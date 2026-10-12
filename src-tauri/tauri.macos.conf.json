@@ -1,0 +1,23 @@
+{
+  "app": {
+    "windows": [
+      {
+        "title": "ZCashflow",
+        "width": 1280,
+        "minWidth": 420,
+        "height": 820,
+        "minHeight": 600,
+        "dragDropEnabled": false,
+        "label": "main",
+        "decorations": true,
+        "center": true,
+        "titleBarStyle": "Overlay",
+        "hiddenTitle": true,
+        "trafficLightPosition": {
+          "x": 16,
+          "y": 20
+        }
+      }
+    ]
+  }
+}

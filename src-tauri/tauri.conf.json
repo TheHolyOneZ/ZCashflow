@@ -1,0 +1,76 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "ZCashflow",
+  "version": "1.0.0",
+  "identifier": "dev.zcashflow.app",
+  "build": {
+    "beforeDevCommand": "pnpm dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "pnpm build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "ZCashflow",
+        "width": 1280,
+        "minWidth": 420,
+        "height": 820,
+        "minHeight": 600,
+        "dragDropEnabled": false,
+        "label": "main",
+        "decorations": false,
+        "center": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "resources": {
+      "resources/ocr/": "ocr/"
+    },
+    "category": "Finance",
+    "shortDescription": "Free, private, local-first personal finance",
+    "licenseFile": "../LICENSE",
+    "publisher": "TheHolyOneZ",
+    "homepage": "https://zsync.eu/zcashflow/",
+    "copyright": "© 2026 TheHolyOneZ · GPL-3.0-or-later · zsync.eu/zcashflow",
+    "longDescription": "ZCashflow is a free, open-source, local-first personal finance app by TheHolyOneZ. Track income and expenses, scan receipts with on-device OCR, plan recurring payments, debts, savings goals and budgets, and see a month-end forecast. No cloud, no account – your devices sync end-to-end encrypted over your own Wi-Fi. Website: https://zsync.eu/zcashflow/ · Source: https://github.com/TheHolyOneZ/ZCashflow",
+    "windows": {
+      "nsis": {
+        "languages": [
+          "English",
+          "German",
+          "Spanish",
+          "French",
+          "Italian",
+          "Polish",
+          "Turkish"
+        ],
+        "displayLanguageSelector": true,
+        "installMode": "currentUser"
+      }
+    },
+    "macOS": {
+      "signingIdentity": "-",
+      "minimumSystemVersion": "11.0"
+    },
+    "linux": {
+      "deb": {
+        "section": "utils"
+      }
+    },
+    "license": "GPL-3.0-or-later"
+  }
+}

@@ -1,0 +1,247 @@
+name: Build
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      linux:
+        type: boolean
+        default: true
+      windows:
+        type: boolean
+        default: true
+      macos:
+        type: boolean
+        default: false
+      android:
+        type: boolean
+        default: true
+      ios:
+        type: boolean
+        default: false
+
+jobs:
+  desktop:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            name: linux
+            enabled: ${{ github.event_name == 'push' || inputs.linux }}
+          - os: windows-latest
+            name: windows
+            enabled: ${{ github.event_name == 'push' || inputs.windows }}
+          - os: macos-latest
+            name: macos
+            enabled: ${{ github.event_name == 'push' || inputs.macos }}
+    name: desktop (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Skip
+        if: ${{ !matrix.enabled }}
+        run: echo "not selected"
+
+      - uses: actions/checkout@v4
+        if: ${{ matrix.enabled }}
+
+      - name: System dependencies
+        if: ${{ matrix.enabled && matrix.name == 'linux' }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - uses: pnpm/action-setup@v4
+        if: ${{ matrix.enabled }}
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        if: ${{ matrix.enabled }}
+        with:
+          node-version: 22
+          cache: pnpm
+      - uses: dtolnay/rust-toolchain@stable
+        if: ${{ matrix.enabled }}
+      - uses: swatinem/rust-cache@v2
+        if: ${{ matrix.enabled }}
+        with:
+          workspaces: src-tauri
+
+      - run: pnpm install --frozen-lockfile
+        if: ${{ matrix.enabled }}
+      - run: pnpm tauri build
+        if: ${{ matrix.enabled }}
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ matrix.enabled }}
+        with:
+          name: zcashflow-${{ matrix.name }}
+          path: |
+            src-tauri/target/release/bundle/**/*.deb
+            src-tauri/target/release/bundle/**/*.rpm
+            src-tauri/target/release/bundle/**/*.AppImage
+            src-tauri/target/release/bundle/**/*-setup.exe
+            src-tauri/target/release/bundle/**/*.dmg
+          if-no-files-found: error
+
+  android:
+    if: ${{ github.event_name == 'push' || inputs.android }}
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android/sdk/ndk /opt/ghc /usr/local/.ghcup /usr/share/swift /usr/local/share/boost /opt/hostedtoolcache/CodeQL
+          sudo docker image prune --all --force > /dev/null
+          df -h /
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: NDK
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "ndk;27.2.12479018" "platforms;android-35" "build-tools;35.0.0"
+          echo "NDK_HOME=$ANDROID_HOME/ndk/27.2.12479018" >> "$GITHUB_ENV"
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android,armv7-linux-androideabi
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - run: pnpm install --frozen-lockfile
+      - name: Init Android project
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          pnpm tauri android init --ci
+          pnpm tauri icon src-tauri/icons/source/icon.png
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > src-tauri/gen/android/release.jks
+            printf 'keyAlias=zcashflow\npassword=%s\nstoreFile=release.jks\n' "$KEY_PASSWORD" > src-tauri/gen/android/keystore.properties
+          fi
+          pnpm android:setup
+      - name: Build APK
+        run: pnpm tauri android build --apk --target aarch64 --target armv7
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: zcashflow-android
+          path: src-tauri/gen/android/app/build/outputs/apk/**/release/*.apk
+          if-no-files-found: error
+
+  ios:
+    if: ${{ github.event_name == 'push' || inputs.ios }}
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-ios
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - run: pnpm install --frozen-lockfile
+      - name: Init iOS project without code signing
+        run: |
+          pnpm tauri ios init --ci
+          pnpm tauri icon src-tauri/icons/source/icon.png
+          printf 'CODE_SIGNING_ALLOWED = NO\nCODE_SIGNING_REQUIRED = NO\nCODE_SIGN_IDENTITY =\nCODE_SIGN_ENTITLEMENTS =\nDEVELOPMENT_TEAM =\nPROVISIONING_PROFILE_SPECIFIER =\n' > "$RUNNER_TEMP/unsigned.xcconfig"
+          echo "XCODE_XCCONFIG_FILE=$RUNNER_TEMP/unsigned.xcconfig" >> "$GITHUB_ENV"
+          python3 scripts/ios-unsigned.py
+      - name: Build for iPhone (unsigned)
+        run: |
+          python3 scripts/ios-unsigned.py
+          pnpm tauri ios build --target aarch64 --ci || true
+      - name: Package unsigned IPA
+        run: |
+          APP=$(find src-tauri/gen/apple ~/Library/Developer/Xcode/DerivedData -type d -name "*.app" -path "*-iphoneos/*" 2>/dev/null | head -1)
+          if [ -z "$APP" ] || [ ! -f "$APP/Info.plist" ]; then echo "no complete .app found"; exit 1; fi
+          echo "app: $APP"
+          mkdir -p ipa/Payload
+          cp -R "$APP" ipa/Payload/
+          (cd ipa && zip -qr ../ZCashflow-unsigned.ipa Payload)
+          ls -la ZCashflow-unsigned.ipa
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: zcashflow-ios-unsigned-ipa
+          path: ZCashflow-unsigned.ipa
+          if-no-files-found: error
+
+  release:
+    if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+    needs: [desktop, android, ios]
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Collect, rename and checksum
+        run: |
+          V="${GITHUB_REF_NAME#v}"
+          mkdir -p dist
+          pick() { find artifacts -type f -name "$1" | sort | head -1; }
+          put() {
+            src="$(pick "$1")"
+            if [ -z "$src" ]; then echo "missing $1"; exit 1; fi
+            cp "$src" "dist/$2"
+          }
+          put '*-setup.exe'  "ZCashflow_${V}_windows_x64-setup.exe"
+          put '*.dmg'        "ZCashflow_${V}_macos_apple-silicon.dmg"
+          put '*.deb'        "ZCashflow_${V}_linux_amd64.deb"
+          put '*.rpm'        "ZCashflow_${V}_linux_x86_64.rpm"
+          put '*.AppImage'   "ZCashflow_${V}_linux_x86_64.AppImage"
+          apk="$(find artifacts -type f -name '*universal*release*.apk' | head -1)"
+          [ -n "$apk" ] || apk="$(pick '*.apk')"
+          cp "$apk" "dist/ZCashflow_${V}_android.apk"
+          put '*.ipa'        "ZCashflow_${V}_ios_unsigned.ipa"
+          (cd dist && sha256sum * > SHA256SUMS.txt)
+          ls -la dist
+          cat dist/SHA256SUMS.txt
+      - name: Release notes
+        run: |
+          V="${GITHUB_REF_NAME#v}"
+          cat > notes.md <<NOTES
+          ## ZCashflow ${V}
+
+          | Platform | Download |
+          |---|---|
+          | Windows 10/11 (x64) | \`ZCashflow_${V}_windows_x64-setup.exe\` |
+          | macOS (Apple Silicon) | \`ZCashflow_${V}_macos_apple-silicon.dmg\` |
+          | Debian / Ubuntu / Mint | \`ZCashflow_${V}_linux_amd64.deb\` |
+          | Fedora / openSUSE | \`ZCashflow_${V}_linux_x86_64.rpm\` |
+          | Any Linux (Arch, EndeavourOS, …) | \`ZCashflow_${V}_linux_x86_64.AppImage\` |
+          | Android | \`ZCashflow_${V}_android.apk\` |
+          | iPhone / iPad (sideload) | \`ZCashflow_${V}_ios_unsigned.ipa\` |
+
+          Installation guides for every platform – including the free iPhone install via SideStore – are in the [README](https://github.com/${GITHUB_REPOSITORY}#-installation).
+          Verify downloads with \`SHA256SUMS.txt\`.
+          NOTES
+          sed -i 's/^          //' notes.md
+      - name: Create draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/* --draft --title "ZCashflow ${GITHUB_REF_NAME}" --notes-file notes.md

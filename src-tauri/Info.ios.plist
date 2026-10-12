@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>NSCameraUsageDescription</key>
+  <string>ZCashflow fotografiert Belege, um Datum, Betrag und Händler zu erkennen. Fotos bleiben auf deinen Geräten.</string>
+  <key>NSPhotoLibraryUsageDescription</key>
+  <string>ZCashflow importiert Belegfotos aus deiner Mediathek.</string>
+  <key>NSLocalNetworkUsageDescription</key>
+  <string>ZCashflow synchronisiert sich verschlüsselt mit deinen gekoppelten Geräten im selben Netzwerk.</string>
+  <key>NSBonjourServices</key>
+  <array>
+    <string>_zcashflow._tcp</string>
+  </array>
+</dict>
+</plist>

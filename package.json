@@ -1,0 +1,82 @@
+{
+  "name": "zcashflow",
+  "private": true,
+  "version": "1.0.0",
+  "description": "ZCashflow – free, private, local-first personal finance app for Windows, macOS, Linux, Android and iOS",
+  "author": {
+    "name": "TheHolyOneZ",
+    "url": "https://github.com/TheHolyOneZ"
+  },
+  "license": "GPL-3.0-or-later",
+  "homepage": "https://zsync.eu/zcashflow/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TheHolyOneZ/ZCashflow.git"
+  },
+  "bugs": {
+    "url": "https://github.com/TheHolyOneZ/ZCashflow/issues"
+  },
+  "funding": {
+    "type": "ko-fi",
+    "url": "https://ko-fi.com/theholyonez"
+  },
+  "keywords": [
+    "finance",
+    "budget",
+    "expense-tracker",
+    "money-manager",
+    "personal-finance",
+    "local-first",
+    "privacy",
+    "receipt-ocr",
+    "tauri",
+    "react"
+  ],
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "tauri": "tauri",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "android:setup": "node scripts/android-setup.mjs"
+  },
+  "dependencies": {
+    "@fontsource-variable/geist": "^5.3.0",
+    "@fontsource-variable/inter": "^5.3.0",
+    "@fontsource-variable/manrope": "^5.3.0",
+    "@tanstack/react-query": "^5.104.1",
+    "@tanstack/react-router": "^1.170.41",
+    "@tauri-apps/api": "^2",
+    "@tauri-apps/plugin-clipboard-manager": "^2.4.1",
+    "@tauri-apps/plugin-dialog": "^2.8.1",
+    "@tauri-apps/plugin-notification": "^2.5.1",
+    "@tauri-apps/plugin-opener": "^2",
+    "@tauri-apps/plugin-window-state": "^2.5.0",
+    "clsx": "^2.1.1",
+    "cmdk": "^1.1.1",
+    "date-fns": "^4.4.0",
+    "i18next": "^26.4.2",
+    "lucide-react": "^1.53.0",
+    "radix-ui": "^1.7.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-i18next": "^17.0.16",
+    "recharts": "^3.10.1",
+    "tailwind-merge": "^3.7.0",
+    "zustand": "^5.0.15"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@tauri-apps/cli": "^2",
+    "@types/node": "^26.6.4",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "@vitejs/plugin-react": "^6.0.2",
+    "tailwindcss": "^4.3.3",
+    "typescript": "~6.0.3",
+    "vite": "^8.0.16",
+    "vitest": "^5.0.3"
+  }
+}

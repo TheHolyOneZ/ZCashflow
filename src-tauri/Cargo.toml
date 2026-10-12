@@ -1,0 +1,68 @@
+[package]
+name = "zcashflow"
+version = "1.0.0"
+description = "ZCashflow – free, private, local-first personal finance app with receipt OCR, forecasts and encrypted LAN sync"
+authors = ["TheHolyOneZ <https://github.com/TheHolyOneZ>"]
+license = "GPL-3.0-or-later"
+homepage = "https://zsync.eu/zcashflow/"
+repository = "https://github.com/TheHolyOneZ/ZCashflow"
+documentation = "https://github.com/TheHolyOneZ/ZCashflow#readme"
+readme = "../README.md"
+keywords = ["finance", "budget", "money", "tauri", "local-first"]
+categories = ["finance"]
+edition = "2021"
+publish = false
+
+[lib]
+name = "zcashflow_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[features]
+embed-ocr = []
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-opener = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+rusqlite = { version = "0.40.2", features = ["bundled"] }
+rusqlite_migration = "2.6.0"
+uuid = { version = "1.27.0", features = ["v4", "v5", "v7", "serde"] }
+chrono = { version = "0.4.45", features = ["serde"] }
+thiserror = "2.0.21"
+tauri-plugin-notification = "2.5.1"
+tauri-plugin-dialog = "2.8.1"
+ocrs = "0.13.1"
+rten = "0.26"
+image = "0.25.10"
+regex = "1.13.1"
+sha2 = "0.11.0"
+hex = "0.4.3"
+base64 = "0.23.1"
+ureq = { version = "3.4.2", features = ["json"] }
+snow = "0.10.0"
+mdns-sd = "0.21.5"
+tauri-plugin-clipboard-manager = "2.4.1"
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = 3
+panic = "unwind"
+strip = true
+
+[dev-dependencies]
+tempfile = "3.27.0"
+
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-single-instance = "2.5.2"
+tauri-plugin-window-state = "2.5.0"
+
+[profile.dev]
+debug = "line-tables-only"
+
+[profile.dev.package."*"]
+debug = false

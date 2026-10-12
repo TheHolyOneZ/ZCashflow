@@ -1,0 +1,15 @@
+pub mod attachments;
+pub mod accounts;
+pub mod budgets;
+pub mod categories;
+pub mod counterparties;
+pub mod debts;
+pub mod demo;
+pub mod export;
+pub mod forecast;
+pub mod goals;
+pub mod insights;
+pub mod quick;
+pub mod recurring;
+pub mod summary;
+pub mod transactions;
