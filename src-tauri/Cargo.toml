@@ -1,6 +1,6 @@
 [package]
 name = "zcashflow"
-version = "1.0.0"
+version = "1.1.0"
 description = "ZCashflow – free, private, local-first personal finance app with receipt OCR, forecasts and encrypted LAN sync"
 authors = ["TheHolyOneZ <https://github.com/TheHolyOneZ>"]
 license = "GPL-3.0-or-later"

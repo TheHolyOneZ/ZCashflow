@@ -78,20 +78,25 @@ function BalanceForm({ only, onDone }: { only?: string; onDone: () => void }) {
     <form onSubmit={submit} className="flex flex-col gap-4">
       <ul className="flex flex-col gap-2">
         {accounts.map((a, i) => {
-          const next = changed(a);
+          const entered = parseSignedMoney(values[a.id] ?? "", a.currency);
           return (
             <li key={a.id} className="flex items-center gap-3 rounded-xl border border-border px-3 py-2.5">
               <IconTile icon={KIND_ICON[a.kind]} color={a.color ?? "var(--accent)"} />
               <div className="min-w-0 flex-1">
                 <div className="truncate text-[13.5px] font-medium">{displayName(a)}</div>
-                <div className="text-[11.5px] text-muted">
-                  {next !== null ? (
+                <div className="text-[10.5px] leading-relaxed text-muted">
+                  <div>
+                    {t("balance.recorded")}: <Money minor={a.balanceMinor} currency={a.currency} />
+                  </div>
+                  {entered !== null && (
                     <>
-                      {t("balance.diff")}{" "}
-                      <Money minor={next - a.balanceMinor} currency={a.currency} signed tone="auto" className="font-medium" />
+                      <div>
+                        {t("balance.entered")}: <Money minor={entered} currency={a.currency} />
+                      </div>
+                      <div>
+                        {t("balance.difference")}: <Money minor={entered - a.balanceMinor} currency={a.currency} signed tone="auto" className="font-medium" />
+                      </div>
                     </>
-                  ) : (
-                    t("balance.current")
                   )}
                 </div>
               </div>

@@ -10,6 +10,7 @@ use crate::error::{AppError, AppResult};
 
 pub const TABLES: &[(&str, &str)] = &[
     ("accounts", "id"),
+    ("account_balance_anchors", "account_id"),
     ("categories", "id"),
     ("counterparties", "id"),
     ("recurring_rules", "id"),

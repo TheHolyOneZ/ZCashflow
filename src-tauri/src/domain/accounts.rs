@@ -34,7 +34,7 @@ pub struct AccountInput {
 
 const SELECT: &str = "
     SELECT a.id, a.name, a.system_key, a.kind, a.currency, a.opening_minor, a.color, a.archived,
-           CASE WHEN a.anchor_at IS NULL THEN a.opening_minor ELSE a.anchor_minor END + coalesce((
+           CASE WHEN b.anchor_at IS NULL THEN a.opening_minor ELSE b.anchor_minor END + coalesce((
                SELECT sum(CASE
                    WHEN t.kind = 'income'   AND t.account_id    = a.id THEN t.amount_minor
                    WHEN t.kind = 'expense'  AND t.account_id    = a.id THEN -t.amount_minor
@@ -43,12 +43,13 @@ const SELECT: &str = "
                    ELSE 0 END)
                FROM transactions t
                WHERE t.deleted = 0 AND (t.account_id = a.id OR t.to_account_id = a.id)
-                 AND (a.anchor_at IS NULL
-                      OR t.occurred_on > a.anchor_on
-                      OR (t.occurred_on = a.anchor_on AND t.created_at > a.anchor_at))
+                 AND (b.anchor_at IS NULL
+                      OR t.occurred_on > b.anchor_on
+                      OR (t.occurred_on = b.anchor_on AND t.created_at > b.anchor_at))
            ), 0) AS balance,
-           a.anchor_on
+           b.anchor_on
     FROM accounts a
+    LEFT JOIN account_balance_anchors b ON b.account_id = a.id
     WHERE a.deleted = 0";
 
 fn from_row(r: &Row) -> rusqlite::Result<Account> {
@@ -123,15 +124,20 @@ pub fn upsert(db: &Db, input: AccountInput) -> AppResult<Account> {
 
 pub fn set_balance(db: &Db, id: &str, balance_minor: i64, today: &str) -> AppResult<Account> {
     chrono::NaiveDate::parse_from_str(today, "%Y-%m-%d").map_err(|_| AppError::Invalid(format!("invalid date {today:?}")))?;
-    let conn = db.conn();
-    let n = conn.execute(
-        "UPDATE accounts SET anchor_minor = ?2, anchor_on = ?3, anchor_at = ?4, updated_hlc = ?5
-         WHERE id = ?1 AND deleted = 0",
-        params![id, balance_minor, today, now_rfc3339(), db.hlc.tick()],
+    let mut conn = db.conn();
+    let tx = conn.transaction()?;
+    let n = tx.execute(
+        "INSERT INTO account_balance_anchors (account_id, anchor_minor, anchor_on, anchor_at, device_id, updated_hlc)
+         SELECT id, ?2, ?3, ?4, ?5, ?6 FROM accounts WHERE id = ?1 AND deleted = 0
+         ON CONFLICT(account_id) DO UPDATE SET anchor_minor = excluded.anchor_minor,
+             anchor_on = excluded.anchor_on, anchor_at = excluded.anchor_at,
+             device_id = excluded.device_id, updated_hlc = excluded.updated_hlc",
+        params![id, balance_minor, today, now_rfc3339(), db.device_id(), db.hlc.tick()],
     )?;
     if n == 0 {
         return Err(AppError::NotFound(format!("account {id}")));
     }
+    tx.commit()?;
     get(&conn, id)
 }
 

@@ -9,7 +9,7 @@ use crate::error::AppResult;
 
 mod seed;
 
-pub const SCHEMA_VERSION: u32 = 5;
+pub const SCHEMA_VERSION: u32 = 6;
 
 fn migrations() -> Migrations<'static> {
     Migrations::new(vec![
@@ -18,6 +18,7 @@ fn migrations() -> Migrations<'static> {
         M::up(include_str!("../../migrations/003_receipts.sql")),
         M::up(include_str!("../../migrations/004_sync.sql")),
         M::up(include_str!("../../migrations/005_balance_anchor.sql")),
+        M::up(include_str!("../../migrations/006_balance_anchor_sync.sql")),
     ])
 }
 

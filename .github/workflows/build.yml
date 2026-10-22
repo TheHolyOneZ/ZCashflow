@@ -195,53 +195,9 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-      - name: Collect, rename and checksum
-        run: |
-          V="${GITHUB_REF_NAME#v}"
-          mkdir -p dist
-          pick() { find artifacts -type f -name "$1" | sort | head -1; }
-          put() {
-            src="$(pick "$1")"
-            if [ -z "$src" ]; then echo "missing $1"; exit 1; fi
-            cp "$src" "dist/$2"
-          }
-          put '*-setup.exe'  "ZCashflow_${V}_windows_x64-setup.exe"
-          put '*.dmg'        "ZCashflow_${V}_macos_apple-silicon.dmg"
-          put '*.deb'        "ZCashflow_${V}_linux_amd64.deb"
-          put '*.rpm'        "ZCashflow_${V}_linux_x86_64.rpm"
-          put '*.AppImage'   "ZCashflow_${V}_linux_x86_64.AppImage"
-          apk="$(find artifacts -type f -name '*universal*release*.apk' | head -1)"
-          [ -n "$apk" ] || apk="$(pick '*.apk')"
-          cp "$apk" "dist/ZCashflow_${V}_android.apk"
-          put '*.ipa'        "ZCashflow_${V}_ios_unsigned.ipa"
-          (cd dist && sha256sum * > SHA256SUMS.txt)
-          ls -la dist
-          cat dist/SHA256SUMS.txt
-      - name: Release notes
-        run: |
-          V="${GITHUB_REF_NAME#v}"
-          cat > notes.md <<NOTES
-          ## ZCashflow ${V}
-
-          | Platform | Download |
-          |---|---|
-          | Windows 10/11 (x64) | \`ZCashflow_${V}_windows_x64-setup.exe\` |
-          | macOS (Apple Silicon) | \`ZCashflow_${V}_macos_apple-silicon.dmg\` |
-          | Debian / Ubuntu / Mint | \`ZCashflow_${V}_linux_amd64.deb\` |
-          | Fedora / openSUSE | \`ZCashflow_${V}_linux_x86_64.rpm\` |
-          | Any Linux (Arch, EndeavourOS, …) | \`ZCashflow_${V}_linux_x86_64.AppImage\` |
-          | Android | \`ZCashflow_${V}_android.apk\` |
-          | iPhone / iPad (sideload) | \`ZCashflow_${V}_ios_unsigned.ipa\` |
-
-          Installation guides for every platform – including the free iPhone install via SideStore – are in the [README](https://github.com/${GITHUB_REPOSITORY}#-installation).
-          Verify downloads with \`SHA256SUMS.txt\`.
-          NOTES
-          sed -i 's/^          //' notes.md
-      - name: Create draft release
+      - name: Create draft source release without binary assets
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" dist/* --draft --title "ZCashflow ${GITHUB_REF_NAME}" --notes-file notes.md
+          V="${GITHUB_REF_NAME#v}"
+          gh release create "$GITHUB_REF_NAME" --draft --title "ZCashflow ${V}" --notes-file release.txt

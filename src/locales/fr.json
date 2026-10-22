@@ -854,8 +854,9 @@
   "balance": {
     "title": "Corriger le solde",
     "intro": "Saisis ce qu'il y a vraiment sur le compte aujourd'hui – p. ex. selon ton appli bancaire. Les saisies antérieures restent dans l'historique et ne déduisent plus rien.",
-    "current": "solde actuel",
-    "diff": "Correction :",
+    "recorded": "Solde enregistré",
+    "entered": "Solde bancaire",
+    "difference": "Écart :",
     "hint": "Désormais, seuls les nouveaux revenus et dépenses comptent. Les jours rattrapés ne modifient plus le solde du jour.",
     "save": "Appliquer",
     "saved": "Solde mis à jour",

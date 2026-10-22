@@ -37,6 +37,7 @@ encrypted, over your own Wi-Fi.
 
 ## Contents
 
+- [What's new in 1.1.0](#-whats-new-in-110)
 - [Why ZCashflow?](#-why-zcashflow)
 - [Features](#-features)
 - [Screenshots](#-screenshots)
@@ -53,6 +54,18 @@ encrypted, over your own Wi-Fi.
 - [FAQ & troubleshooting](#-faq--troubleshooting)
 - [Contributing](#-contributing)
 - [License, author & support](#-license-author--support)
+
+---
+
+## 🆕 What's new in 1.1.0
+
+- The balance correction dialog compares the balance currently recorded in ZCashflow with the balance entered from your bank, and shows the difference so you can spot a mismatch.
+- Account balance corrections now accept zero and negative balances, persist correctly, and continue to include transactions made after the correction date.
+- Balance corrections sync independently from account details, so editing an account's name or color does not replace its corrected balance.
+- Upcoming recurring occurrences refresh every minute while their list is active.
+- Sync schema version 6 separates balance corrections from account metadata. Update both paired devices when prompted.
+
+See [changelog.md](changelog.md) for the full change list.
 
 ---
 
@@ -124,6 +137,7 @@ encrypted, over your own Wi-Fi.
 ### 🔁 Recurring payments
 - Salary, rent, subscriptions, insurance – weekly, monthly, every *n* months, yearly
 - Booked **automatically** or **confirmed by you** for varying amounts
+- Upcoming occurrences refresh every minute while their list is open, so payments that become due appear without restarting the app
 - Pick *Repeat* right in the quick entry (e.g. insurance, twice a year)
 - Got a bonus? Adjust this month's salary – or apply the new amount to all future months
 - Fixed costs per month and per year at a glance
@@ -144,7 +158,7 @@ encrypted, over your own Wi-Fi.
 ### 🏦 Accounts
 - Checking, cash, savings, credit card, other – multiple currencies
 - *Where your money is* distribution bar
-- **Correct balance** (pencil icon): type what your banking app says today – earlier entries become history and stop affecting today's balance
+- **Correct balance** (pencil icon): enter the balance shown by your bank, including zero or a negative balance – earlier entries become history and later transactions continue to update it
 
 </td>
 <td valign="top">
@@ -155,6 +169,7 @@ encrypted, over your own Wi-Fi.
 - **One-tap pairing**: tap *Pair* on the phone, the PC shows a 6-digit code
 - Roles per device: full access, read-only, receipts-only
 - Receipt photos are transferred too
+- Corrected balances sync independently from account name and color changes
 
 </td>
 </tr>
@@ -536,7 +551,7 @@ You don't need every toolchain locally – GitHub builds everything:
   - *Actions → Build → Run workflow* builds selected platforms as artifacts.
   - Pushing a version tag builds **all** platforms and creates a **draft release** with consistently named files and `SHA256SUMS.txt`:
     ```sh
-    git tag v1.0.0 && git push origin v1.0.0
+    git tag v1.1.0 && git push origin v1.1.0
     ```
   - Android signing uses the repository secrets `ANDROID_KEYSTORE_B64` (base64 of the keystore) and `ANDROID_KEY_PASSWORD`.
 

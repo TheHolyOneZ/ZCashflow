@@ -93,7 +93,7 @@ export function MoneyInput({
 
 export function parseSignedMoney(text: string, currency: string): number | null {
   const neg = text.trim().startsWith("-");
-  const v = parseMoney(text.trim().replace(/^-/, ""), currency);
+  const v = parseMoney(text.trim().replace(/^-/, ""), currency, true);
   return v === null ? null : neg ? -v : v;
 }
 

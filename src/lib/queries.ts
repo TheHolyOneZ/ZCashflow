@@ -37,7 +37,7 @@ export const useSummary = (from: string, to: string, currency: string | undefine
 
 export const useRecurring = () => useQuery({ queryKey: ["recurring"], queryFn: planning.listRecurring });
 export const useUpcoming = (days: number) =>
-  useQuery({ queryKey: ["upcoming", days], queryFn: () => planning.upcoming(days) });
+  useQuery({ queryKey: ["upcoming", days], queryFn: () => planning.upcoming(days), refetchInterval: 60_000 });
 export const useDebts = () => useQuery({ queryKey: ["debts"], queryFn: planning.listDebts });
 export const useGoals = () => useQuery({ queryKey: ["goals"], queryFn: planning.listGoals });
 export const useGoalAllocations = (goalId: string | undefined) =>

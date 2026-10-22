@@ -48,7 +48,7 @@ export function formatMoney(
   return moneyHidden() ? maskParts(f.formatToParts(value)) : f.format(value);
 }
 
-export function parseMoney(input: string, currency = "EUR"): number | null {
+export function parseMoney(input: string, currency = "EUR", allowZero = false): number | null {
   const digits = minorDigits(currency);
   const s = input.trim().replace(/[\s€$£]|EUR|USD|CHF/gi, "");
   if (!/^\d[\d.,]*$/.test(s)) return null;
@@ -64,7 +64,7 @@ export function parseMoney(input: string, currency = "EUR"): number | null {
   const int = Number(intPart.replace(/[.,]/g, ""));
   const frac = Number(fracPart.padEnd(digits, "0") || "0");
   const minor = int * 10 ** digits + frac;
-  return Number.isSafeInteger(minor) && minor > 0 ? minor : null;
+  return Number.isSafeInteger(minor) && (allowZero ? minor >= 0 : minor > 0) ? minor : null;
 }
 
 export function minorToInput(minor: number, currency: string, locale: string): string {
