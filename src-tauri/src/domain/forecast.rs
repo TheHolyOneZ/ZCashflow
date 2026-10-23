@@ -34,12 +34,32 @@ pub struct Forecast {
     pub daily_variable_minor: i64,
 }
 
-pub fn current_balance(conn: &Connection, currency: &str) -> AppResult<i64> {
-    Ok(accounts::list(conn)?
-        .iter()
-        .filter(|a| !a.archived && a.currency == currency)
-        .map(|a| a.balance_minor)
-        .sum())
+struct BookedAhead {
+    date: String,
+    kind: String,
+    amount_minor: i64,
+    account_id: String,
+    to_account_id: Option<String>,
+}
+
+fn booked_ahead(conn: &Connection, currency: &str, today: NaiveDate, to: NaiveDate) -> AppResult<Vec<BookedAhead>> {
+    let mut stmt = conn.prepare(
+        "SELECT t.occurred_on, t.kind, t.amount_minor, t.account_id, t.to_account_id
+         FROM transactions t JOIN accounts a ON a.id = t.account_id
+         WHERE t.deleted = 0 AND a.deleted = 0 AND a.archived = 0 AND a.currency = ?1
+           AND t.occurred_on > ?2 AND t.occurred_on <= ?3
+         ORDER BY t.occurred_on",
+    )?;
+    let rows = stmt.query_map(params![currency, today.to_string(), to.to_string()], |r| {
+        Ok(BookedAhead {
+            date: r.get(0)?,
+            kind: r.get(1)?,
+            amount_minor: r.get(2)?,
+            account_id: r.get(3)?,
+            to_account_id: r.get(4)?,
+        })
+    })?;
+    Ok(rows.collect::<Result<_, _>>()?)
 }
 
 fn variable_spending_90d(conn: &Connection, currency: &str, today: NaiveDate) -> AppResult<i64> {
@@ -54,25 +74,24 @@ fn variable_spending_90d(conn: &Connection, currency: &str, today: NaiveDate) ->
 
 pub fn forecast(conn: &Connection, currency: &str, today: NaiveDate, horizon_days: i64) -> AppResult<Forecast> {
     let to = today + Duration::days(horizon_days.clamp(1, 3 * 366));
-    let start = current_balance(conn, currency)?;
-
-    let all_accounts = accounts::list(conn)?;
+    let all_accounts = accounts::list_as_of(conn, today)?;
+    let start: i64 = all_accounts.iter().filter(|a| !a.archived && a.currency == currency).map(|a| a.balance_minor).sum();
     let liquid_ids: std::collections::HashSet<String> = all_accounts
         .iter()
         .filter(|a| !a.archived && a.currency == currency && matches!(a.kind.as_str(), "cash" | "checking" | "credit"))
         .map(|a| a.id.clone())
         .collect();
     let liquid_start: i64 = all_accounts.iter().filter(|a| liquid_ids.contains(&a.id)).map(|a| a.balance_minor).sum();
-    let liquid_effect = |o: &Occurrence| -> i64 {
-        let from = liquid_ids.contains(&o.account_id);
-        match o.kind.as_str() {
-            "income" if from => o.amount_minor,
-            "expense" if from => -o.amount_minor,
+    let liquid_effect = |kind: &str, amount_minor: i64, account_id: &String, to_account_id: Option<&String>| -> i64 {
+        let from = liquid_ids.contains(account_id);
+        match kind {
+            "income" if from => amount_minor,
+            "expense" if from => -amount_minor,
             "transfer" => {
-                let to = o.to_account_id.as_ref().is_some_and(|t| liquid_ids.contains(t));
+                let to = to_account_id.is_some_and(|t| liquid_ids.contains(t));
                 match (from, to) {
-                    (true, false) => -o.amount_minor,
-                    (false, true) => o.amount_minor,
+                    (true, false) => -amount_minor,
+                    (false, true) => amount_minor,
                     _ => 0,
                 }
             }
@@ -82,14 +101,25 @@ pub fn forecast(conn: &Connection, currency: &str, today: NaiveDate, horizon_day
     let all_events: Vec<Occurrence> = recurring::occurrences(conn, today, to)?.into_iter().filter(|o| o.currency == currency).collect();
     let variable_90 = variable_spending_90d(conn, currency, today)?;
     let events: Vec<Occurrence> = all_events.iter().filter(|o| o.kind != "transfer").cloned().collect();
+    let ahead = booked_ahead(conn, currency, today, to)?;
 
     let mut days = Vec::new();
     let mut balance = start;
     let mut min = (start, today);
     let mut day = today;
     let mut i = 0;
+    let mut j = 0;
     while day <= to {
         let (mut inc, mut exp) = (0, 0);
+
+        while j < ahead.len() && ahead[j].date.as_str() <= day.to_string().as_str() {
+            match ahead[j].kind.as_str() {
+                "income" => inc += ahead[j].amount_minor,
+                "expense" => exp += ahead[j].amount_minor,
+                _ => {}
+            }
+            j += 1;
+        }
 
         while i < events.len() && events[i].date.as_str() <= day.to_string().as_str() {
             match events[i].kind.as_str() {
@@ -118,7 +148,17 @@ pub fn forecast(conn: &Connection, currency: &str, today: NaiveDate, horizon_day
         .unwrap_or(today + Duration::days(30))
         .max(today);
     let until_s = until.to_string();
-    let window_net: i64 = all_events.iter().filter(|o| o.date <= until_s).map(liquid_effect).sum();
+    let window_net: i64 = all_events
+        .iter()
+        .filter(|o| o.date <= until_s)
+        .map(|o| liquid_effect(&o.kind, o.amount_minor, &o.account_id, o.to_account_id.as_ref()))
+        .chain(
+            ahead
+                .iter()
+                .filter(|t| t.date <= until_s)
+                .map(|t| liquid_effect(&t.kind, t.amount_minor, &t.account_id, t.to_account_id.as_ref())),
+        )
+        .sum();
     let safe_total = (liquid_start + window_net).max(0);
     let window_days = (until - today).num_days() + 1;
 
@@ -247,6 +287,41 @@ mod tests {
             today,
         )
         .unwrap();
+    }
+
+    #[test]
+    fn entries_dated_ahead_land_on_their_day() {
+        let db = Db::open_in_memory().unwrap();
+        let today = d("2026-10-08");
+        let acc = accounts::list(&db.conn()).unwrap()[0].id.clone();
+        accounts::set_balance(&db, &acc, 10_000, "2026-10-08").unwrap();
+        crate::domain::transactions::create(
+            &db,
+            crate::domain::transactions::TransactionInput {
+                kind: "expense".into(),
+                amount_minor: 3_000,
+                currency: None,
+                occurred_on: "2026-10-10".into(),
+                account_id: acc,
+                to_account_id: None,
+                category_id: None,
+                counterparty: None,
+                title: "Vorgemerkt".into(),
+                note: None,
+                tags: vec![],
+                debt_id: None,
+                goal_id: None,
+            },
+        )
+        .unwrap();
+
+        let fc = forecast(&db.conn(), "EUR", today, 5).unwrap();
+        assert_eq!(fc.start_balance_minor, 10_000);
+        let on = |day: &str| fc.days.iter().find(|x| x.date == day).unwrap();
+        assert_eq!(on("2026-10-09").balance_minor, 10_000);
+        assert_eq!(on("2026-10-10").expense_minor, 3_000);
+        assert_eq!(fc.end_balance_minor, 7_000);
+        assert_eq!(fc.safe_total_minor, 7_000);
     }
 
     #[test]

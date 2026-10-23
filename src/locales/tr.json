@@ -824,7 +824,7 @@
     "intro": "Hesapta bugün gerçekten ne olduğunu gir – örn. bankacılık uygulamana göre. Önceki kayıtlar geçmişte kalır ve artık hiçbir şey düşmez.",
     "recorded": "Kayıtlı bakiye",
     "entered": "Banka bakiyesi",
-    "difference": "Fark:",
+    "difference": "Fark",
     "hint": "Bundan sonra yalnızca yeni gelir ve giderler sayılır. Tamamlanan günler bugünkü bakiyeyi artık değiştirmez.",
     "save": "Uygula",
     "saved": "Bakiye güncellendi",

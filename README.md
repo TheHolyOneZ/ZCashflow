@@ -37,7 +37,7 @@ encrypted, over your own Wi-Fi.
 
 ## Contents
 
-- [What's new in 1.1.0](#-whats-new-in-110)
+- [What's new in 1.1.1](#-whats-new-in-111)
 - [Why ZCashflow?](#-why-zcashflow)
 - [Features](#-features)
 - [Screenshots](#-screenshots)
@@ -57,7 +57,11 @@ encrypted, over your own Wi-Fi.
 
 ---
 
-## 🆕 What's new in 1.1.0
+## 🆕 What's new in 1.1.1
+
+- Fixed: a balance correction no longer appears to revert when an account has transactions dated in the future. Today's balance only counts transactions up to today; future-dated ones count on their date and are included in the forecast.
+
+### 1.1.0
 
 - The balance correction dialog compares the balance currently recorded in ZCashflow with the balance entered from your bank, and shows the difference so you can spot a mismatch.
 - Account balance corrections now accept zero and negative balances, persist correctly, and continue to include transactions made after the correction date.
@@ -551,7 +555,7 @@ You don't need every toolchain locally – GitHub builds everything:
   - *Actions → Build → Run workflow* builds selected platforms as artifacts.
   - Pushing a version tag builds **all** platforms and creates a **draft release** with consistently named files and `SHA256SUMS.txt`:
     ```sh
-    git tag v1.1.0 && git push origin v1.1.0
+    git tag v1.1.1 && git push origin v1.1.1
     ```
   - Android signing uses the repository secrets `ANDROID_KEYSTORE_B64` (base64 of the keystore) and `ANDROID_KEY_PASSWORD`.
 

@@ -824,7 +824,7 @@
     "intro": "Enter what is really in the account today – e.g. from your banking app. Earlier entries stay as history and no longer deduct anything.",
     "recorded": "Recorded balance",
     "entered": "Bank balance",
-    "difference": "Difference:",
+    "difference": "Difference",
     "hint": "From now on only new income and expenses count. Caught-up days no longer change today's balance.",
     "save": "Apply",
     "saved": "Balance updated",

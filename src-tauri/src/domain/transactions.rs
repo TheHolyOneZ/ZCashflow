@@ -402,6 +402,10 @@ fn learned_category(conn: &Connection, name: &str) -> AppResult<Option<String>> 
 mod tests {
     use super::*;
 
+    fn d(s: &str) -> NaiveDate {
+        NaiveDate::parse_from_str(s, "%Y-%m-%d").unwrap()
+    }
+
     fn cash_account(db: &Db) -> String {
         accounts::list(&db.conn()).unwrap()[0].id.clone()
     }
@@ -519,23 +523,34 @@ mod tests {
     fn anchored_balance_ignores_backfilled_entries() {
         let db = Db::open_in_memory().unwrap();
         let acc = cash_account(&db);
-        let bal = |db: &Db| accounts::get(&db.conn(), &acc).unwrap().balance_minor;
+        let bal = |db: &Db, on: &str| accounts::get_as_of(&db.conn(), &acc, d(on)).unwrap().balance_minor;
         create(&db, expense(&acc, "Alt", 5_000, "2026-10-01")).unwrap();
-        assert_eq!(bal(&db), -5_000);
+        assert_eq!(bal(&db, "2026-10-10"), -5_000);
 
         accounts::set_balance(&db, &acc, 100_000, "2026-10-10").unwrap();
-        assert_eq!(bal(&db), 100_000, "today's balance is exactly what the user typed");
+        assert_eq!(bal(&db, "2026-10-10"), 100_000, "today's balance is exactly what the user typed");
         std::thread::sleep(std::time::Duration::from_millis(5));
 
         create(&db, expense(&acc, "Nachgeholt", 3_000, "2026-10-05")).unwrap();
-        assert_eq!(bal(&db), 100_000, "catch-up entries before the anchor are history, not money leaving now");
+        assert_eq!(bal(&db, "2026-10-10"), 100_000, "catch-up entries before the anchor are history, not money leaving now");
 
         create(&db, expense(&acc, "Heute später", 2_000, "2026-10-10")).unwrap();
         create(&db, expense(&acc, "Morgen", 1_000, "2026-10-11")).unwrap();
-        assert_eq!(bal(&db), 97_000);
+        assert_eq!(bal(&db, "2026-10-10"), 98_000, "entries dated after today have not left the account yet");
+        assert_eq!(bal(&db, "2026-10-11"), 97_000);
 
         accounts::set_balance(&db, &acc, 50_000, "2026-10-11").unwrap();
-        assert_eq!(bal(&db), 50_000, "correcting again resets the anchor");
+        assert_eq!(bal(&db, "2026-10-11"), 50_000, "correcting again resets the anchor");
+    }
+
+    #[test]
+    fn correction_with_future_entry_keeps_typed_balance() {
+        let db = Db::open_in_memory().unwrap();
+        let acc = cash_account(&db);
+        create(&db, expense(&acc, "Morgen geplant", 300, "2026-10-24")).unwrap();
+        let a = accounts::set_balance(&db, &acc, 4_000, "2026-10-23").unwrap();
+        assert_eq!(a.balance_minor, 4_000);
+        assert_eq!(accounts::get_as_of(&db.conn(), &acc, d("2026-10-24")).unwrap().balance_minor, 3_700);
     }
 
     #[test]

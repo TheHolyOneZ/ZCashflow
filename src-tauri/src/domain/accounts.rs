@@ -1,4 +1,5 @@
-use rusqlite::{params, Connection, Row};
+use chrono::NaiveDate;
+use rusqlite::{named_params, params, Connection, Row};
 use serde::{Deserialize, Serialize};
 
 use crate::db::{new_id, now_rfc3339, Db};
@@ -43,6 +44,7 @@ const SELECT: &str = "
                    ELSE 0 END)
                FROM transactions t
                WHERE t.deleted = 0 AND (t.account_id = a.id OR t.to_account_id = a.id)
+                 AND t.occurred_on <= :today
                  AND (b.anchor_at IS NULL
                       OR t.occurred_on > b.anchor_on
                       OR (t.occurred_on = b.anchor_on AND t.created_at > b.anchor_at))
@@ -68,13 +70,21 @@ fn from_row(r: &Row) -> rusqlite::Result<Account> {
 }
 
 pub fn list(conn: &Connection) -> AppResult<Vec<Account>> {
+    list_as_of(conn, chrono::Local::now().date_naive())
+}
+
+pub fn list_as_of(conn: &Connection, today: NaiveDate) -> AppResult<Vec<Account>> {
     let mut stmt = conn.prepare(&format!("{SELECT} ORDER BY a.archived, a.created_at"))?;
-    let rows = stmt.query_map([], from_row)?;
+    let rows = stmt.query_map(named_params! { ":today": today.to_string() }, from_row)?;
     Ok(rows.collect::<Result<_, _>>()?)
 }
 
 pub fn get(conn: &Connection, id: &str) -> AppResult<Account> {
-    conn.query_row(&format!("{SELECT} AND a.id = ?1"), [id], from_row)
+    get_as_of(conn, id, chrono::Local::now().date_naive())
+}
+
+pub fn get_as_of(conn: &Connection, id: &str, today: NaiveDate) -> AppResult<Account> {
+    conn.query_row(&format!("{SELECT} AND a.id = :id"), named_params! { ":today": today.to_string(), ":id": id }, from_row)
         .map_err(|e| match e {
             rusqlite::Error::QueryReturnedNoRows => AppError::NotFound(format!("account {id}")),
             e => e.into(),
@@ -123,7 +133,7 @@ pub fn upsert(db: &Db, input: AccountInput) -> AppResult<Account> {
 }
 
 pub fn set_balance(db: &Db, id: &str, balance_minor: i64, today: &str) -> AppResult<Account> {
-    chrono::NaiveDate::parse_from_str(today, "%Y-%m-%d").map_err(|_| AppError::Invalid(format!("invalid date {today:?}")))?;
+    let on = NaiveDate::parse_from_str(today, "%Y-%m-%d").map_err(|_| AppError::Invalid(format!("invalid date {today:?}")))?;
     let mut conn = db.conn();
     let tx = conn.transaction()?;
     let n = tx.execute(
@@ -138,7 +148,7 @@ pub fn set_balance(db: &Db, id: &str, balance_minor: i64, today: &str) -> AppRes
         return Err(AppError::NotFound(format!("account {id}")));
     }
     tx.commit()?;
-    get(&conn, id)
+    get_as_of(&conn, id, on)
 }
 
 pub fn delete(db: &Db, id: &str) -> AppResult<()> {

@@ -856,7 +856,7 @@
     "intro": "Inserisci quanto c'è davvero oggi sul conto – ad es. dalla tua app della banca. Le voci precedenti restano nello storico e non scalano più nulla.",
     "recorded": "Saldo registrato",
     "entered": "Saldo bancario",
-    "difference": "Differenza:",
+    "difference": "Differenza",
     "hint": "D'ora in poi contano solo le nuove entrate e uscite. I giorni recuperati non cambiano più il saldo di oggi.",
     "save": "Applica",
     "saved": "Saldo aggiornato",

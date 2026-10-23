@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.1
+
+### Fixed
+
+- Correcting an account balance no longer appears to revert when the account has transactions dated after today. Today's balance now only counts transactions dated up to today, so it shows exactly the balance you entered.
+- Transactions dated in the future count towards the balance on their date. The forecast, month preview and "safe to spend" include them on that day.
+- Removed a doubled colon after "Difference" in the balance correction dialog.
+
 ## 1.1.0
 
 ### Added

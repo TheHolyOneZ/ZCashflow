@@ -856,7 +856,7 @@
     "intro": "Introduce lo que hay de verdad hoy en la cuenta – p. ej. según tu app del banco. Las entradas anteriores quedan como historial y ya no restan nada.",
     "recorded": "Saldo registrado",
     "entered": "Saldo del banco",
-    "difference": "Diferencia:",
+    "difference": "Diferencia",
     "hint": "A partir de ahora solo cuentan los nuevos ingresos y gastos. Los días puestos al día ya no cambian el saldo de hoy.",
     "save": "Aplicar",
     "saved": "Saldo actualizado",

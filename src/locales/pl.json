@@ -888,7 +888,7 @@
     "intro": "Wpisz, ile naprawdę jest dziś na koncie – np. według aplikacji banku. Wcześniejsze wpisy zostają w historii i niczego już nie odejmują.",
     "recorded": "Zapisane saldo",
     "entered": "Saldo bankowe",
-    "difference": "Różnica:",
+    "difference": "Różnica",
     "hint": "Od teraz liczą się tylko nowe przychody i wydatki. Uzupełnione dni nie zmieniają już dzisiejszego salda.",
     "save": "Zastosuj",
     "saved": "Saldo zaktualizowane",

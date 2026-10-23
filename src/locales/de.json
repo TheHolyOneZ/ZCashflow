@@ -824,7 +824,7 @@
     "intro": "Trag ein, was heute wirklich auf dem Konto ist – z. B. laut Banking-App. Frühere Einträge bleiben Verlauf und ziehen nichts mehr ab.",
     "recorded": "Erfasster Kontostand",
     "entered": "Kontostand laut Bank",
-    "difference": "Abweichung:",
+    "difference": "Abweichung",
     "hint": "Ab jetzt zählen nur neue Einnahmen und Ausgaben. Nachgeholte Tage verändern den heutigen Stand nicht mehr.",
     "save": "Übernehmen",
     "saved": "Kontostand aktualisiert",
