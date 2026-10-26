@@ -12,6 +12,7 @@ export interface SelectItem {
   hint?: ReactNode;
   disabled?: boolean;
   indent?: boolean;
+  depth?: number;
 }
 
 const EMPTY = "__empty__";
@@ -126,8 +127,9 @@ export function Select({
                 className={cn(
                   "relative flex cursor-default items-center gap-2.5 rounded-lg py-2 pr-8 pl-2.5 text-[13px] outline-none select-none",
                   "data-[highlighted]:bg-surface-2 data-[disabled]:opacity-40 data-[state=checked]:font-medium",
-                  item.indent && "pl-7",
+                  item.indent && !item.depth && "pl-7",
                 )}
+                style={item.depth ? { paddingLeft: `${0.625 + item.depth * 1.125}rem` } : undefined}
               >
                 {item.icon && <span className="shrink-0">{item.icon}</span>}
                 <span className="min-w-0 flex-1">

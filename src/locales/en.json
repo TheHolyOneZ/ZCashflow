@@ -144,7 +144,8 @@
     "cashflow": "Cash flow – last 6 months",
     "upcoming": "Next 14 days",
     "noUpcoming": "No planned payments. Add recurring items to see them here.",
-    "cashflowEmpty": "Once you add transactions, you'll see income and expenses for the last months here."
+    "cashflowEmpty": "Once you add transactions, you'll see income and expenses for the last months here.",
+    "budgetsReserved": "{{amount}} reserved for budgets"
   },
   "palette": {
     "placeholder": "Quick add (“Kebab 8.50”) or search …",
@@ -178,11 +179,9 @@
     "daysBefore_one": "{{count}} day before",
     "daysBefore_other": "{{count}} days before",
     "data": "Data",
-    "dataHint": "Everything stays on your device. Export for spreadsheets or back up the whole database.",
-    "exportCsv": "Export as CSV",
+    "dataHint": "Everything stays on your device. Export for spreadsheets, import bank statements or back up the whole database.",
+    "exportCsv": "Export data",
     "backup": "Save backup",
-    "exported_one": "{{count}} transaction exported",
-    "exported_other": "{{count}} transactions exported",
     "backedUp": "Backup saved",
     "demo": "Demo data",
     "demoHint": "Six months of sample data with subscriptions, loans, goals and budgets – great for exploring.",
@@ -191,7 +190,8 @@
     "demoRemove": "Remove demo data",
     "demoRemoved": "Demo data removed",
     "general": "General",
-    "subtitle": "Everything the way you like it – applies to this device."
+    "subtitle": "Everything the way you like it – applies to this device.",
+    "importCsv": "Import CSV"
   },
   "errors": {
     "db": "Database error",
@@ -203,7 +203,11 @@
     "pageTitle": "Something went wrong here",
     "pageHint": "Your data is safe – only this view couldn't be displayed.",
     "retry": "Try again",
-    "unreachable": "Device not reachable. Is ZCashflow running on the other device, are both on the same Wi-Fi, and does the firewall allow port 47811?"
+    "unreachable": "Device not reachable. Is ZCashflow running on the other device, are both on the same Wi-Fi, and does the firewall allow port 47811?",
+    "unsupported_heic": "HEIC/HEIF photos can't be read yet. Please save the photo as JPEG (iPhone: Settings → Camera → Formats → Most Compatible).",
+    "unsupported_pdf_without_image": "This PDF contains no scanned image. Please save the scan as JPEG or as an image PDF.",
+    "unsupported_missing_columns": "The file needs at least a date and an amount column. Use the ZCashflow template or rename the column headers.",
+    "unsupported_empty_file": "The file is empty."
   },
   "freq": {
     "daily": "daily",
@@ -268,7 +272,12 @@
     "variableHintRest": "pro rata for the remaining days",
     "balanceToday": "Balance today",
     "restOfMonth": "Rest of {{month}}",
-    "forecastNote": "Forecast includes everyday spending of about {{amount}} per day (avg. of the last 90 days)."
+    "forecastNote": "Forecast includes everyday spending of about {{amount}} per day (avg. of the last 90 days).",
+    "budgets": "Budgets",
+    "budgetsHintRest": "what's left this month",
+    "variableOther": "Other everyday spending",
+    "forecastBudgets": "Planned budgets are included.",
+    "forecastSubset": "Only the selected accounts are shown."
   },
   "recurring": {
     "subtitle": "Salary, rent, subscriptions – everything that comes and goes regularly.",
@@ -416,7 +425,15 @@
     "edit": "Edit category",
     "kind": "Type",
     "both": "Both",
-    "parent": "Parent"
+    "parent": "Parent",
+    "moved": "Category moved",
+    "dropTopLevel": "Drop here to make it a main category",
+    "dragHint": "Drag a category by its handle onto another one to make it a subcategory – as many levels deep as you like.",
+    "addSub": "Add subcategory",
+    "moveTop": "Make main category",
+    "dragHandle": "Move",
+    "collapse": "Collapse",
+    "expand": "Expand"
   },
   "insights": {
     "severity": {
@@ -477,7 +494,23 @@
     "attached_other": "{{count}} receipts",
     "attach": "Attach receipt",
     "dropTitle": "Drop receipt here",
-    "dropHint": "Recognized locally right away"
+    "dropHint": "Recognized locally right away",
+    "rest": "Rest",
+    "splitInvalid": "The items don't fit the total. Check the amounts – every category needs more than 0.",
+    "items_one": "{{count}} item recognised",
+    "items_other": "{{count}} items recognised",
+    "itemsHint": "Split the receipt and give each item its own category",
+    "splitItems": "Split into items",
+    "noItems": "No items recognised – add them yourself.",
+    "itemName": "Item",
+    "addItem": "Add item",
+    "itemsSum": "Items:",
+    "restToMain": "Rest to {{category}}:",
+    "combine": "Combine items of the same category",
+    "combineHint": "One entry per category instead of one per item",
+    "bookParts_one": "Book {{count}} entry",
+    "bookParts_other": "Book {{count}} entries",
+    "sameAsMain": "↑ {{category}}"
   },
   "ocr": {
     "title": "Receipt recognition & AI",
@@ -590,14 +623,18 @@
     "hideAmounts": "Hide amounts",
     "showAmounts": "Show amounts",
     "minimize": "Minimize",
-    "maximize": "Maximize"
+    "maximize": "Maximize",
+    "restore": "Restore",
+    "quit": "Quit",
+    "fullscreenHint": "F11 for full screen"
   },
   "shortcuts": {
     "title": "Keyboard shortcuts",
     "general": "General",
     "navigate": "Navigation",
     "palette": "Search & quick entry",
-    "privacy": "Hide/show amounts"
+    "privacy": "Hide/show amounts",
+    "fullscreen": "Full screen"
   },
   "appearance": {
     "title": "Appearance",
@@ -842,5 +879,107 @@
     "kofiHint": "A coffee via Ko-fi helps keep ZCashflow free",
     "license": "License",
     "privacy": "no cloud, no trackers"
+  },
+  "dataTransfer": {
+    "exportTitle": "Export data",
+    "exportHint": "Choose what to export. Opens in Excel, LibreOffice or Numbers.",
+    "what": "What",
+    "everything": "Everything",
+    "dataset": {
+      "transactions": "Transactions",
+      "accounts": "Accounts",
+      "categories": "Categories",
+      "recurring": "Recurring payments",
+      "budgets": "Budgets",
+      "goals": "Savings goals",
+      "debts": "Debts"
+    },
+    "period": "Period (transactions)",
+    "periodAll": "All",
+    "periodYear": "This year",
+    "periodLast12": "Last 12 months",
+    "periodCustom": "Custom",
+    "format": "Format",
+    "formatExcel": "Excel (;)",
+    "formatStandard": "Standard (,)",
+    "formatExcelHint": "semicolon, decimal comma – for European Excel",
+    "formatStandardHint": "comma, decimal point – for English Excel and other apps",
+    "zipNote": "Several areas are saved as one ZIP file with a CSV file per area.",
+    "export": "Export",
+    "exported": "Export saved",
+    "exportedZip_one": "Export saved ({{count}} file)",
+    "exportedZip_other": "Export saved ({{count}} files)",
+    "exportSelection": "Export the current list as CSV",
+    "exportRecurring": "Export recurring payments as CSV",
+    "importTitle": "Import CSV",
+    "importHint": "Import transactions from the ZCashflow template or straight from your bank's CSV export.",
+    "chooseFile": "Choose CSV file",
+    "otherFile": "Other file",
+    "template": "Download template",
+    "templateSaved": "Template saved",
+    "columnsTitle": "Which columns are recognised?",
+    "columnsNote": "Only date and amount are required. Column names in your language work too (e.g. Buchungstag, Betrag, Verwendungszweck, Empfänger), so a bank CSV can often be imported as it is. Negative amounts are expenses.",
+    "col": {
+      "date": "Date – 2026-10-26, 26.10.2026 or 26.10.26",
+      "type": "income, expense or transfer – optional, otherwise taken from the sign",
+      "amount": "Amount – -12.50, 12,50 or 1.234,56",
+      "currency": "Currency code such as EUR – optional",
+      "account": "Account name – empty uses the default account, unknown names are created",
+      "to_account": "Target account – only for transfers",
+      "category": "Category, subcategories with > e.g. Food > Groceries – created if missing",
+      "counterparty": "Merchant, payee or payer",
+      "title": "Description or purpose",
+      "note": "Note",
+      "tags": "Tags separated by spaces",
+      "reference": "ZCashflow reference – used to recognise entries that already exist"
+    },
+    "defaultAccount": "Account for rows without an account",
+    "defaultAccountHint": "e.g. your checking account for a bank export",
+    "autoCategory": "Suggest categories",
+    "autoCategoryHint": "Rows without a category get one learned from your history or recognised by the merchant name",
+    "skipDuplicates": "Skip entries that already exist",
+    "skipDuplicatesHint": "Same date, amount, account and description – or the same reference",
+    "keepBalances": "Keep today's balances",
+    "keepBalancesHint": "Imported entries count as history and don't change your current account balances – ideal for past months",
+    "rows": "Rows",
+    "ready": "To import",
+    "duplicates": "Already there",
+    "errors": "Errors",
+    "newAccounts": "New accounts",
+    "newCategories": "New categories",
+    "errorsTitle": "These rows are skipped",
+    "line": "Line {{line}}",
+    "duplicate": "exists",
+    "imported_one": "{{count}} entry imported",
+    "imported_other": "{{count}} entries imported",
+    "skipped_one": "{{count}} skipped",
+    "skipped_other": "{{count}} skipped",
+    "importCount_one": "Import {{count}} entry",
+    "importCount_other": "Import {{count}} entries",
+    "rowError": {
+      "invalid_date": "invalid date “{{value}}”",
+      "invalid_amount": "invalid amount “{{value}}”",
+      "zero_amount": "amount is 0",
+      "no_account": "no account",
+      "unknown_type": "unknown type “{{value}}”",
+      "missing_target": "transfer without target account",
+      "same_target": "transfer to the same account “{{value}}”"
+    }
+  },
+  "forecastView": {
+    "allAccounts": "All accounts",
+    "accounts_one": "{{count}} account",
+    "accounts_other": "{{count}} accounts",
+    "split": "Per account",
+    "sum": "Sum",
+    "mode": "Display",
+    "hint": "Sum draws one curve for the selected accounts, per account draws one curve each."
+  },
+  "budgetPlan": {
+    "off": "Budgets not planned",
+    "all": "All budgets planned",
+    "some": "{{count}} of {{total}} budgets planned",
+    "title": "Include budgets in the plan",
+    "hint": "Planned budgets count as expected spending in the month plan, forecast and safe to spend. Past spending in these categories is not estimated a second time."
   }
 }

@@ -6,7 +6,7 @@ import { Tip } from "@/components/ui/inputs";
 import { Kbd } from "@/components/ui/misc";
 import { cn } from "@/lib/cn";
 import logo from "@/assets/logo.png";
-import { isTauri, os, shortcutLabel } from "@/lib/platform";
+import { isDesktop, isTauri, os, shortcutLabel } from "@/lib/platform";
 import { useSyncStatus } from "@/lib/queries";
 import { usePrefs } from "@/stores/prefs";
 import { useUi } from "@/stores/ui";
@@ -28,6 +28,16 @@ function useWindow() {
     return () => unlisten?.();
   }, []);
   return { win: api?.getCurrentWindow() ?? null, maximized };
+}
+
+export async function toggleFullscreen() {
+  if (!isTauri || !isDesktop) return;
+  try {
+    const w = (await import("@tauri-apps/api/window")).getCurrentWindow();
+    await w.setFullscreen(!(await w.isFullscreen()));
+  } catch {
+    return;
+  }
 }
 
 export function useApplyTitleBar() {
@@ -72,6 +82,7 @@ export function TitleBar() {
   const live = (useSyncStatus().data?.peers ?? []).filter((p) => p.connected).length;
   const { win, maximized } = useWindow();
   const custom = isTauri && os !== "mac" && titleBar === "custom";
+  const desktopApp = isTauri && isDesktop;
   const dark = document.documentElement.classList.contains("dark");
 
   return (
@@ -81,39 +92,45 @@ export function TitleBar() {
         if (custom && e.target === e.currentTarget) win?.toggleMaximize();
       }}
       className={cn(
-        "relative z-20 hidden h-12 shrink-0 items-center gap-2 border-b border-border bg-surface/80 backdrop-blur-xl select-none md:flex",
+        "relative z-20 h-12 shrink-0 items-center gap-2 border-b border-border bg-surface/80 backdrop-blur-xl select-none",
+        desktopApp ? "flex" : "hidden md:flex",
         os === "mac" && isTauri ? "pl-[84px]" : "pl-3",
         custom ? "pr-0" : "pr-3",
       )}
     >
-      <div data-tauri-drag-region className={cn("flex items-center gap-2 transition-[width] duration-300 ease-[var(--ease-out)]", collapsed && !simple ? "w-auto" : simple ? "w-auto pl-1" : "w-[13.25rem]")}>
+      <div data-tauri-drag-region className={cn("flex shrink-0 items-center gap-2 transition-[width] duration-300 ease-[var(--ease-out)]", collapsed && !simple ? "w-auto" : simple ? "w-auto pl-1" : "w-auto md:w-[13.25rem]")}>
         {!simple && (
-          <ToolButton label={`${t("shell.sidebar")} · ${shortcutLabel("Mod+B")}`} onClick={() => toggle("sidebarCollapsed")}>
-            <PanelLeft className="size-4" />
-          </ToolButton>
+          <span className="hidden md:contents">
+            <ToolButton label={`${t("shell.sidebar")} · ${shortcutLabel("Mod+B")}`} onClick={() => toggle("sidebarCollapsed")}>
+              <PanelLeft className="size-4" />
+            </ToolButton>
+          </span>
         )}
         {(!collapsed || simple) && (
-          <Link to="/" className="flex items-center gap-2 rounded-lg px-1 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
+          <Link to={simple ? "/today" : "/"} className="flex items-center gap-2 rounded-lg px-1 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
             <Logo />
-            <span className="text-[13px] font-semibold tracking-tight">{t("app.name")}</span>
+            <span className="hidden text-[13px] font-semibold tracking-tight sm:inline">{t("app.name")}</span>
           </Link>
         )}
       </div>
 
       <ModeSwitch />
-      <div data-tauri-drag-region className="flex flex-1 justify-center">
+      <div data-tauri-drag-region className="flex min-w-0 flex-1 justify-center">
         <button
           type="button"
+          aria-label={t("shell.searchOrAdd")}
           onClick={() => setPalette(true)}
-          className="flex h-8 w-full max-w-md items-center gap-2 rounded-lg border border-border bg-bg/70 px-2.5 text-[13px] text-muted transition-colors hover:border-muted/40 hover:text-fg focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none active:scale-100"
+          className="flex h-8 w-8 items-center justify-center gap-2 rounded-lg border border-border bg-bg/70 text-[13px] text-muted transition-colors hover:border-muted/40 hover:text-fg focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none active:scale-100 sm:w-full sm:max-w-md sm:justify-start sm:px-2.5"
         >
-          <Search className="size-4" />
-          <span className="flex-1 text-left">{t("shell.searchOrAdd")}</span>
-          <Kbd>{shortcutLabel("Mod+K")}</Kbd>
+          <Search className="size-4 shrink-0" />
+          <span className="hidden flex-1 truncate text-left sm:inline">{t("shell.searchOrAdd")}</span>
+          <span className="hidden sm:inline">
+            <Kbd>{shortcutLabel("Mod+K")}</Kbd>
+          </span>
         </button>
       </div>
 
-      <div className="flex items-center gap-1">
+      <div className="flex shrink-0 items-center gap-1">
         <Link
           to="/devices"
           className="flex h-8 items-center gap-1.5 rounded-lg px-2 text-[12px] font-medium text-muted hover:bg-surface-2 hover:text-fg"
@@ -128,12 +145,14 @@ export function TitleBar() {
         >
           {privacy ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
         </ToolButton>
-        <ToolButton
-          label={t("palette.toggleTheme")}
-          onClick={() => setTheme(dark ? "light" : "dark")}
-        >
-          {dark ? <Sun className="size-4" /> : <Moon className="size-4" />}
-        </ToolButton>
+        <span className="hidden sm:contents">
+          <ToolButton
+            label={t("palette.toggleTheme")}
+            onClick={() => setTheme(dark ? "light" : "dark")}
+          >
+            {dark ? <Sun className="size-4" /> : <Moon className="size-4" />}
+          </ToolButton>
+        </span>
       </div>
 
       {custom && win && <WindowControls maximized={maximized} onMin={() => win.minimize()} onMax={() => win.toggleMaximize()} onClose={() => win.close()} />}
@@ -183,33 +202,45 @@ export function Logo({ className }: { className?: string }) {
 function WindowControls({ maximized, onMin, onMax, onClose }: { maximized: boolean; onMin: () => void; onMax: () => void; onClose: () => void }) {
   const { t } = useTranslation();
   if (os === "windows") {
-    const btn = "flex h-12 w-[46px] items-center justify-center text-fg/80 hover:bg-fg/8 active:scale-100";
+    const btn = "flex h-12 w-[46px] shrink-0 items-center justify-center text-fg/80 hover:bg-fg/8 active:scale-100";
     return (
-      <div className="ml-1 flex self-stretch">
-        <button type="button" aria-label={t("shell.minimize")} onClick={onMin} className={btn}>
-          <Minus className="size-4" strokeWidth={1.5} />
-        </button>
-        <button type="button" aria-label={t("shell.maximize")} onClick={onMax} className={btn}>
-          {maximized ? <RestoreIcon /> : <Square className="size-3.5" strokeWidth={1.5} />}
-        </button>
-        <button type="button" aria-label={t("common.close")} onClick={onClose} className={cn(btn, "hover:bg-[#c42b1c] hover:text-white")}>
-          <X className="size-4" strokeWidth={1.5} />
-        </button>
+      <div className="ml-1 flex shrink-0 self-stretch">
+        <Tip label={t("shell.minimize")} side="bottom">
+          <button type="button" aria-label={t("shell.minimize")} onClick={onMin} className={btn}>
+            <Minus className="size-4" strokeWidth={1.5} />
+          </button>
+        </Tip>
+        <Tip label={`${maximized ? t("shell.restore") : t("shell.maximize")} · ${t("shell.fullscreenHint")}`} side="bottom">
+          <button type="button" aria-label={maximized ? t("shell.restore") : t("shell.maximize")} onClick={onMax} className={btn}>
+            {maximized ? <RestoreIcon /> : <Square className="size-3.5" strokeWidth={1.5} />}
+          </button>
+        </Tip>
+        <Tip label={t("shell.quit")} side="bottom">
+          <button type="button" aria-label={t("shell.quit")} onClick={onClose} className={cn(btn, "hover:bg-[#c42b1c] hover:text-white")}>
+            <X className="size-4" strokeWidth={1.5} />
+          </button>
+        </Tip>
       </div>
     );
   }
-  const btn = "flex size-6 items-center justify-center rounded-full bg-surface-2 text-fg/75 hover:bg-border hover:text-fg active:scale-90";
+  const btn = "flex size-6 shrink-0 items-center justify-center rounded-full bg-surface-2 text-fg/75 hover:bg-border hover:text-fg active:scale-90";
   return (
-    <div className="mr-3 ml-2 flex items-center gap-2.5">
-      <button type="button" aria-label={t("shell.minimize")} onClick={onMin} className={btn}>
-        <Minus className="size-3.5" strokeWidth={2.25} />
-      </button>
-      <button type="button" aria-label={t("shell.maximize")} onClick={onMax} className={btn}>
-        {maximized ? <RestoreIcon small /> : <Square className="size-2.5" strokeWidth={2.5} />}
-      </button>
-      <button type="button" aria-label={t("common.close")} onClick={onClose} className={cn(btn, "hover:bg-expense hover:text-white")}>
-        <X className="size-3.5" strokeWidth={2.25} />
-      </button>
+    <div className="mr-3 ml-2 flex shrink-0 items-center gap-2.5">
+      <Tip label={t("shell.minimize")} side="bottom">
+        <button type="button" aria-label={t("shell.minimize")} onClick={onMin} className={btn}>
+          <Minus className="size-3.5" strokeWidth={2.25} />
+        </button>
+      </Tip>
+      <Tip label={`${maximized ? t("shell.restore") : t("shell.maximize")} · ${t("shell.fullscreenHint")}`} side="bottom">
+        <button type="button" aria-label={maximized ? t("shell.restore") : t("shell.maximize")} onClick={onMax} className={btn}>
+          {maximized ? <RestoreIcon small /> : <Square className="size-2.5" strokeWidth={2.5} />}
+        </button>
+      </Tip>
+      <Tip label={t("shell.quit")} side="bottom">
+        <button type="button" aria-label={t("shell.quit")} onClick={onClose} className={cn(btn, "hover:bg-expense hover:text-white")}>
+          <X className="size-3.5" strokeWidth={2.25} />
+        </button>
+      </Tip>
     </div>
   );
 }

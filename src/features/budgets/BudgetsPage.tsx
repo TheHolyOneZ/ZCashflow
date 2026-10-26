@@ -14,6 +14,7 @@ import { percent } from "@/lib/format";
 import { activeLocale, displayName } from "@/lib/i18n";
 import { minorToInput, parseMoney } from "@/lib/money";
 import { useAppInfo, useAppMutation, useBudgets, useCategories } from "@/lib/queries";
+import { BudgetPlanPicker } from "./BudgetPlanPicker";
 
 export function budgetTone(b: Budget): "ok" | "warn" | "over" {
   return b.spentMinor > b.limitMinor ? "over" : b.progress >= 0.8 ? "warn" : "ok";
@@ -31,12 +32,20 @@ export function BudgetsPage() {
         title={t("nav.budgets")}
         subtitle={t("budgets.subtitle")}
         actions={
+          <>
+          <BudgetPlanPicker className="hidden sm:flex" />
           <Button variant="primary" onClick={() => setEdit({})}>
             <Plus className="size-4" />
             <span className="hidden sm:inline">{t("budgets.new")}</span>
           </Button>
+          </>
         }
       />
+      {budgets.length > 0 && (
+        <div className="-mt-1 flex sm:hidden">
+          <BudgetPlanPicker />
+        </div>
+      )}
       {budgets.length === 0 ? (
         <Card>
           <EmptyState icon={<Wallet className="size-8" />} title={t("budgets.empty")} hint={t("budgets.emptyHint")} />

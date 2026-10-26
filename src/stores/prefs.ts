@@ -51,6 +51,8 @@ export interface Prefs {
   revealOnHover: boolean;
   startPage: StartPage;
   hiddenWidgets: DashboardWidget[];
+  chartAccounts: string[];
+  chartSplit: boolean;
 }
 
 export const DEFAULT_PREFS: Prefs = {
@@ -68,6 +70,8 @@ export const DEFAULT_PREFS: Prefs = {
   revealOnHover: true,
   startPage: "/",
   hiddenWidgets: [],
+  chartAccounts: [],
+  chartSplit: false,
 };
 
 const KEY = "zc.prefs";

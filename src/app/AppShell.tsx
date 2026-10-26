@@ -6,9 +6,9 @@ import { Ellipsis, Keyboard, Plus, Search, Loader2, ScanLine } from "lucide-reac
 import { Dialog } from "@/components/ui/dialog";
 import { Toaster } from "@/components/ui/toaster";
 import { TransactionDialog } from "@/features/transactions/TransactionDialog";
-import { shortcutLabel } from "@/lib/platform";
+import { isDesktop, isTauri, shortcutLabel } from "@/lib/platform";
 import { usePrefs } from "@/stores/prefs";
-import { Logo, ModeSwitch, TitleBar, useApplyTitleBar } from "./TitleBar";
+import { Logo, ModeSwitch, TitleBar, toggleFullscreen, useApplyTitleBar } from "./TitleBar";
 import { ShortcutsDialog } from "./ShortcutsDialog";
 import { GlobalContextMenu } from "./GlobalContextMenu";
 import { Tip } from "@/components/ui/inputs";
@@ -39,6 +39,11 @@ function useGlobalShortcuts(openHelp: () => void) {
     function onKey(e: KeyboardEvent) {
       const mod = e.metaKey || e.ctrlKey;
       const key = e.key.toLowerCase();
+      if (e.key === "F11") {
+        e.preventDefault();
+        toggleFullscreen();
+        return;
+      }
       if (mod && key === "k") {
         e.preventDefault();
         setPalette(!useUi.getState().paletteOpen);
@@ -292,7 +297,7 @@ export function AppShell() {
       </aside>
 
       <main ref={mainRef} className="min-w-0 flex-1 overflow-y-auto">
-        <div className="flex items-center justify-between gap-3 px-4 pt-[max(0.75rem,env(safe-area-inset-top))] md:hidden">
+        <div className={cn("flex items-center justify-between gap-3 px-4 pt-[max(0.75rem,env(safe-area-inset-top))] md:hidden", isTauri && isDesktop && "hidden")}>
           <Link to={simple ? "/today" : "/"} className="flex items-center gap-2">
             <Logo />
             <span className="text-[14px] font-semibold tracking-tight">{t("app.name")}</span>

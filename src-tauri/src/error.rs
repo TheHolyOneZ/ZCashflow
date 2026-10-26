@@ -12,6 +12,8 @@ pub enum AppError {
     NotFound(String),
     #[error("invalid input: {0}")]
     Invalid(String),
+    #[error("{0}")]
+    Unsupported(String),
 }
 
 impl AppError {
@@ -34,6 +36,7 @@ impl AppError {
             AppError::Io(_) => "io",
             AppError::NotFound(_) => "not_found",
             AppError::Invalid(_) => "invalid",
+            AppError::Unsupported(_) => "unsupported",
         }
     }
 }

@@ -8,6 +8,7 @@ pub mod demo;
 pub mod export;
 pub mod forecast;
 pub mod goals;
+pub mod import;
 pub mod insights;
 pub mod quick;
 pub mod recurring;

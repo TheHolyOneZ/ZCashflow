@@ -137,7 +137,10 @@ pub fn list(conn: &Connection, f: &TransactionFilter) -> AppResult<Vec<Transacti
     }
     if let Some(v) = &f.category_id {
         args.push(v.clone().into());
-        sql.push_str(&format!(" AND t.category_id = ?{}", args.len()));
+        sql.push_str(&format!(
+            " AND t.category_id IN (WITH RECURSIVE tree(id) AS (SELECT ?{n} UNION SELECT c.id FROM categories c JOIN tree ON c.parent_id = tree.id WHERE c.deleted = 0) SELECT id FROM tree)",
+            n = args.len()
+        ));
     }
     if let Some(q) = f.query.as_deref().and_then(fts_query) {
         args.push(q.into());

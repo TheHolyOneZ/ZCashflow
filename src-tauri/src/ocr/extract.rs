@@ -15,7 +15,19 @@ pub struct Extracted {
     #[serde(default)]
     pub category_hint: Option<String>,
 
+    #[serde(default)]
+    pub items: Vec<LineItem>,
+
     pub source: String,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LineItem {
+    pub name: String,
+    pub amount_minor: i64,
+    #[serde(default)]
+    pub category_hint: Option<String>,
 }
 
 static AMOUNT: LazyLock<Regex> =
@@ -25,6 +37,13 @@ static DATE_DMY: LazyLock<Regex> =
 
 static DATE_DMY_LOOSE: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"(?m)(?:^|[^\d,.])(\d{1,2}) (\d{1,2})[./-](\d{4})\b").unwrap());
+static ITEM: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"^(?P<name>.*?\p{L}.*?)\s+(?P<neg>-)?(?P<int>\d{1,5})\s?[.,]\s?(?P<frac>\d{2})\s*(?P<trail>-)?\s*(?:€|EUR|[A-Z]{1,2}|\*)?\s*\d?\s*$").unwrap()
+});
+static QTY_PREFIX: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"(?i)^\d+(?:[.,]\d+)?\s*(?:x|×|stk\.?|st\.?)\s*").unwrap());
+static HAS_DATE_OR_TIME: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"\b\d{1,2}[./-]\d{1,2}[./-]\d{2,4}\b|\b\d{1,2}:\d{2}\b").unwrap());
+
 static DATE_ISO: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"\b(\d{4})-(\d{2})-(\d{2})\b").unwrap());
 
 const TOTAL_KEYS: &[&str] = &[
@@ -36,6 +55,79 @@ const NOT_TOTAL: &[&str] = &[
     "mwst", "ust", "netto", "steuer", "tax", "vat", "rückgeld", "ruckgeld", "gegeben", "change", "brutto netto",
     "rabatt", "pfand", "zwischensumme", "subtotal",
 ];
+
+const ITEMS_END: &[&str] = &[
+    "summe", "total", "zu zahlen", "gesamt", "amount due", "subtotal", "zwischensumme", "endbetrag", "zahlbetrag",
+];
+
+const NOT_ITEM_WORDS: &[&str] = &[
+    "mwst", "ust", "steuer", "netto", "brutto", "tax", "vat", "gegeben", "rueckgeld", "ruckgeld", "change", "bar", "ec",
+    "karte", "kartenzahlung", "girocard", "visa", "mastercard", "maestro", "zahlung", "payment", "kredit", "cash", "tip",
+    "trinkgeld", "eur",
+];
+
+const CHAINS: &[(&str, &str)] = &[
+    ("rewe", "REWE"), ("edeka", "EDEKA"), ("aldi", "ALDI"), ("lidl", "Lidl"), ("netto", "Netto"), ("penny", "Penny"),
+    ("kaufland", "Kaufland"), ("rossmann", "Rossmann"), ("dm", "dm"), ("globus", "Globus"), ("norma", "Norma"),
+    ("tegut", "tegut"), ("aral", "Aral"), ("shell", "Shell"), ("esso", "Esso"), ("ikea", "IKEA"), ("mediamarkt", "MediaMarkt"),
+    ("saturn", "Saturn"), ("obi", "OBI"), ("hornbach", "Hornbach"), ("bauhaus", "Bauhaus"), ("tedi", "TEDi"),
+    ("primark", "Primark"), ("deichmann", "Deichmann"), ("fressnapf", "Fressnapf"), ("thalia", "Thalia"),
+    ("decathlon", "Decathlon"), ("mcdonalds", "McDonald's"), ("starbucks", "Starbucks"), ("alnatura", "Alnatura"),
+];
+
+fn fold_words(s: &str) -> Vec<String> {
+    s.to_lowercase()
+        .replace('ä', "ae")
+        .replace('ö', "oe")
+        .replace('ü', "ue")
+        .replace('\'', "")
+        .split(|c: char| !c.is_alphanumeric())
+        .filter(|w| !w.is_empty())
+        .map(str::to_owned)
+        .collect()
+}
+
+fn find_chain(lines: &[&str]) -> Option<&'static str> {
+    lines.iter().take(12).find_map(|l| {
+        let words = fold_words(l);
+        CHAINS.iter().find(|(k, _)| words.iter().any(|w| w == k)).map(|(_, name)| *name)
+    })
+}
+
+fn find_items(lines: &[&str]) -> Vec<LineItem> {
+    let mut out = Vec::new();
+    for line in lines {
+        let lower = line.to_lowercase();
+        if ITEMS_END.iter().any(|k| lower.contains(k)) && !out.is_empty() {
+            break;
+        }
+        if HAS_DATE_OR_TIME.is_match(line) {
+            continue;
+        }
+        let cleaned = line.replace(['O', 'o'], "0");
+        let Some(c) = ITEM.captures(line).or_else(|| ITEM.captures(&cleaned)) else { continue };
+        let name = QTY_PREFIX.replace(c["name"].trim(), "").trim_matches(|ch: char| !ch.is_alphanumeric() && ch != '%').to_owned();
+        if name.chars().filter(|ch| ch.is_alphabetic()).count() < 2 {
+            continue;
+        }
+        let words = fold_words(&name);
+        if words.iter().any(|w| NOT_ITEM_WORDS.contains(&w.as_str())) || ITEMS_END.iter().any(|k| lower.contains(k)) {
+            continue;
+        }
+        let Ok(int) = c["int"].parse::<i64>() else { continue };
+        let Ok(frac) = c["frac"].parse::<i64>() else { continue };
+        let mut amount = int * 100 + frac;
+        if amount == 0 {
+            continue;
+        }
+        let negative = c.name("neg").is_some() || c.name("trail").is_some() || words.iter().any(|w| w == "rabatt" || w == "coupon" || w == "nachlass");
+        if negative {
+            amount = -amount;
+        }
+        out.push(LineItem { name: tidy_case(&name), amount_minor: amount, category_hint: None });
+    }
+    out
+}
 
 const NOT_MERCHANT: &[&str] = &[
     "str.", "straße", "strasse", "tel", "fax", "www", "http", "ust-id", "steuer", "uid", "kasse", "beleg",
@@ -157,12 +249,27 @@ fn find_currency(text: &str) -> Option<String> {
 
 pub fn extract(text: &str, today: NaiveDate) -> Extracted {
     let lines: Vec<&str> = text.lines().map(str::trim).filter(|l| !l.is_empty()).collect();
+    let items = find_items(&lines);
+    let item_sum: i64 = items.iter().map(|i| i.amount_minor).sum();
+    let mut total = find_total(&lines);
+    if !items.is_empty() && item_sum > 0 && total != Some(item_sum) {
+        let keyword_total = TOTAL_KEYS.iter().any(|k| lines.iter().any(|l| l.to_lowercase().contains(k)));
+        let seen = lines.iter().any(|l| parse_amount(l).contains(&item_sum));
+        if !keyword_total && seen {
+            total = Some(item_sum);
+        }
+    }
+    let merchant = match (find_merchant(&lines), find_chain(&lines)) {
+        (Some(m), Some(chain)) if !fold_words(&m).contains(&chain.to_lowercase().replace('\'', "")) => Some(chain.to_owned()),
+        (m, chain) => m.or(chain.map(str::to_owned)),
+    };
     Extracted {
-        merchant: find_merchant(&lines),
+        merchant,
         date: find_date(text, today).map(|d| d.to_string()),
-        total_minor: find_total(&lines),
+        total_minor: total,
         currency: find_currency(text),
         category_hint: None,
+        items,
         source: "rules".into(),
     }
 }
@@ -243,6 +350,32 @@ VISA ****1234";
         assert!(find_date("01.01.2099", today()).is_none(), "future dates are implausible");
 
         assert_eq!(find_date("06 10.2026 18:42", today()).map(|d| d.to_string()).as_deref(), Some("2026-10-06"));
+    }
+
+    #[test]
+    fn finds_line_items_and_skips_payment_lines() {
+        let e = extract(REWE, today());
+        let names: Vec<&str> = e.items.iter().map(|i| i.name.as_str()).collect();
+        assert_eq!(names, vec!["Bio Bananen", "Vollmilch 3,5%", "Pfand", "Spaghetti"]);
+        assert_eq!(e.items.iter().map(|i| i.amount_minor).sum::<i64>(), 432);
+
+        let e = extract(KEBAB, today());
+        assert_eq!(e.items.len(), 2);
+        assert_eq!(e.items[0].name, "Döner");
+        assert_eq!(e.items[0].amount_minor, 750);
+
+        let e = extract(ENGLISH, today());
+        assert_eq!(e.items.iter().map(|i| i.name.as_str()).collect::<Vec<_>>(), vec!["Latte", "Croissant"]);
+
+        let e = extract("Edeka Center\nApfel 1,20 A\nRabatt -0,20 A\nBrot 2,50 A\nKartenzahlung 3,50", today());
+        assert_eq!(e.items.iter().map(|i| i.amount_minor).collect::<Vec<_>>(), vec![120, -20, 250]);
+        assert_eq!(e.total_minor, Some(350), "the sum of the items confirms the paid amount");
+    }
+
+    #[test]
+    fn prefers_a_known_store_over_a_slogan() {
+        let e = extract("Ihr Supermarkt um die Ecke\nLIDL Dienstleistung\nMilch 0,99\nSumme 0,99", today());
+        assert_eq!(e.merchant.as_deref(), Some("Lidl"));
     }
 
     #[test]

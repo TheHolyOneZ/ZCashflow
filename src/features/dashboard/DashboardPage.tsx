@@ -7,7 +7,9 @@ import { Tip } from "@/components/ui/inputs";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, EmptyState, PageHeader } from "@/components/ui/misc";
 import { Money, ProgressBar } from "@/components/ui/extra";
-import { CashflowChart, ForecastChart } from "@/components/charts";
+import { CashflowChart } from "@/components/charts";
+import { BalanceForecastChart, ChartAccountPicker, useForecastView } from "@/components/forecast-view";
+import { formatMoney } from "@/lib/money";
 import { IconTile } from "@/components/category-icon";
 import { StatTile } from "@/components/stat-tile";
 import { TransactionList } from "@/features/transactions/TransactionList";
@@ -16,7 +18,7 @@ import { OccurrenceList } from "@/features/planner/PlannerPage";
 import { BudgetCard } from "@/features/budgets/BudgetsPage";
 import { formatDay, isoDate, monthRange } from "@/lib/dates";
 import { daysFromToday, percent, relativeDays } from "@/lib/format";
-import { displayName } from "@/lib/i18n";
+import { activeLocale, displayName } from "@/lib/i18n";
 import {
   useAccounts,
   useAppInfo,
@@ -50,6 +52,7 @@ export function DashboardPage() {
   const summary = useSummary(range.from, range.to, currency).data;
   const recent = useTransactions({ limit: 6 }).data ?? [];
   const forecast = useForecast(30).data;
+  const view = useForecastView(forecast);
   const insights = useInsights().data ?? [];
   const upcoming = useUpcoming(14).data ?? [];
   const series = useMonthlySeries(6).data ?? [];
@@ -119,23 +122,41 @@ export function DashboardPage() {
                     ? t("dashboard.untilIncome", { title: next.title, when: relativeDays(daysFromToday(next.date)) })
                     : t("planner.until", { date: formatDay(forecast.safeUntil) })}
                 </div>
+                {forecast.budgetsIncluded && forecast.budgetReservedMinor > 0 && (
+                  <div className="text-[11px] text-muted">
+                    {t("dashboard.budgetsReserved", { amount: formatMoney(forecast.budgetReservedMinor, currency, activeLocale()) })}
+                  </div>
+                )}
               </div>
             )}
           </div>
-          {forecast && (
+          {forecast && view && (
             <>
               <div className="min-h-32 flex-1 pt-2">
-                <ForecastChart days={forecast.days} events={forecast.events} currency={currency} minOn={forecast.minBalanceOn} height="100%" compact />
+                <BalanceForecastChart view={view} currency={currency} height="100%" compact />
               </div>
-              <div className="flex items-center justify-between border-t border-border px-5 py-2.5 text-[12px] text-muted">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border px-5 py-2.5 text-[12px] text-muted">
                 <span>
                   {t("dashboard.in30Days")}{" "}
-                  <Money minor={forecast.endBalanceMinor} currency={currency} tone="auto" className="font-medium text-fg" />
+                  {view.split ? (
+                    view.lines.map((l, i) => (
+                      <span key={l.id}>
+                        {i > 0 && " · "}
+                        <span style={{ color: l.color }}>●</span>{" "}
+                        <Money minor={l.balances.at(-1) ?? 0} currency={currency} tone="auto" className="font-medium text-fg" />
+                      </span>
+                    ))
+                  ) : (
+                    <Money minor={view.end} currency={currency} tone="auto" className="font-medium text-fg" />
+                  )}
                 </span>
-                <Link to="/planner" className="flex items-center gap-1 font-medium text-accent hover:underline">
-                  {t("nav.planner")}
-                  <ArrowRight className="size-3.5" />
-                </Link>
+                <span className="flex items-center gap-3">
+                  <ChartAccountPicker forecast={forecast} className="h-7" />
+                  <Link to="/planner" className="flex items-center gap-1 font-medium text-accent hover:underline">
+                    {t("nav.planner")}
+                    <ArrowRight className="size-3.5" />
+                  </Link>
+                </span>
               </div>
             </>
           )}

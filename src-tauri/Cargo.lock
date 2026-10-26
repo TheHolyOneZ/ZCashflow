@@ -6631,7 +6631,7 @@ dependencies = [
 
 [[package]]
 name = "zcashflow"
-version = "1.1.1"
+version = "1.2.0"
 dependencies = [
  "base64 0.23.1",
  "chrono",
@@ -6651,6 +6651,7 @@ dependencies = [
  "tauri-build",
  "tauri-plugin-clipboard-manager",
  "tauri-plugin-dialog",
+ "tauri-plugin-fs",
  "tauri-plugin-notification",
  "tauri-plugin-opener",
  "tauri-plugin-single-instance",

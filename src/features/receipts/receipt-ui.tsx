@@ -8,7 +8,7 @@ import { cn } from "@/lib/cn";
 import { invalidateData, useAttachmentImage, useErrorMessage } from "@/lib/queries";
 import { useUi } from "@/stores/ui";
 
-export const IMAGE_ACCEPT = "image/jpeg,image/png,image/webp,image/bmp,image/tiff";
+export const IMAGE_ACCEPT = "image/jpeg,image/png,image/webp,image/bmp,image/tiff,image/heic,image/heif,application/pdf,.pdf,.heic,.heif";
 
 export function useReceiptImport() {
   const { t } = useTranslation();
@@ -20,7 +20,9 @@ export function useReceiptImport() {
 
   return useCallback(
     async (files: File[] | FileList, opts: { transactionId?: string; review?: boolean } = {}) => {
-      const list = Array.from(files).filter((f) => f.type.startsWith("image/") || /\.(jpe?g|png|webp|bmp|tiff?)$/i.test(f.name));
+      const list = Array.from(files).filter(
+        (f) => f.type.startsWith("image/") || f.type === "application/pdf" || /\.(jpe?g|png|webp|bmp|tiff?|pdf|heic|heif)$/i.test(f.name),
+      );
       if (!list.length) return [];
       const done: Attachment[] = [];
       setProcessing(list.length);

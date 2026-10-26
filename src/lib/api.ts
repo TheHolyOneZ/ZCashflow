@@ -1,4 +1,5 @@
 import { isoDate } from "@/lib/dates";
+import { isAndroid } from "@/lib/platform";
 import { invoke } from "@tauri-apps/api/core";
 
 export type TxKind = "income" | "expense" | "transfer";
@@ -126,7 +127,7 @@ export interface PeriodSummary {
 }
 
 export interface ApiError {
-  code: "db" | "io" | "not_found" | "invalid" | "unreachable";
+  code: "db" | "io" | "not_found" | "invalid" | "unreachable" | "unsupported";
   message: string;
 }
 
@@ -145,6 +146,7 @@ export const api = {
 
   listCategories: () => invoke<Category[]>("list_categories"),
   upsertCategory: (input: CategoryInput) => invoke<Category>("upsert_category", { input }),
+  moveCategory: (id: string, parentId: string | null) => invoke<Category>("move_category", { id, parentId }),
 
   listCounterparties: () => invoke<Counterparty[]>("list_counterparties"),
 
@@ -340,6 +342,11 @@ export interface ForecastDay {
   expenseMinor: number;
 }
 
+export interface AccountSeries {
+  accountId: string;
+  balances: number[];
+}
+
 export interface Forecast {
   currency: string;
   startBalanceMinor: number;
@@ -353,6 +360,15 @@ export interface Forecast {
   safeTotalMinor: number;
   safeUntil: string;
   dailyVariableMinor: number;
+  budgetsIncluded: boolean;
+  budgetReservedMinor: number;
+  accounts: AccountSeries[];
+}
+
+export interface PlannedBudget {
+  budgetId: string;
+  categoryId: string;
+  amountMinor: number;
 }
 
 export interface MonthPreview {
@@ -363,6 +379,8 @@ export interface MonthPreview {
   expectedIncomeMinor: number;
   fixedExpenseMinor: number;
   variableExpenseMinor: number;
+  budgetExpenseMinor: number;
+  budgets: PlannedBudget[];
   savingsTargetMinor: number;
   freeMinor: number;
   startBalanceMinor: number;
@@ -418,7 +436,8 @@ export type SettingKey =
   | "device_name"
   | "discoverable"
   | "daily_done"
-  | "daily_reminder";
+  | "daily_reminder"
+  | "plan_budgets";
 
 export const planning = {
   getSettings: () => invoke<Partial<Record<SettingKey, string>>>("get_settings"),
@@ -458,10 +477,73 @@ export const planning = {
   insights: () => invoke<Insight[]>("insights"),
 
   exportCsv: (path: string) => invoke<number>("export_csv", { path }),
+  exportData: (path: string, options: ExportOptions) => invoke<number>("export_data", { path, options }),
   backupDatabase: (path: string) => invoke<void>("backup_database", { path }),
+  importTemplate: (path: string, delimiter: string) => invoke<void>("import_template", { path, delimiter }),
+  importPreview: (text: string, options: ImportOptions) => invoke<ImportPreview>("import_preview", { text, options }),
+  importCommit: (text: string, options: ImportOptions) => invoke<ImportResult>("import_commit", { text, options }),
 };
 
+export type Dataset = "transactions" | "accounts" | "categories" | "recurring" | "budgets" | "goals" | "debts";
+
+export const DATASETS: Dataset[] = ["transactions", "accounts", "categories", "recurring", "budgets", "goals", "debts"];
+
+export interface ExportOptions {
+  datasets: Dataset[];
+  delimiter: string;
+  decimalComma: boolean;
+  labels: Record<string, string>;
+  filter?: TransactionFilter;
+}
+
+export interface ImportOptions {
+  defaultAccountId?: string | null;
+  autoCategory: boolean;
+  skipDuplicates: boolean;
+  keepBalances: boolean;
+  labels: Record<string, string>;
+}
+
+export interface ImportPreview {
+  columns: string[];
+  totalRows: number;
+  validRows: number;
+  duplicates: number;
+  errors: { line: number; code: string; value: string }[];
+  newAccounts: string[];
+  newCategories: string[];
+  incomeMinor: number;
+  expenseMinor: number;
+  firstDate: string | null;
+  lastDate: string | null;
+  rows: {
+    line: number;
+    date: string;
+    kind: TxKind;
+    amountMinor: number;
+    currency: string;
+    account: string;
+    category: string;
+    title: string;
+    duplicate: boolean;
+  }[];
+}
+
+export interface ImportResult {
+  imported: number;
+  skipped: number;
+  newAccounts: number;
+  newCategories: number;
+}
+
+export interface LineItem {
+  name: string;
+  amountMinor: number;
+  categoryHint?: string | null;
+}
+
 export interface Extracted {
+  items?: LineItem[];
   merchant: string | null;
   date: string | null;
   totalMinor: number | null;
@@ -486,24 +568,45 @@ export interface Attachment {
   available: boolean;
 }
 
+export interface BookReceiptInput {
+  date: string;
+  accountId: string;
+  counterparty: string | null;
+  title: string;
+  parts: { categoryId: string | null; amountMinor: number; note: string | null }[];
+}
+
 export interface OcrStatus {
   tesseract: string | null;
   tesseractLangs: string[];
   ocrs: boolean;
 }
 
+function toBase64(file: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const url = String(reader.result);
+      resolve(url.slice(url.indexOf(",") + 1));
+    };
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+}
+
 export const receipts = {
   import: async (file: Blob, opts: { fileName?: string; transactionId?: string } = {}) => {
-    const bytes = new Uint8Array(await file.arrayBuffer());
     const headers: Record<string, string> = {};
     if (opts.fileName) headers["x-file-name"] = encodeURIComponent(opts.fileName);
     if (opts.transactionId) headers["x-transaction-id"] = opts.transactionId;
-    return invoke<Attachment>("import_receipt", bytes, { headers });
+    const body = isAndroid ? { b64: await toBase64(file) } : new Uint8Array(await file.arrayBuffer());
+    return invoke<Attachment>("import_receipt", body, { headers });
   },
   list: (filter?: { inbox?: boolean; transactionId?: string }) =>
     invoke<Attachment[]>("list_attachments", { filter }),
   link: (id: string, transactionId: string | null) =>
     invoke<Attachment>("link_attachment", { id, transactionId }),
+  book: (id: string, input: BookReceiptInput) => invoke<string[]>("book_receipt", { id, input }),
   delete: (id: string) => invoke<void>("delete_attachment", { id }),
   reprocess: (id: string) => invoke<Attachment>("reprocess_attachment", { id }),
   image: (id: string, thumb: boolean) => invoke<ArrayBuffer>("attachment_image", { id, thumb }),

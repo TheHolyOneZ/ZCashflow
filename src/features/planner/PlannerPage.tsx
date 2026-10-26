@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, PageHeader } from "@/components/ui/misc";
 import { Segmented } from "@/components/ui/segmented";
 import { Money } from "@/components/ui/extra";
-import { ForecastChart } from "@/components/charts";
+import { BalanceForecastChart, ChartAccountPicker, useForecastView } from "@/components/forecast-view";
+import { BudgetPlanPicker } from "@/features/budgets/BudgetPlanPicker";
 import { CategoryIcon } from "@/components/category-icon";
 import type { MonthPreview, Occurrence } from "@/lib/api";
 import { cn } from "@/lib/cn";
@@ -14,7 +15,8 @@ import { formatDay, isoDate } from "@/lib/dates";
 import { monthLabel, relativeDays, daysFromToday } from "@/lib/format";
 import { activeLocale } from "@/lib/i18n";
 import { formatMoney } from "@/lib/money";
-import { useCategories, useForecast, useMonthPreview } from "@/lib/queries";
+import { useBudgets, useCategories, useForecast, useMonthPreview } from "@/lib/queries";
+import { displayName } from "@/lib/i18n";
 
 type Horizon = "30" | "90" | "180" | "365";
 
@@ -25,6 +27,7 @@ export function PlannerPage() {
   const month = format(addMonths(new Date(), offset), "yyyy-MM");
   const preview = useMonthPreview(month).data;
   const forecast = useForecast(Number(horizon)).data;
+  const view = useForecastView(forecast);
 
   return (
     <div className="flex flex-col gap-3">
@@ -55,38 +58,35 @@ export function PlannerPage() {
         <CardHeader
           title={t("planner.balanceForecast")}
           action={
-            <Segmented<Horizon>
-              aria-label={t("planner.horizon")}
-              value={horizon}
-              onChange={setHorizon}
-              options={[
-                { value: "30", label: t("planner.days", { count: 30 }) },
-                { value: "90", label: t("planner.days", { count: 90 }) },
-                { value: "180", label: t("planner.months", { count: 6 }) },
-                { value: "365", label: t("planner.months", { count: 12 }) },
-              ]}
-            />
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <ChartAccountPicker forecast={forecast} />
+              <Segmented<Horizon>
+                aria-label={t("planner.horizon")}
+                value={horizon}
+                onChange={setHorizon}
+                options={[
+                  { value: "30", label: t("planner.days", { count: 30 }) },
+                  { value: "90", label: t("planner.days", { count: 90 }) },
+                  { value: "180", label: t("planner.months", { count: 6 }) },
+                  { value: "365", label: t("planner.months", { count: 12 }) },
+                ]}
+              />
+            </div>
           }
         />
         <div className="px-2 pb-3">
-          {forecast && (
+          {forecast && view && (
             <>
-              <ForecastChart
-                days={forecast.days}
-                events={forecast.events}
-                currency={forecast.currency}
-                minOn={forecast.minBalanceOn}
-                height={260}
-              />
+              <BalanceForecastChart view={view} currency={forecast.currency} height={260} />
               <div className="grid grid-cols-2 gap-3 px-2 pt-3 text-[12px] sm:grid-cols-4">
                 <Fact label={t("planner.today")}>
-                  <Money minor={forecast.startBalanceMinor} currency={forecast.currency} tone="auto" />
+                  <Money minor={view.start} currency={forecast.currency} tone="auto" />
                 </Fact>
-                <Fact label={t("planner.lowest")} hint={formatDay(forecast.minBalanceOn)}>
-                  <Money minor={forecast.minBalanceMinor} currency={forecast.currency} tone="auto" />
+                <Fact label={t("planner.lowest")} hint={formatDay(view.minOn)}>
+                  <Money minor={view.min} currency={forecast.currency} tone="auto" />
                 </Fact>
                 <Fact label={t("planner.endOfRange")} hint={forecast.days.at(-1) && formatDay(forecast.days.at(-1)!.date)}>
-                  <Money minor={forecast.endBalanceMinor} currency={forecast.currency} tone="auto" />
+                  <Money minor={view.end} currency={forecast.currency} tone="auto" />
                 </Fact>
                 <Fact label={t("planner.safeDaily")} hint={t("planner.until", { date: formatDay(forecast.safeUntil) })}>
                   <Money minor={forecast.safeDailyMinor} currency={forecast.currency} className="text-accent" />
@@ -96,6 +96,8 @@ export function PlannerPage() {
                 {t("planner.forecastNote", {
                   amount: formatMoney(forecast.dailyVariableMinor, forecast.currency, activeLocale()),
                 })}
+                {forecast.budgetsIncluded && ` ${t("planner.forecastBudgets")}`}
+                {!view.allSelected && ` ${t("planner.forecastSubset")}`}
               </p>
             </>
           )}
@@ -117,11 +119,29 @@ function Fact({ label, hint, children }: { label: string; hint?: React.ReactNode
 
 function MonthBudget({ preview: p }: { preview: MonthPreview }) {
   const { t } = useTranslation();
-  const base = Math.max(p.expectedIncomeMinor, p.fixedExpenseMinor + p.variableExpenseMinor + p.savingsTargetMinor, 1);
+  const hasBudgets = (useBudgets().data ?? []).length > 0;
+  const categories = useCategories().data ?? [];
+  const budgetsOn = p.budgets.length > 0;
+  const base = Math.max(p.expectedIncomeMinor, p.fixedExpenseMinor + p.variableExpenseMinor + p.budgetExpenseMinor + p.savingsTargetMinor, 1);
+  const budgetNames = p.budgets
+    .filter((b) => b.amountMinor > 0)
+    .map((b) => categories.find((c) => c.id === b.categoryId))
+    .filter((c) => !!c)
+    .map((c) => displayName(c!))
+    .join(", ");
   const rows = [
     { label: t("planner.expectedIncome"), minor: p.expectedIncomeMinor, color: "var(--chart-in)", sign: 1 },
     { label: t("planner.fixedCosts"), minor: p.fixedExpenseMinor, color: "var(--chart-out)", sign: -1 },
-    { label: t("planner.variableCosts"), hint: p.isCurrent ? t("planner.variableHintRest") : t("planner.variableHint"), minor: p.variableExpenseMinor, color: "var(--chart-out)", sign: -1 },
+    ...(budgetsOn
+      ? [{ label: t("planner.budgets"), hint: budgetNames || (p.isCurrent ? t("planner.budgetsHintRest") : undefined), minor: p.budgetExpenseMinor, color: "var(--warn)", sign: -1 }]
+      : []),
+    {
+      label: budgetsOn ? t("planner.variableOther") : t("planner.variableCosts"),
+      hint: p.isCurrent ? t("planner.variableHintRest") : t("planner.variableHint"),
+      minor: p.variableExpenseMinor,
+      color: "var(--chart-out)",
+      sign: -1,
+    },
     { label: t("planner.savings"), hint: t("planner.savingsHint"), minor: p.savingsTargetMinor, color: "var(--accent)", sign: -1 },
   ];
   const free = p.freeMinor;
@@ -131,9 +151,12 @@ function MonthBudget({ preview: p }: { preview: MonthPreview }) {
   return (
     <Card className="grid grid-cols-1 gap-0 overflow-hidden lg:grid-cols-[1fr_20rem]">
       <div className="flex flex-col gap-3 p-5">
-        <h2 className="text-[13px] font-semibold text-muted">
-          {p.isCurrent ? t("planner.restOfMonth", { month: monthLabel(p.month, { month: "long" }) }) : t("planner.monthPlan", { month: monthLabel(p.month, { month: "long" }) })}
-        </h2>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-[13px] font-semibold text-muted">
+            {p.isCurrent ? t("planner.restOfMonth", { month: monthLabel(p.month, { month: "long" }) }) : t("planner.monthPlan", { month: monthLabel(p.month, { month: "long" }) })}
+          </h2>
+          {hasBudgets && <BudgetPlanPicker />}
+        </div>
         <ul className="flex flex-col gap-2.5">
           {rows.map((r) => (
             <li key={r.label} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-1">

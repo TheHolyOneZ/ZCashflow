@@ -5,6 +5,8 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  Line,
+  LineChart,
   ReferenceDot,
   ReferenceLine,
   ResponsiveContainer,
@@ -18,6 +20,7 @@ import { monthLabel, shortDate } from "@/lib/format";
 import { activeLocale } from "@/lib/i18n";
 import { formatMoney, maskParts, minorDigits, moneyHidden } from "@/lib/money";
 import { Money } from "@/components/ui/extra";
+import { cn } from "@/lib/cn";
 
 const axisTick = { fill: "var(--muted)", fontSize: 11 };
 
@@ -253,6 +256,90 @@ function Row({ color, label, minor, currency }: { color: string; label: string; 
         {label}
       </span>
       <Money minor={minor} currency={currency} />
+    </div>
+  );
+}
+
+export interface LineSeries {
+  id: string;
+  name: string;
+  color: string;
+  balances: number[];
+}
+
+export function AccountLinesChart({
+  dates,
+  series,
+  currency,
+  height = 220,
+  compact,
+}: {
+  dates: string[];
+  series: LineSeries[];
+  currency: string;
+  height?: number | string;
+  compact?: boolean;
+}) {
+  const data = dates.map((date, i) => {
+    const row: Record<string, number | string> = { date };
+    for (const s of series) row[s.id] = s.balances[i] ?? 0;
+    return row;
+  });
+  const values = series.flatMap((s) => s.balances);
+  const min = Math.min(0, ...values);
+  return (
+    <div className="flex h-full w-full flex-col gap-1.5" style={{ height }}>
+      <div className={cn("flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-muted", compact ? "px-5" : "px-2")}>
+        {series.map((s) => (
+          <span key={s.id} className="flex items-center gap-1.5">
+            <span className="h-0.5 w-3 rounded-full" style={{ background: s.color }} />
+            {s.name}
+          </span>
+        ))}
+      </div>
+      <div className="min-h-0 w-full flex-1">
+        <ResponsiveContainer>
+          <LineChart data={data} margin={{ top: 8, right: compact ? 8 : 4, bottom: 0, left: compact ? 8 : 0 }}>
+            {!compact && <CartesianGrid vertical={false} stroke="var(--border)" />}
+            <XAxis dataKey="date" hide={compact} tick={axisTick} tickLine={false} axisLine={false} minTickGap={40} tickFormatter={(d: string) => shortDate(d)} />
+            <YAxis hide={compact} width={64} tick={axisTick} tickLine={false} axisLine={false} tickFormatter={(v: number) => compactMoney(v, currency)} />
+            {min < 0 && <ReferenceLine y={0} stroke="var(--muted)" strokeDasharray="4 4" strokeOpacity={0.6} />}
+            <Tooltip
+              cursor={{ stroke: "var(--muted)", strokeWidth: 1, strokeDasharray: "3 3" }}
+              content={({ active, payload }) => {
+                if (!active || !payload?.length) return null;
+                const row = payload[0].payload as Record<string, number | string>;
+                return (
+                  <TooltipBox>
+                    <div className="mb-1 text-muted">{formatDay(String(row.date), { weekday: "short", day: "numeric", month: "long" })}</div>
+                    {series.map((s) => (
+                      <div key={s.id} className="flex items-center justify-between gap-3">
+                        <span className="flex min-w-0 items-center gap-1.5">
+                          <span className="size-2 shrink-0 rounded-full" style={{ background: s.color }} />
+                          <span className="truncate">{s.name}</span>
+                        </span>
+                        <Money minor={Number(row[s.id])} currency={currency} tone="auto" />
+                      </div>
+                    ))}
+                  </TooltipBox>
+                );
+              }}
+            />
+            {series.map((s) => (
+              <Line
+                key={s.id}
+                type="stepAfter"
+                dataKey={s.id}
+                stroke={s.color}
+                strokeWidth={2}
+                dot={false}
+                isAnimationActive={false}
+                activeDot={{ r: 3.5, strokeWidth: 2, stroke: "var(--surface)" }}
+              />
+            ))}
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 }

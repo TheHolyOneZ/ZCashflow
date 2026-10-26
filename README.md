@@ -37,7 +37,7 @@ encrypted, over your own Wi-Fi.
 
 ## Contents
 
-- [What's new in 1.1.1](#-whats-new-in-111)
+- [What's new in 1.2.0](#-whats-new-in-120)
 - [Why ZCashflow?](#-why-zcashflow)
 - [Features](#-features)
 - [Screenshots](#-screenshots)
@@ -57,17 +57,22 @@ encrypted, over your own Wi-Fi.
 
 ---
 
-## 🆕 What's new in 1.1.1
+## 🆕 What's new in 1.2.0
+
+- **Subcategories at any depth** – drag a category by its handle onto another one to nest it, or onto the drop zone to make it a main category. Budgets, filters and totals include every level.
+- **Export everything** – all data or a selection (transactions, accounts, categories, recurring payments, budgets, goals, debts) for any period, as CSV or one ZIP. *Excel (;)* format for European Excel.
+- **CSV import** – from the ZCashflow template or straight from your bank's export (`Buchungstag`, `Betrag`, `-1.234,56` …), with a preview of duplicates and errors before anything is saved.
+- **Receipt line items** – give each item its own category; booking creates one entry per category, all linked to the same photo. PDF scans from phone scanner apps work too.
+- **Forecast per account** – show selected accounts only, or one curve per account.
+- **Budgets in the plan** – include all or selected budgets in the month plan, forecast and safe-to-spend.
+- **Window controls** stay available in narrow windows; <kbd>F11</kbd> toggles full screen.
+- Fixed: importing a receipt on Android failed with "expected raw image bytes".
+
+No database or sync schema change. Older versions sync as before but don't show categories below the second level – update all paired devices.
+
+### 1.1.1
 
 - Fixed: a balance correction no longer appears to revert when an account has transactions dated in the future. Today's balance only counts transactions up to today; future-dated ones count on their date and are included in the forecast.
-
-### 1.1.0
-
-- The balance correction dialog compares the balance currently recorded in ZCashflow with the balance entered from your bank, and shows the difference so you can spot a mismatch.
-- Account balance corrections now accept zero and negative balances, persist correctly, and continue to include transactions made after the correction date.
-- Balance corrections sync independently from account details, so editing an account's name or color does not replace its corrected balance.
-- Upcoming recurring occurrences refresh every minute while their list is active.
-- Sync schema version 6 separates balance corrections from account metadata. Update both paired devices when prompted.
 
 See [changelog.md](changelog.md) for the full change list.
 
@@ -93,7 +98,7 @@ See [changelog.md](changelog.md) for the full change list.
 <td width="50%" valign="top">
 
 ### 📊 Overview & forecast
-- Total balance with a **30-day balance forecast** chart
+- Total balance with a **30-day balance forecast** chart – all accounts, a selection, or one curve per account
 - **Safe to spend per day** until your next income – calculated from spendable accounts only
 - *Keeping an eye on*: overdue debts, exceeded budgets, low balance ahead, payments waiting for confirmation
 - Monthly income, expenses, net and fixed costs
@@ -120,6 +125,8 @@ See [changelog.md](changelog.md) for the full change list.
 - Income, expenses and transfers between accounts
 - **Quick entry** understands `Kebab 8.50`, `+2500 salary yesterday`, `Fuel 60€ 03.10.`
 - Categories are **learned** from your history and recognized by keyword from the very first entry (`REWE`, `Aral`, `Netflix` …)
+- **Subcategories at any depth**, rearranged by drag & drop
+- **CSV import** from your bank's export or the ZCashflow template, with duplicate detection
 - Full-text search incl. receipt text, filters by account, category, date range
 - Tags, notes, references (`TX-2026-000123`), duplicate, right-click menus everywhere
 
@@ -129,7 +136,9 @@ See [changelog.md](changelog.md) for the full change list.
 ### 🧾 Receipts
 - Photo, file picker or drag & drop anywhere in the window
 - On-device OCR (built-in `ocrs` everywhere, Tesseract on desktop if installed)
-- Detects date, total and merchant; finds the matching transaction
+- Detects date, total, merchant and **line items**; finds the matching transaction
+- **Split by category**: one receipt, one entry per category
+- Photos and PDF scans
 - One click: **book** the receipt or **link** it to an existing entry
 - Optional **local AI** (Ollama, LM Studio …) refines values and suggests a category – nothing leaves your device
 
@@ -153,6 +162,7 @@ See [changelog.md](changelog.md) for the full change list.
 - **Debts** in both directions with installment plans that stop by themselves and a projected payoff date
 - **Savings goals** with target date, required monthly amount, your real pace and "on track / behind"
 - **Budgets** per day, week, month or year with a projection to the end of the period and warnings from 80 %
+- Include budgets in the month plan and forecast – all or a selection
 
 </td>
 </tr>
@@ -179,7 +189,7 @@ See [changelog.md](changelog.md) for the full change list.
 </tr>
 </table>
 
-**Also included:** 7 languages (English, Deutsch, Español, Français, Italiano, Polski, Türkçe) · light / dark / midnight themes · accent colors, fonts, density, corner radius, interface size · privacy mode that blurs every amount (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>H</kbd>) · custom title bar · command palette · system notifications · CSV export · full database backup · demo data to explore · factory reset with backup.
+**Also included:** 7 languages (English, Deutsch, Español, Français, Italiano, Polski, Türkçe) · light / dark / midnight themes · accent colors, fonts, density, corner radius, interface size · privacy mode that blurs every amount (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>H</kbd>) · custom title bar · command palette · system notifications · CSV / ZIP export and CSV import · full database backup · demo data to explore · factory reset with backup.
 
 ---
 
@@ -470,7 +480,7 @@ If automatic discovery doesn't find the other device (e.g. guest networks with c
 | Android / iOS | App sandbox (removed when the app is uninstalled) |
 
 - `zcashflow.db` – the SQLite database; `attachments/` – receipt photos.
-- **Backup:** *Settings → Data → Save backup* writes a complete copy of the database. **Export:** *Export as CSV* for spreadsheets.
+- **Backup:** *Settings → Data → Save backup* writes a complete copy of the database. **Export:** *Settings → Data → Export data* saves all data or a selection as CSV (several selections as one ZIP). **Import:** *Import CSV* reads the ZCashflow template or a bank export and shows a preview first.
 - **Reset:** *Settings → Reset* resets the appearance or deletes everything (optionally saving a backup first).
 - Syncing devices is *not* a backup – deleting on one device deletes everywhere. Keep a backup.
 
@@ -486,6 +496,7 @@ If automatic discovery doesn't find the other device (e.g. guest networks with c
 | <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>B</kbd> | Toggle sidebar |
 | <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>,</kbd> | Settings |
 | <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>Shift</kbd> + <kbd>H</kbd> | Hide / show all amounts |
+| <kbd>F11</kbd> | Full screen (desktop) |
 | <kbd>?</kbd> | Show all shortcuts |
 
 ---
@@ -555,7 +566,7 @@ You don't need every toolchain locally – GitHub builds everything:
   - *Actions → Build → Run workflow* builds selected platforms as artifacts.
   - Pushing a version tag builds **all** platforms and creates a **draft release** with consistently named files and `SHA256SUMS.txt`:
     ```sh
-    git tag v1.1.1 && git push origin v1.1.1
+    git tag v1.2.0 && git push origin v1.2.0
     ```
   - Android signing uses the repository secrets `ANDROID_KEYSTORE_B64` (base64 of the keystore) and `ANDROID_KEY_PASSWORD`.
 

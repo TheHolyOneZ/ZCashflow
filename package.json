@@ -1,7 +1,7 @@
 {
   "name": "zcashflow",
   "private": true,
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "ZCashflow – free, private, local-first personal finance app for Windows, macOS, Linux, Android and iOS",
   "author": {
     "name": "TheHolyOneZ",

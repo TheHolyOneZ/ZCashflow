@@ -58,7 +58,13 @@ export const useInsights = () => useQuery({ queryKey: ["insights"], queryFn: pla
 export function useErrorMessage() {
   const { t } = useTranslation();
   return (e: unknown) =>
-    !isApiError(e) ? t("errors.unknown") : e.code === "unreachable" ? t("errors.unreachable") : `${t(`errors.${e.code}`)}: ${e.message}`;
+    !isApiError(e)
+      ? t("errors.unknown")
+      : e.code === "unreachable"
+        ? t("errors.unreachable")
+        : e.code === "unsupported"
+          ? t(`errors.unsupported_${e.message}`, { defaultValue: t("errors.unknown") })
+          : `${t(`errors.${e.code}`)}: ${e.message}`;
 }
 
 export function invalidateData(qc: ReturnType<typeof useQueryClient>) {

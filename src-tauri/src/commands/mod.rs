@@ -60,6 +60,11 @@ pub fn upsert_category(db: State<SharedDb>, input: CategoryInput) -> AppResult<C
 }
 
 #[tauri::command]
+pub fn move_category(db: State<SharedDb>, id: String, parent_id: Option<String>) -> AppResult<Category> {
+    categories::move_to(&db, &id, parent_id.as_deref().filter(|p| !p.is_empty()))
+}
+
+#[tauri::command]
 pub fn list_counterparties(db: State<SharedDb>) -> AppResult<Vec<Counterparty>> {
     counterparties::list(&db.conn())
 }
@@ -104,6 +109,7 @@ use crate::domain::{
     recurring::{self as recurring_dom, Occurrence, RecurringInput, RecurringRule},
     summary::MonthTotals,
 };
+use crate::domain::import::{ImportOptions, ImportPreview, ImportResult};
 use crate::error::AppError;
 
 fn today() -> chrono::NaiveDate {
@@ -139,6 +145,7 @@ const SETTINGS: &[&str] = &[
     "discoverable",
     "daily_done",
     "daily_reminder",
+    crate::domain::budgets::PLAN_SETTING,
 ];
 
 #[tauri::command]
@@ -295,14 +302,82 @@ pub fn insights(db: State<SharedDb>) -> AppResult<Vec<Insight>> {
     insights_dom::compute(&conn, &currency, today(), remind_days)
 }
 
-#[tauri::command]
-pub fn export_csv(db: State<SharedDb>, path: String) -> AppResult<usize> {
-    export::transactions_csv(&db.conn(), std::path::Path::new(&path))
+fn create_target(app: &tauri::AppHandle, path: &str) -> AppResult<std::fs::File> {
+    use tauri_plugin_fs::FsExt;
+    let target: tauri_plugin_fs::FilePath = path.parse().map_err(|_| AppError::Invalid(format!("invalid path {path:?}")))?;
+    let mut opts = tauri_plugin_fs::OpenOptions::new();
+    opts.write(true).create(true).truncate(true);
+    Ok(app.fs().open(target, opts)?)
+}
+
+fn write_target(app: &tauri::AppHandle, path: &str, bytes: &[u8]) -> AppResult<()> {
+    use std::io::Write;
+    let mut file = create_target(app, path)?;
+    file.write_all(bytes)?;
+    file.flush()?;
+    Ok(())
 }
 
 #[tauri::command]
-pub fn backup_database(db: State<SharedDb>, path: String) -> AppResult<()> {
-    export::backup(&db.conn(), std::path::Path::new(&path))
+pub fn export_csv(app: tauri::AppHandle, db: State<SharedDb>, path: String) -> AppResult<usize> {
+    let opts = export::ExportOptions {
+        datasets: vec!["transactions".into()],
+        delimiter: ",".into(),
+        decimal_comma: false,
+        labels: Default::default(),
+        filter: None,
+    };
+    let out = export::export(&db.conn(), &opts, today())?;
+    write_target(&app, &path, &out.bytes)?;
+    Ok(out.files)
+}
+
+#[tauri::command]
+pub async fn export_data(app: tauri::AppHandle, path: String, options: export::ExportOptions) -> AppResult<usize> {
+    blocking(move || {
+        let db = app.state::<SharedDb>();
+        let out = export::export(&db.conn(), &options, today())?;
+        write_target(&app, &path, &out.bytes)?;
+        Ok(out.files)
+    })
+    .await
+}
+
+#[tauri::command]
+pub fn import_template(app: tauri::AppHandle, path: String, delimiter: String) -> AppResult<()> {
+    write_target(&app, &path, &export::template(&delimiter))
+}
+
+#[tauri::command]
+pub async fn import_preview(app: tauri::AppHandle, text: String, options: ImportOptions) -> AppResult<ImportPreview> {
+    blocking(move || {
+        let db = app.state::<SharedDb>();
+        let conn = db.conn();
+        crate::domain::import::preview(&conn, &text, &options)
+    })
+    .await
+}
+
+#[tauri::command]
+pub async fn import_commit(app: tauri::AppHandle, text: String, options: ImportOptions) -> AppResult<ImportResult> {
+    blocking(move || {
+        let db = app.state::<SharedDb>();
+        crate::domain::import::commit(&db, &text, &options, today())
+    })
+    .await
+}
+
+#[tauri::command]
+pub fn backup_database(app: tauri::AppHandle, db: State<SharedDb>, path: String) -> AppResult<()> {
+    let plain = !path.contains("://");
+    if plain {
+        return export::backup(&db.conn(), std::path::Path::new(&path));
+    }
+    let tmp = std::env::temp_dir().join(format!("zc-backup-{}.db", uuid::Uuid::now_v7().simple()));
+    export::backup(&db.conn(), &tmp)?;
+    let bytes = std::fs::read(&tmp);
+    let _ = std::fs::remove_file(&tmp);
+    write_target(&app, &path, &bytes?)
 }
 
 use crate::domain::attachments::{self as attachments_dom, Attachment, AttachmentFilter};
@@ -326,15 +401,30 @@ fn percent_decode(s: &str) -> String {
     String::from_utf8_lossy(&out).into_owned()
 }
 
+fn body_bytes(body: &tauri::ipc::InvokeBody) -> AppResult<Vec<u8>> {
+    use base64::Engine;
+    use serde_json::Value;
+    let bytes = match body {
+        tauri::ipc::InvokeBody::Raw(bytes) => Some(bytes.clone()),
+        tauri::ipc::InvokeBody::Json(Value::Object(m)) => m
+            .get("b64")
+            .and_then(Value::as_str)
+            .and_then(|s| base64::engine::general_purpose::STANDARD.decode(s).ok()),
+        tauri::ipc::InvokeBody::Json(Value::Array(a)) => a
+            .iter()
+            .map(|v| v.as_u64().and_then(|n| u8::try_from(n).ok()))
+            .collect::<Option<Vec<u8>>>(),
+        _ => None,
+    };
+    bytes.filter(|b| !b.is_empty()).ok_or_else(|| AppError::Invalid("expected image bytes".into()))
+}
+
 #[tauri::command]
 pub async fn import_receipt(app: tauri::AppHandle, request: tauri::ipc::Request<'_>) -> AppResult<Attachment> {
-    let tauri::ipc::InvokeBody::Raw(bytes) = request.body() else {
-        return Err(AppError::Invalid("expected raw image bytes".into()));
-    };
+    let bytes = body_bytes(request.body())?;
     let header = |k: &str| request.headers().get(k).and_then(|v| v.to_str().ok()).map(percent_decode);
     let name = header("x-file-name");
     let tx = header("x-transaction-id").filter(|s| !s.is_empty());
-    let bytes = bytes.clone();
     let res = tauri::async_runtime::spawn_blocking(move || {
         let db = app.state::<SharedDb>();
         attachments_dom::import(&db, &bytes, name, tx, today())
@@ -352,6 +442,11 @@ pub fn list_attachments(db: State<SharedDb>, filter: Option<AttachmentFilter>) -
 #[tauri::command]
 pub fn link_attachment(db: State<SharedDb>, id: String, transaction_id: Option<String>) -> AppResult<Attachment> {
     attachments_dom::link(&db, &id, transaction_id.as_deref())
+}
+
+#[tauri::command]
+pub fn book_receipt(db: State<SharedDb>, id: String, input: attachments_dom::BookReceipt) -> AppResult<Vec<String>> {
+    attachments_dom::book(&db, &id, input)
 }
 
 #[tauri::command]

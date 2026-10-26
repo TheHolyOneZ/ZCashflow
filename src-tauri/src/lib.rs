@@ -59,6 +59,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_clipboard_manager::init())
         .setup(|app| {
             let db = db::Db::open(&data_dir(app).join("zcashflow.db"))?;
@@ -92,6 +93,7 @@ pub fn run() {
             commands::set_account_balance,
             commands::list_categories,
             commands::upsert_category,
+            commands::move_category,
             commands::list_counterparties,
             commands::list_transactions,
             commands::create_transaction,
@@ -127,10 +129,15 @@ pub fn run() {
             commands::monthly_series,
             commands::insights,
             commands::export_csv,
+            commands::export_data,
+            commands::import_template,
+            commands::import_preview,
+            commands::import_commit,
             commands::backup_database,
             commands::import_receipt,
             commands::list_attachments,
             commands::link_attachment,
+            commands::book_receipt,
             commands::delete_attachment,
             commands::reprocess_attachment,
             commands::attachment_image,

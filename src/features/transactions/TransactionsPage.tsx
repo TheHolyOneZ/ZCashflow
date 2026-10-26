@@ -3,13 +3,16 @@ import { DateInput } from "@/components/ui/date-input";
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { useNavigate, useSearch } from "@tanstack/react-router";
-import { Plus, Receipt, Search, SlidersHorizontal, X } from "lucide-react";
+import { Download, Plus, Receipt, Search, SlidersHorizontal, Upload, X } from "lucide-react";
+import { ImportDialog } from "@/features/data/ImportDialog";
+import { useExportFile } from "@/features/data/export";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/field";
-import { SearchInput } from "@/components/ui/inputs";
+import { SearchInput, Tip } from "@/components/ui/inputs";
 import { Card, EmptyState, Kbd, PageHeader } from "@/components/ui/misc";
 import { Segmented } from "@/components/ui/segmented";
 import type { TransactionFilter, TxKind } from "@/lib/api";
+import { categoryTree } from "@/lib/categories";
 import { displayName } from "@/lib/i18n";
 import { useAccounts, useCategories, useTransactions } from "@/lib/queries";
 import { useUi } from "@/stores/ui";
@@ -34,6 +37,8 @@ export function TransactionsPage() {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [showMore, setShowMore] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
+  const exportFile = useExportFile();
   const advanced = !!(accountId || categoryId || from || to);
 
   useEffect(() => setQuery(search.q ?? ""), [search.q]);
@@ -69,10 +74,28 @@ export function TransactionsPage() {
         title={t("nav.transactions")}
         subtitle={t("tx.count", { count: items.length })}
         actions={
-          <Button variant="primary" onClick={() => openNew()}>
-            <Plus className="size-4" />
-            <span className="hidden sm:inline">{t("tx.new")}</span>
-          </Button>
+          <>
+            <Tip label={t("dataTransfer.exportSelection")}>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={t("dataTransfer.exportSelection")}
+                disabled={!items.length}
+                onClick={() => exportFile({ datasets: ["transactions"], filter }, "zcashflow-transactions")}
+              >
+                <Download className="size-4" />
+              </Button>
+            </Tip>
+            <Tip label={t("settings.importCsv")}>
+              <Button variant="ghost" size="icon" aria-label={t("settings.importCsv")} onClick={() => setImportOpen(true)}>
+                <Upload className="size-4" />
+              </Button>
+            </Tip>
+            <Button variant="primary" onClick={() => openNew()}>
+              <Plus className="size-4" />
+              <span className="hidden sm:inline">{t("tx.new")}</span>
+            </Button>
+          </>
         }
       />
 
@@ -125,10 +148,10 @@ export function TransactionsPage() {
               className="w-full sm:w-48"
               items={[
                 { value: "", label: `${t("tx.category")}: ${t("common.all")}` },
-                ...categories.map((c) => ({
+                ...categoryTree(categories).map(({ category: c, depth }) => ({
                   value: c.id,
                   label: displayName(c),
-                  indent: !!c.parentId,
+                  depth,
                   icon: <CategoryIcon category={c} className="size-6 rounded-md [&_svg]:size-3.5" />,
                 })),
               ]}
@@ -181,6 +204,7 @@ export function TransactionsPage() {
           <TransactionList items={items} />
         )}
       </Card>
+      <ImportDialog open={importOpen} onOpenChange={setImportOpen} />
     </div>
   );
 }

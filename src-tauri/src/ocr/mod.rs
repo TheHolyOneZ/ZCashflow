@@ -188,6 +188,56 @@ pub fn recognize(img: DynamicImage, preferred: &str) -> AppResult<(String, &'sta
     Err(last_err)
 }
 
+fn find(haystack: &[u8], needle: &[u8]) -> Option<usize> {
+    haystack.windows(needle.len()).position(|w| w == needle)
+}
+
+fn is_heif(bytes: &[u8]) -> bool {
+    bytes.len() > 12
+        && &bytes[4..8] == b"ftyp"
+        && matches!(&bytes[8..12], b"heic" | b"heix" | b"hevc" | b"hevx" | b"heim" | b"heis" | b"mif1" | b"msf1")
+}
+
+fn pdf_image(bytes: &[u8]) -> Option<Vec<u8>> {
+    let mut best: Option<&[u8]> = None;
+    let mut i = 0;
+    while let Some(pos) = find(&bytes[i..], b"stream") {
+        let at = i + pos;
+        let mut start = at + 6;
+        if at >= 3 && &bytes[at - 3..at] == b"end" {
+            i = start;
+            continue;
+        }
+        if bytes.get(start) == Some(&b'\r') {
+            start += 1;
+        }
+        if bytes.get(start) == Some(&b'\n') {
+            start += 1;
+        }
+        let Some(len) = find(&bytes[start..], b"endstream") else { break };
+        let data = &bytes[start..start + len];
+        if data.starts_with(&[0xFF, 0xD8, 0xFF]) {
+            let end = data.windows(2).rposition(|w| w == [0xFF, 0xD9]).map(|p| p + 2).unwrap_or(data.len());
+            let jpeg = &data[..end];
+            if best.is_none_or(|b| jpeg.len() > b.len()) {
+                best = Some(jpeg);
+            }
+        }
+        i = start + len + 9;
+    }
+    best.map(<[u8]>::to_vec)
+}
+
+pub fn prepare_upload(bytes: &[u8]) -> AppResult<std::borrow::Cow<'_, [u8]>> {
+    if bytes.starts_with(b"%PDF") {
+        return pdf_image(bytes).map(std::borrow::Cow::Owned).ok_or_else(|| AppError::Unsupported("pdf_without_image".into()));
+    }
+    if is_heif(bytes) {
+        return Err(AppError::Unsupported("heic".into()));
+    }
+    Ok(std::borrow::Cow::Borrowed(bytes))
+}
+
 pub fn decode(bytes: &[u8]) -> AppResult<DynamicImage> {
     use image::ImageDecoder;
     let reader = image::ImageReader::new(std::io::Cursor::new(bytes))
@@ -205,6 +255,28 @@ pub fn decode(bytes: &[u8]) -> AppResult<DynamicImage> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn jpeg() -> Vec<u8> {
+        let img = image::RgbImage::from_fn(30, 20, |x, y| image::Rgb([x as u8 * 8, y as u8 * 12, 90]));
+        let mut buf = std::io::Cursor::new(Vec::new());
+        img.write_to(&mut buf, image::ImageFormat::Jpeg).unwrap();
+        buf.into_inner()
+    }
+
+    #[test]
+    fn takes_the_scanned_page_out_of_a_pdf() {
+        let page = jpeg();
+        let mut pdf = b"%PDF-1.4\n1 0 obj\n<< /Length 4 >>\nstream\nq Q\nendstream\nendobj\n2 0 obj\n<< /Filter /DCTDecode >>\nstream\r\n".to_vec();
+        pdf.extend_from_slice(&page);
+        pdf.extend_from_slice(b"\nendstream\nendobj\n%%EOF");
+        let out = prepare_upload(&pdf).unwrap();
+        assert_eq!(out.as_ref(), page.as_slice());
+        assert_eq!(decode(&out).unwrap().width(), 30);
+        assert!(matches!(prepare_upload(b"%PDF-1.7 no images"), Err(AppError::Unsupported(m)) if m == "pdf_without_image"));
+        let heic = [&[0, 0, 0, 24][..], b"ftypheic", &[0; 8]].concat();
+        assert!(matches!(prepare_upload(&heic), Err(AppError::Unsupported(m)) if m == "heic"));
+        assert!(matches!(prepare_upload(&page), Ok(std::borrow::Cow::Borrowed(_))));
+    }
 
     #[test]
     #[ignore]

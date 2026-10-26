@@ -1,5 +1,7 @@
 import { RowMenu, type MenuEntry } from "@/components/ui/context-menu";
-import { Pencil, Trash2, CalendarClock, Plus } from "lucide-react";
+import { Pencil, Trash2, CalendarClock, Download, Plus } from "lucide-react";
+import { Tip } from "@/components/ui/inputs";
+import { useExportFile } from "@/features/data/export";
 import { planning } from "@/lib/api";
 import { useAppMutation, useAccounts, useAppInfo, useCategories, useRecurring, useUpcoming } from "@/lib/queries";
 import { useMemo, useState } from "react";
@@ -26,6 +28,7 @@ export function RecurringPage() {
   const currency = useAppInfo().data?.defaultCurrency ?? "EUR";
   const [filter, setFilter] = useState<Filter>("all");
   const [dialog, setDialog] = useState<{ rule?: RecurringRule } | null>(null);
+  const exportFile = useExportFile();
 
   const totals = useMemo(() => {
     const active = rules.filter((r) => r.nextOn && r.currency === currency);
@@ -44,10 +47,23 @@ export function RecurringPage() {
         title={t("nav.recurring")}
         subtitle={t("recurring.subtitle")}
         actions={
-          <Button variant="primary" onClick={() => setDialog({})}>
-            <Plus className="size-4" />
-            <span className="hidden sm:inline">{t("recurring.new")}</span>
-          </Button>
+          <>
+            <Tip label={t("dataTransfer.exportRecurring")}>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={t("dataTransfer.exportRecurring")}
+                disabled={!rules.length}
+                onClick={() => exportFile({ datasets: ["recurring"] }, "zcashflow-recurring")}
+              >
+                <Download className="size-4" />
+              </Button>
+            </Tip>
+            <Button variant="primary" onClick={() => setDialog({})}>
+              <Plus className="size-4" />
+              <span className="hidden sm:inline">{t("recurring.new")}</span>
+            </Button>
+          </>
         }
       />
 

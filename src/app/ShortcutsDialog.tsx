@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { Dialog } from "@/components/ui/dialog";
-import { shortcutLabel } from "@/lib/platform";
+import { isDesktop, isTauri, shortcutLabel } from "@/lib/platform";
 import { navItems } from "./nav";
 
 function Keys({ combo }: { combo: string }) {
@@ -33,6 +33,7 @@ export function ShortcutsDialog({ open, onOpenChange }: { open: boolean; onOpenC
         ["Mod+B", t("shell.sidebar")],
         ["Mod+,", t("nav.settings")],
         ["?", t("shortcuts.title")],
+        ...(isTauri && isDesktop ? [["F11", t("shortcuts.fullscreen")] as [string, string]] : []),
       ],
     },
     {

@@ -5,6 +5,7 @@ use rusqlite::{params, Connection, OptionalExtension, Row};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
+use super::transactions;
 use crate::db::{get_meta, new_id, now_rfc3339, Db};
 use crate::error::{AppError, AppResult};
 use crate::ocr::{self, extract::Extracted, llm};
@@ -121,6 +122,8 @@ pub fn write_files(db: &Db, bytes: &[u8]) -> AppResult<(String, image::DynamicIm
 }
 
 pub fn import(db: &Db, bytes: &[u8], file_name: Option<String>, transaction_id: Option<String>, today: NaiveDate) -> AppResult<Attachment> {
+    let bytes = ocr::prepare_upload(bytes)?;
+    let bytes = bytes.as_ref();
     let (sha, img) = write_files(db, bytes)?;
     let id = new_id();
     {
@@ -215,6 +218,76 @@ pub fn link(db: &Db, id: &str, transaction_id: Option<&str>) -> AppResult<Attach
     get(db, &conn, id)
 }
 
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReceiptPart {
+    pub category_id: Option<String>,
+    pub amount_minor: i64,
+    pub note: Option<String>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BookReceipt {
+    pub date: String,
+    pub account_id: String,
+    pub counterparty: Option<String>,
+    pub title: String,
+    pub parts: Vec<ReceiptPart>,
+}
+
+pub fn book(db: &Db, id: &str, input: BookReceipt) -> AppResult<Vec<String>> {
+    if input.parts.is_empty() {
+        return Err(AppError::Invalid("nothing to book".into()));
+    }
+    let mut conn = db.conn();
+    let tx = conn.transaction()?;
+    let mut ids = Vec::with_capacity(input.parts.len());
+    for (i, part) in input.parts.iter().enumerate() {
+        let tx_id = transactions::insert(
+            db,
+            &tx,
+            &transactions::TransactionInput {
+                kind: "expense".into(),
+                amount_minor: part.amount_minor,
+                currency: None,
+                occurred_on: input.date.clone(),
+                account_id: input.account_id.clone(),
+                to_account_id: None,
+                category_id: part.category_id.clone().filter(|c| !c.is_empty()),
+                counterparty: input.counterparty.clone().filter(|c| !c.trim().is_empty()),
+                title: input.title.clone(),
+                note: part.note.clone().filter(|n| !n.trim().is_empty()),
+                tags: vec![],
+                debt_id: None,
+                goal_id: None,
+            },
+            transactions::SystemLinks::default(),
+        )?;
+        let n = if i == 0 {
+            tx.execute(
+                "UPDATE attachments SET transaction_id = ?2, updated_hlc = ?3 WHERE id = ?1 AND deleted = 0",
+                params![id, tx_id, db.hlc.tick()],
+            )?
+        } else {
+            tx.execute(
+                "INSERT INTO attachments (id, transaction_id, sha256, mime, file_name, size_bytes, width, height,
+                                          ocr_text, ocr_engine, extracted_json, created_at, device_id, updated_hlc)
+                 SELECT ?2, ?3, sha256, mime, file_name, size_bytes, width, height, ocr_text, ocr_engine, extracted_json,
+                        ?4, ?5, ?6
+                 FROM attachments WHERE id = ?1 AND deleted = 0",
+                params![id, new_id(), tx_id, now_rfc3339(), db.device_id(), db.hlc.tick()],
+            )?
+        };
+        if n == 0 {
+            return Err(AppError::NotFound(format!("attachment {id}")));
+        }
+        ids.push(tx_id);
+    }
+    tx.commit()?;
+    Ok(ids)
+}
+
 pub fn delete(db: &Db, id: &str) -> AppResult<()> {
     let n = db.conn().execute(
         "UPDATE attachments SET deleted = 1, updated_hlc = ?2 WHERE id = ?1 AND deleted = 0",
@@ -305,5 +378,38 @@ mod tests {
         )
         .unwrap();
         assert_eq!(found.len(), 1);
+    }
+
+    #[test]
+    fn one_receipt_books_one_entry_per_category() {
+        let db = Db::open_in_memory().unwrap();
+        let today = NaiveDate::from_ymd_opt(2026, 10, 8).unwrap();
+        db.conn().execute("INSERT INTO meta (key, value) VALUES ('ocr_engine', 'none')", []).unwrap();
+        let a = import(&db, &png(), Some("bon.png".into()), None, today).unwrap();
+        let acc = crate::domain::accounts::list(&db.conn()).unwrap()[0].id.clone();
+        let cats = crate::domain::categories::list(&db.conn()).unwrap();
+        let id = |key: &str| cats.iter().find(|c| c.system_key.as_deref() == Some(key)).unwrap().id.clone();
+        let ids = book(
+            &db,
+            &a.id,
+            BookReceipt {
+                date: "2026-10-07".into(),
+                account_id: acc,
+                counterparty: Some("REWE".into()),
+                title: "REWE".into(),
+                parts: vec![
+                    ReceiptPart { category_id: Some(id("category.groceries")), amount_minor: 2_340, note: Some("Milch · Brot".into()) },
+                    ReceiptPart { category_id: Some(id("category.health")), amount_minor: 599, note: None },
+                ],
+            },
+        )
+        .unwrap();
+        assert_eq!(ids.len(), 2);
+        let all = list(&db, &db.conn(), &AttachmentFilter::default()).unwrap();
+        assert_eq!(all.len(), 2, "the second entry gets its own link to the same photo");
+        assert!(all.iter().all(|x| x.sha256 == a.sha256 && x.transaction_id.is_some()));
+        let tx = crate::domain::transactions::get(&db.conn(), &ids[1]).unwrap();
+        assert_eq!((tx.amount_minor, tx.attachment_count), (599, 1));
+        assert!(book(&db, "missing", BookReceipt { date: "2026-10-07".into(), account_id: tx.account_id, counterparty: None, title: "x".into(), parts: vec![ReceiptPart { category_id: None, amount_minor: 1, note: None }] }).is_err());
     }
 }

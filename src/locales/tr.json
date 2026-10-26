@@ -144,7 +144,8 @@
     "cashflow": "Nakit akışı – son 6 ay",
     "upcoming": "Önümüzdeki 14 gün",
     "noUpcoming": "Planlanmış ödeme yok. Burada görmek için düzenli işlemler ekle.",
-    "cashflowEmpty": "İşlem ekledikçe son ayların gelir ve giderlerini burada göreceksin."
+    "cashflowEmpty": "İşlem ekledikçe son ayların gelir ve giderlerini burada göreceksin.",
+    "budgetsReserved": "Bütçeler için {{amount}} ayrıldı"
   },
   "palette": {
     "placeholder": "Hızlı ekle („Döner 8,50“) veya ara …",
@@ -178,11 +179,9 @@
     "daysBefore_one": "{{count}} gün önce",
     "daysBefore_other": "{{count}} gün önce",
     "data": "Veriler",
-    "dataHint": "Her şey cihazında kalır. Tablolar için dışa aktar veya tüm veritabanını yedekle.",
-    "exportCsv": "CSV olarak dışa aktar",
+    "dataHint": "Her şey cihazında kalır. Tablolar için dışa aktar, banka dökümlerini içe aktar veya tüm veritabanını yedekle.",
+    "exportCsv": "Verileri dışa aktar",
     "backup": "Yedek kaydet",
-    "exported_one": "{{count}} işlem dışa aktarıldı",
-    "exported_other": "{{count}} işlem dışa aktarıldı",
     "backedUp": "Yedek kaydedildi",
     "demo": "Demo verileri",
     "demoHint": "Abonelikler, krediler, hedefler ve bütçelerle altı aylık örnek veri – keşfetmek için ideal.",
@@ -191,7 +190,8 @@
     "demoRemove": "Demo verilerini kaldır",
     "demoRemoved": "Demo verileri kaldırıldı",
     "general": "Genel",
-    "subtitle": "Her şey sevdiğin gibi – bu cihaz için geçerli."
+    "subtitle": "Her şey sevdiğin gibi – bu cihaz için geçerli.",
+    "importCsv": "CSV içe aktar"
   },
   "errors": {
     "db": "Veritabanı hatası",
@@ -203,7 +203,11 @@
     "pageTitle": "Burada bir şeyler ters gitti",
     "pageHint": "Verilerin güvende – yalnızca bu görünüm gösterilemedi.",
     "retry": "Tekrar dene",
-    "unreachable": "Cihaza ulaşılamıyor. Diğer cihazda ZCashflow açık mı, ikisi de aynı Wi-Fi'da mı ve güvenlik duvarı 47811 numaralı porta izin veriyor mu?"
+    "unreachable": "Cihaza ulaşılamıyor. Diğer cihazda ZCashflow açık mı, ikisi de aynı Wi-Fi'da mı ve güvenlik duvarı 47811 numaralı porta izin veriyor mu?",
+    "unsupported_heic": "HEIC/HEIF fotoğraflar henüz okunamıyor. Lütfen fotoğrafı JPEG olarak kaydet (iPhone: Ayarlar → Kamera → Biçimler → En Uyumlu).",
+    "unsupported_pdf_without_image": "Bu PDF taranmış bir görüntü içermiyor. Taramayı JPEG ya da görüntü PDF'i olarak kaydet.",
+    "unsupported_missing_columns": "Dosyada en az bir tarih ve bir tutar sütunu olmalı. ZCashflow şablonunu kullan veya sütun başlıklarını yeniden adlandır.",
+    "unsupported_empty_file": "Dosya boş."
   },
   "freq": {
     "daily": "günlük",
@@ -268,7 +272,12 @@
     "variableHintRest": "kalan günlere oranla",
     "balanceToday": "Bugünkü bakiye",
     "restOfMonth": "{{month}} kalanı",
-    "forecastNote": "Öngörü, günde yaklaşık {{amount}} günlük harcama içerir (son 90 günün ortalaması)."
+    "forecastNote": "Öngörü, günde yaklaşık {{amount}} günlük harcama içerir (son 90 günün ortalaması).",
+    "budgets": "Bütçeler",
+    "budgetsHintRest": "bu ay kalan",
+    "variableOther": "Diğer günlük harcamalar",
+    "forecastBudgets": "Planlanan bütçeler dahil.",
+    "forecastSubset": "Yalnızca seçilen hesaplar gösteriliyor."
   },
   "recurring": {
     "subtitle": "Maaş, kira, abonelikler – düzenli gelen ve giden her şey.",
@@ -416,7 +425,15 @@
     "edit": "Kategoriyi düzenle",
     "kind": "Tür",
     "both": "İkisi de",
-    "parent": "Üst kategori"
+    "parent": "Üst kategori",
+    "moved": "Kategori taşındı",
+    "dropTopLevel": "Ana kategori yapmak için buraya bırak",
+    "dragHint": "Bir kategoriyi tutamağından başka bir kategorinin üzerine sürükleyerek alt kategori yap – istediğin kadar seviye.",
+    "addSub": "Alt kategori ekle",
+    "moveTop": "Ana kategori yap",
+    "dragHandle": "Taşı",
+    "collapse": "Daralt",
+    "expand": "Genişlet"
   },
   "insights": {
     "severity": {
@@ -477,7 +494,23 @@
     "attached_other": "{{count}} fiş",
     "attach": "Fiş ekle",
     "dropTitle": "Fişi buraya bırak",
-    "dropHint": "Hemen, yerel olarak tanınır"
+    "dropHint": "Hemen, yerel olarak tanınır",
+    "rest": "Kalan",
+    "splitInvalid": "Kalemler toplamla uyuşmuyor. Tutarları kontrol et – her kategori 0'dan büyük olmalı.",
+    "items_one": "{{count}} kalem tanındı",
+    "items_other": "{{count}} kalem tanındı",
+    "itemsHint": "Fişi böl ve her kaleme kendi kategorisini ver",
+    "splitItems": "Kalemlere böl",
+    "noItems": "Kalem tanınmadı – kendin ekle.",
+    "itemName": "Kalem",
+    "addItem": "Kalem ekle",
+    "itemsSum": "Kalemler:",
+    "restToMain": "Kalan → {{category}}:",
+    "combine": "Aynı kategorideki kalemleri birleştir",
+    "combineHint": "Kalem başına değil kategori başına bir işlem",
+    "bookParts_one": "{{count}} işlem kaydet",
+    "bookParts_other": "{{count}} işlem kaydet",
+    "sameAsMain": "↑ {{category}}"
   },
   "ocr": {
     "title": "Fiş tanıma ve yapay zekâ",
@@ -590,14 +623,18 @@
     "hideAmounts": "Tutarları gizle",
     "showAmounts": "Tutarları göster",
     "minimize": "Simge durumuna küçült",
-    "maximize": "Büyüt"
+    "maximize": "Büyüt",
+    "restore": "Geri yükle",
+    "quit": "Çık",
+    "fullscreenHint": "Tam ekran için F11"
   },
   "shortcuts": {
     "title": "Klavye kısayolları",
     "general": "Genel",
     "navigate": "Gezinme",
     "palette": "Arama ve hızlı giriş",
-    "privacy": "Tutarları gizle/göster"
+    "privacy": "Tutarları gizle/göster",
+    "fullscreen": "Tam ekran"
   },
   "appearance": {
     "title": "Görünüm",
@@ -842,5 +879,107 @@
     "kofiHint": "Ko-fi üzerinden bir kahve, ZCashflow'un ücretsiz kalmasına yardımcı olur",
     "license": "Lisans",
     "privacy": "bulut yok, takip yok"
+  },
+  "dataTransfer": {
+    "exportTitle": "Verileri dışa aktar",
+    "exportHint": "Neyin dışa aktarılacağını seç. Excel, LibreOffice veya Numbers'ta açılır.",
+    "what": "Ne",
+    "everything": "Hepsi",
+    "dataset": {
+      "transactions": "İşlemler",
+      "accounts": "Hesaplar",
+      "categories": "Kategoriler",
+      "recurring": "Düzenli ödemeler",
+      "budgets": "Bütçeler",
+      "goals": "Birikim hedefleri",
+      "debts": "Borçlar"
+    },
+    "period": "Dönem (işlemler)",
+    "periodAll": "Tümü",
+    "periodYear": "Bu yıl",
+    "periodLast12": "Son 12 ay",
+    "periodCustom": "Özel",
+    "format": "Biçim",
+    "formatExcel": "Excel (;)",
+    "formatStandard": "Standart (,)",
+    "formatExcelHint": "noktalı virgül, ondalık virgül – Avrupa Excel'i için",
+    "formatStandardHint": "virgül, ondalık nokta – İngilizce Excel ve diğer uygulamalar için",
+    "zipNote": "Birden fazla alan, her alan için bir CSV içeren tek bir ZIP dosyası olarak kaydedilir.",
+    "export": "Dışa aktar",
+    "exported": "Dışa aktarma kaydedildi",
+    "exportedZip_one": "Dışa aktarma kaydedildi ({{count}} dosya)",
+    "exportedZip_other": "Dışa aktarma kaydedildi ({{count}} dosya)",
+    "exportSelection": "Geçerli listeyi CSV olarak dışa aktar",
+    "exportRecurring": "Düzenli ödemeleri CSV olarak dışa aktar",
+    "importTitle": "CSV içe aktar",
+    "importHint": "İşlemleri ZCashflow şablonundan veya doğrudan bankanın CSV dışa aktarımından içe aktar.",
+    "chooseFile": "CSV dosyası seç",
+    "otherFile": "Başka dosya",
+    "template": "Şablonu indir",
+    "templateSaved": "Şablon kaydedildi",
+    "columnsTitle": "Hangi sütunlar tanınır?",
+    "columnsNote": "Yalnızca tarih ve tutar zorunludur. Kendi dilindeki sütun adları da çalışır (ör. Tarih, Tutar, Açıklama), bu yüzden banka CSV'si çoğu zaman olduğu gibi içe aktarılabilir. Negatif tutarlar giderdir.",
+    "col": {
+      "date": "Tarih – 2026-10-26, 26.10.2026 veya 26.10.26",
+      "type": "income, expense veya transfer – isteğe bağlı, yoksa işaretten anlaşılır",
+      "amount": "Tutar – -12,50, 12.50 veya 1.234,56",
+      "currency": "EUR gibi para birimi kodu – isteğe bağlı",
+      "account": "Hesap adı – boşsa varsayılan hesap kullanılır, yeni adlar oluşturulur",
+      "to_account": "Hedef hesap – yalnızca transferlerde",
+      "category": "Kategori, alt kategoriler > ile, ör. Yemek > Market – yoksa oluşturulur",
+      "counterparty": "Mağaza, alıcı veya gönderen",
+      "title": "Açıklama",
+      "note": "Not",
+      "tags": "Boşlukla ayrılmış etiketler",
+      "reference": "ZCashflow referansı – mevcut işlemleri tanır"
+    },
+    "defaultAccount": "Hesabı olmayan satırlar için hesap",
+    "defaultAccountHint": "ör. banka dökümü için vadesiz hesabın",
+    "autoCategory": "Kategori öner",
+    "autoCategoryHint": "Kategorisi olmayan satırlar geçmişinden öğrenilen veya mağaza adından tanınan bir kategori alır",
+    "skipDuplicates": "Mevcut işlemleri atla",
+    "skipDuplicatesHint": "Aynı tarih, tutar, hesap ve açıklama – ya da aynı referans",
+    "keepBalances": "Bugünkü bakiyeleri koru",
+    "keepBalancesHint": "İçe aktarılan işlemler geçmiş sayılır ve güncel bakiyelerini değiştirmez – geçmiş aylar için ideal",
+    "rows": "Satırlar",
+    "ready": "İçe aktarılacak",
+    "duplicates": "Zaten var",
+    "errors": "Hatalar",
+    "newAccounts": "Yeni hesaplar",
+    "newCategories": "Yeni kategoriler",
+    "errorsTitle": "Bu satırlar atlanacak",
+    "line": "Satır {{line}}",
+    "duplicate": "mevcut",
+    "imported_one": "{{count}} işlem içe aktarıldı",
+    "imported_other": "{{count}} işlem içe aktarıldı",
+    "skipped_one": "{{count}} atlandı",
+    "skipped_other": "{{count}} atlandı",
+    "importCount_one": "{{count}} işlemi içe aktar",
+    "importCount_other": "{{count}} işlemi içe aktar",
+    "rowError": {
+      "invalid_date": "geçersiz tarih “{{value}}”",
+      "invalid_amount": "geçersiz tutar “{{value}}”",
+      "zero_amount": "tutar 0",
+      "no_account": "hesap yok",
+      "unknown_type": "bilinmeyen tür “{{value}}”",
+      "missing_target": "hedef hesabı olmayan transfer",
+      "same_target": "aynı hesaba transfer “{{value}}”"
+    }
+  },
+  "forecastView": {
+    "allAccounts": "Tüm hesaplar",
+    "accounts_one": "{{count}} hesap",
+    "accounts_other": "{{count}} hesap",
+    "split": "Hesap başına",
+    "sum": "Toplam",
+    "mode": "Görünüm",
+    "hint": "Toplam, seçilen hesaplar için tek bir eğri çizer; hesap başına ise her biri için ayrı bir eğri."
+  },
+  "budgetPlan": {
+    "off": "Bütçeler planlanmadı",
+    "all": "Tüm bütçeler planlandı",
+    "some": "{{total}} bütçeden {{count}} tanesi planlandı",
+    "title": "Bütçeleri plana dahil et",
+    "hint": "Planlanan bütçeler aylık planda, tahminde ve günlük harcanabilir tutarda beklenen gider sayılır. Bu kategorilerdeki geçmiş harcamalar iki kez tahmin edilmez."
   }
 }

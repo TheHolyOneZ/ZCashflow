@@ -2,6 +2,8 @@ const ua = typeof navigator === "undefined" ? "" : navigator.userAgent;
 
 export const isMac = /Mac|iPhone|iPad/.test(ua);
 
+export const isAndroid = /Android/.test(ua);
+
 export const os: "mac" | "windows" | "linux" | "mobile" = /Android|iPhone|iPad/.test(ua)
   ? "mobile"
   : isMac

@@ -14,6 +14,7 @@ import {
   RotateCcw,
   ScanLine,
   SlidersHorizontal,
+  Upload,
   type LucideIcon,
 } from "lucide-react";
 import { Card, PageHeader } from "@/components/ui/misc";
@@ -26,6 +27,9 @@ import { DemoControls } from "./DemoControls";
 import { AppearanceSettings } from "./AppearanceSettings";
 import { DashboardSettings } from "./DashboardSettings";
 import { ResetData } from "./ResetData";
+import { ExportDialog } from "@/features/data/ExportDialog";
+import { ImportDialog } from "@/features/data/ImportDialog";
+import { pickSavePath } from "@/features/data/export";
 import { api, planning } from "@/lib/api";
 import { isoDate } from "@/lib/dates";
 import { languages } from "@/lib/i18n";
@@ -82,6 +86,8 @@ export function SettingsPage() {
   const qc = useQueryClient();
   const settings = useSettings().data ?? {};
   const [active, setActive] = useState("general");
+  const [exportOpen, setExportOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const lockUntil = useRef(0);
 
@@ -113,21 +119,12 @@ export function SettingsPage() {
     }
   }
 
-  async function saveFile(kind: "csv" | "backup") {
+  async function saveBackup() {
     try {
-      const { save } = await import("@tauri-apps/plugin-dialog");
-      const path = await save({
-        defaultPath: kind === "csv" ? `zcashflow-${isoDate()}.csv` : `zcashflow-backup-${isoDate()}.db`,
-        filters: kind === "csv" ? [{ name: "CSV", extensions: ["csv"] }] : [{ name: "SQLite", extensions: ["db"] }],
-      });
+      const path = await pickSavePath(`zcashflow-backup-${isoDate()}.db`, { name: "SQLite", extensions: ["db"] });
       if (!path) return;
-      if (kind === "csv") {
-        const n = await planning.exportCsv(path);
-        toast(t("settings.exported", { count: n }));
-      } else {
-        await planning.backupDatabase(path);
-        toast(t("settings.backedUp"));
-      }
+      await planning.backupDatabase(path);
+      toast(t("settings.backedUp"));
     } catch (e) {
       toast(errorMessage(e), "error");
     }
@@ -234,17 +231,23 @@ export function SettingsPage() {
           <Section id="data" icon={Database} title={t("settings.data")} hint={t("settings.dataHint")}>
             <div className="flex flex-col gap-3">
               <div className="flex flex-wrap gap-2">
-                <Button onClick={() => saveFile("csv")}>
+                <Button onClick={() => setExportOpen(true)}>
                   <Download className="size-4" />
                   {t("settings.exportCsv")}
                 </Button>
-                <Button onClick={() => saveFile("backup")}>
+                <Button onClick={() => setImportOpen(true)}>
+                  <Upload className="size-4" />
+                  {t("settings.importCsv")}
+                </Button>
+                <Button onClick={saveBackup}>
                   <HardDriveDownload className="size-4" />
                   {t("settings.backup")}
                 </Button>
               </div>
               <DemoControls />
             </div>
+            <ExportDialog open={exportOpen} onOpenChange={setExportOpen} />
+            <ImportDialog open={importOpen} onOpenChange={setImportOpen} />
           </Section>
 
           <Section id="reset" icon={RotateCcw} title={t("reset.title")} hint={t("reset.hint")}>

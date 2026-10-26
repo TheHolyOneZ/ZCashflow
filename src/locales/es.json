@@ -145,7 +145,8 @@
     "cashflow": "Flujo de caja – últimos 6 meses",
     "upcoming": "Próximos 14 días",
     "noUpcoming": "No hay pagos previstos. Añade recurrentes para verlos aquí.",
-    "cashflowEmpty": "En cuanto añadas movimientos, verás aquí los ingresos y gastos de los últimos meses."
+    "cashflowEmpty": "En cuanto añadas movimientos, verás aquí los ingresos y gastos de los últimos meses.",
+    "budgetsReserved": "{{amount}} reservados para presupuestos"
   },
   "palette": {
     "placeholder": "Añadir rápido («Kebab 8,50») o buscar …",
@@ -179,11 +180,9 @@
     "daysBefore_one": "{{count}} día antes",
     "daysBefore_other": "{{count}} días antes",
     "data": "Datos",
-    "dataHint": "Todo se queda en tu dispositivo. Exporta para hojas de cálculo o guarda una copia completa de la base de datos.",
-    "exportCsv": "Exportar como CSV",
+    "dataHint": "Todo se queda en tu dispositivo. Exporta para hojas de cálculo, importa extractos bancarios o guarda una copia de toda la base de datos.",
+    "exportCsv": "Exportar datos",
     "backup": "Guardar copia de seguridad",
-    "exported_one": "{{count}} movimiento exportado",
-    "exported_other": "{{count}} movimientos exportados",
     "backedUp": "Copia de seguridad guardada",
     "demo": "Datos de demostración",
     "demoHint": "Seis meses de datos de ejemplo con suscripciones, préstamos, metas y presupuestos – ideal para explorar.",
@@ -194,7 +193,7 @@
     "general": "General",
     "subtitle": "Todo a tu gusto – se aplica a este dispositivo.",
     "daysBefore_many": "{{count}} días antes",
-    "exported_many": "{{count}} movimientos exportados"
+    "importCsv": "Importar CSV"
   },
   "errors": {
     "db": "Error de base de datos",
@@ -206,7 +205,11 @@
     "pageTitle": "Algo ha salido mal aquí",
     "pageHint": "Tus datos están a salvo – solo esta vista no se pudo mostrar.",
     "retry": "Reintentar",
-    "unreachable": "Dispositivo no accesible. ¿ZCashflow está abierto en el otro dispositivo, ambos están en la misma wifi y el cortafuegos permite el puerto 47811?"
+    "unreachable": "Dispositivo no accesible. ¿ZCashflow está abierto en el otro dispositivo, ambos están en la misma wifi y el cortafuegos permite el puerto 47811?",
+    "unsupported_heic": "Las fotos HEIC/HEIF aún no se pueden leer. Guarda la foto como JPEG (iPhone: Ajustes → Cámara → Formatos → Más compatible).",
+    "unsupported_pdf_without_image": "Este PDF no contiene ninguna imagen escaneada. Guarda el escaneo como JPEG o como PDF de imagen.",
+    "unsupported_missing_columns": "El archivo necesita al menos una columna de fecha y otra de importe. Usa la plantilla de ZCashflow o cambia los encabezados.",
+    "unsupported_empty_file": "El archivo está vacío."
   },
   "freq": {
     "daily": "diario",
@@ -282,7 +285,12 @@
     "forecastNote": "La previsión incluye gastos diarios de unos {{amount}} al día (media de los últimos 90 días).",
     "allPayments_many": "{{count}} pagos previstos",
     "days_many": "{{count}} días",
-    "months_many": "{{count}} meses"
+    "months_many": "{{count}} meses",
+    "budgets": "Presupuestos",
+    "budgetsHintRest": "lo que queda este mes",
+    "variableOther": "Otros gastos del día a día",
+    "forecastBudgets": "Se incluyen los presupuestos planificados.",
+    "forecastSubset": "Solo se muestran las cuentas elegidas."
   },
   "recurring": {
     "subtitle": "Nómina, alquiler, suscripciones – todo lo que entra y sale con regularidad.",
@@ -436,7 +444,15 @@
     "edit": "Editar categoría",
     "kind": "Tipo",
     "both": "Ambos",
-    "parent": "Categoría superior"
+    "parent": "Categoría superior",
+    "moved": "Categoría movida",
+    "dropTopLevel": "Suelta aquí para convertirla en categoría principal",
+    "dragHint": "Arrastra una categoría por su asa sobre otra para convertirla en subcategoría – con tantos niveles como quieras.",
+    "addSub": "Añadir subcategoría",
+    "moveTop": "Convertir en categoría principal",
+    "dragHandle": "Mover",
+    "collapse": "Contraer",
+    "expand": "Expandir"
   },
   "insights": {
     "severity": {
@@ -502,7 +518,25 @@
     "imported_many": "{{count}} recibos en la bandeja",
     "inbox_many": "Bandeja · {{count}} recibos",
     "matchFound_many": "{{count}} movimientos coincidentes encontrados",
-    "attached_many": "{{count}} recibos"
+    "attached_many": "{{count}} recibos",
+    "rest": "Resto",
+    "splitInvalid": "Los artículos no cuadran con el total. Revisa los importes – cada categoría necesita más de 0.",
+    "items_one": "{{count}} artículo reconocido",
+    "items_many": "{{count}} artículos reconocidos",
+    "items_other": "{{count}} artículos reconocidos",
+    "itemsHint": "Divide el ticket y da a cada artículo su propia categoría",
+    "splitItems": "Dividir en artículos",
+    "noItems": "No se reconocieron artículos – añádelos tú.",
+    "itemName": "Artículo",
+    "addItem": "Añadir artículo",
+    "itemsSum": "Artículos:",
+    "restToMain": "Resto a {{category}}:",
+    "combine": "Agrupar artículos de la misma categoría",
+    "combineHint": "Un movimiento por categoría en lugar de uno por artículo",
+    "bookParts_one": "Registrar {{count}} movimiento",
+    "bookParts_many": "Registrar {{count}} movimientos",
+    "bookParts_other": "Registrar {{count}} movimientos",
+    "sameAsMain": "↑ {{category}}"
   },
   "ocr": {
     "title": "Reconocimiento de recibos e IA",
@@ -617,14 +651,18 @@
     "showAmounts": "Mostrar importes",
     "minimize": "Minimizar",
     "maximize": "Maximizar",
-    "devicesLive_many": "{{count}} dispositivos conectados"
+    "devicesLive_many": "{{count}} dispositivos conectados",
+    "restore": "Restaurar",
+    "quit": "Salir",
+    "fullscreenHint": "F11 para pantalla completa"
   },
   "shortcuts": {
     "title": "Atajos de teclado",
     "general": "General",
     "navigate": "Navegación",
     "palette": "Búsqueda y entrada rápida",
-    "privacy": "Ocultar/mostrar importes"
+    "privacy": "Ocultar/mostrar importes",
+    "fullscreen": "Pantalla completa"
   },
   "appearance": {
     "title": "Apariencia",
@@ -874,5 +912,112 @@
     "kofiHint": "Un café en Ko-fi ayuda a que ZCashflow siga siendo gratis",
     "license": "Licencia",
     "privacy": "sin nube, sin rastreadores"
+  },
+  "dataTransfer": {
+    "exportTitle": "Exportar datos",
+    "exportHint": "Elige qué exportar. Se abre en Excel, LibreOffice o Numbers.",
+    "what": "Qué",
+    "everything": "Todo",
+    "dataset": {
+      "transactions": "Movimientos",
+      "accounts": "Cuentas",
+      "categories": "Categorías",
+      "recurring": "Pagos recurrentes",
+      "budgets": "Presupuestos",
+      "goals": "Metas de ahorro",
+      "debts": "Deudas"
+    },
+    "period": "Periodo (movimientos)",
+    "periodAll": "Todo",
+    "periodYear": "Este año",
+    "periodLast12": "Últimos 12 meses",
+    "periodCustom": "Personalizado",
+    "format": "Formato",
+    "formatExcel": "Excel (;)",
+    "formatStandard": "Estándar (,)",
+    "formatExcelHint": "punto y coma, coma decimal – para Excel europeo",
+    "formatStandardHint": "coma, punto decimal – para Excel en inglés y otras apps",
+    "zipNote": "Varias áreas se guardan como un archivo ZIP con un CSV por área.",
+    "export": "Exportar",
+    "exported": "Exportación guardada",
+    "exportedZip_one": "Exportación guardada ({{count}} archivo)",
+    "exportedZip_many": "Exportación guardada ({{count}} archivos)",
+    "exportedZip_other": "Exportación guardada ({{count}} archivos)",
+    "exportSelection": "Exportar la lista actual como CSV",
+    "exportRecurring": "Exportar pagos recurrentes como CSV",
+    "importTitle": "Importar CSV",
+    "importHint": "Importa movimientos desde la plantilla de ZCashflow o directamente desde el CSV de tu banco.",
+    "chooseFile": "Elegir archivo CSV",
+    "otherFile": "Otro archivo",
+    "template": "Descargar plantilla",
+    "templateSaved": "Plantilla guardada",
+    "columnsTitle": "¿Qué columnas se reconocen?",
+    "columnsNote": "Solo la fecha y el importe son obligatorios. También valen nombres de columna en tu idioma (p. ej. Fecha, Importe, Concepto), así que a menudo puedes importar el CSV del banco tal cual. Los importes negativos son gastos.",
+    "col": {
+      "date": "Fecha – 2026-10-26, 26.10.2026 o 26/10/2026",
+      "type": "income, expense o transfer – opcional, si no se deduce del signo",
+      "amount": "Importe – -12,50, 12.50 o 1.234,56",
+      "currency": "Código de moneda como EUR – opcional",
+      "account": "Nombre de la cuenta – vacío usa la cuenta por defecto, los nombres nuevos se crean",
+      "to_account": "Cuenta de destino – solo en transferencias",
+      "category": "Categoría, subcategorías con > p. ej. Comida > Supermercado – se crea si no existe",
+      "counterparty": "Comercio, beneficiario u ordenante",
+      "title": "Descripción o concepto",
+      "note": "Nota",
+      "tags": "Etiquetas separadas por espacios",
+      "reference": "Referencia de ZCashflow – reconoce movimientos que ya existen"
+    },
+    "defaultAccount": "Cuenta para filas sin cuenta",
+    "defaultAccountHint": "p. ej. tu cuenta corriente en un extracto bancario",
+    "autoCategory": "Sugerir categorías",
+    "autoCategoryHint": "Las filas sin categoría reciben una aprendida de tu historial o reconocida por el comercio",
+    "skipDuplicates": "Omitir movimientos existentes",
+    "skipDuplicatesHint": "Misma fecha, importe, cuenta y descripción – o la misma referencia",
+    "keepBalances": "Mantener los saldos de hoy",
+    "keepBalancesHint": "Los movimientos importados cuentan como historial y no cambian tus saldos actuales – ideal para meses pasados",
+    "rows": "Filas",
+    "ready": "Para importar",
+    "duplicates": "Ya existen",
+    "errors": "Errores",
+    "newAccounts": "Cuentas nuevas",
+    "newCategories": "Categorías nuevas",
+    "errorsTitle": "Estas filas se omiten",
+    "line": "Línea {{line}}",
+    "duplicate": "existe",
+    "imported_one": "{{count}} movimiento importado",
+    "imported_many": "{{count}} movimientos importados",
+    "imported_other": "{{count}} movimientos importados",
+    "skipped_one": "{{count}} omitido",
+    "skipped_many": "{{count}} omitidos",
+    "skipped_other": "{{count}} omitidos",
+    "importCount_one": "Importar {{count}} movimiento",
+    "importCount_many": "Importar {{count}} movimientos",
+    "importCount_other": "Importar {{count}} movimientos",
+    "rowError": {
+      "invalid_date": "fecha no válida «{{value}}»",
+      "invalid_amount": "importe no válido «{{value}}»",
+      "zero_amount": "el importe es 0",
+      "no_account": "sin cuenta",
+      "unknown_type": "tipo desconocido «{{value}}»",
+      "missing_target": "transferencia sin cuenta de destino",
+      "same_target": "transferencia a la misma cuenta «{{value}}»"
+    }
+  },
+  "forecastView": {
+    "allAccounts": "Todas las cuentas",
+    "accounts_one": "{{count}} cuenta",
+    "accounts_many": "{{count}} cuentas",
+    "accounts_other": "{{count}} cuentas",
+    "split": "Por cuenta",
+    "sum": "Suma",
+    "mode": "Vista",
+    "hint": "Suma dibuja una curva para las cuentas elegidas; por cuenta, una curva para cada una."
+  },
+  "budgetPlan": {
+    "off": "Presupuestos sin planificar",
+    "all": "Todos los presupuestos planificados",
+    "some": "{{count}} de {{total}} presupuestos planificados",
+    "title": "Incluir presupuestos en el plan",
+    "hint": "Los presupuestos planificados cuentan como gasto previsto en el plan mensual, la previsión y el disponible por día. El gasto pasado de esas categorías no se estima dos veces."
   }
 }

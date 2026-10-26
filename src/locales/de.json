@@ -144,7 +144,8 @@
     "cashflow": "Cashflow – letzte 6 Monate",
     "upcoming": "Nächste 14 Tage",
     "noUpcoming": "Keine geplanten Zahlungen. Leg wiederkehrende Buchungen an, damit hier etwas steht.",
-    "cashflowEmpty": "Sobald du Buchungen erfasst, siehst du hier Einnahmen und Ausgaben der letzten Monate."
+    "cashflowEmpty": "Sobald du Buchungen erfasst, siehst du hier Einnahmen und Ausgaben der letzten Monate.",
+    "budgetsReserved": "{{amount}} für Budgets reserviert"
   },
   "palette": {
     "placeholder": "Schnell erfassen („Döner 8,50“) oder suchen …",
@@ -178,11 +179,9 @@
     "daysBefore_one": "{{count}} Tag vorher",
     "daysBefore_other": "{{count}} Tage vorher",
     "data": "Daten",
-    "dataHint": "Alles bleibt lokal auf deinem Gerät. Exportiere für Excel oder sichere die komplette Datenbank.",
-    "exportCsv": "Als CSV exportieren",
+    "dataHint": "Alles bleibt lokal auf deinem Gerät. Exportiere für Excel, importiere Kontoauszüge oder sichere die komplette Datenbank.",
+    "exportCsv": "Daten exportieren",
     "backup": "Backup speichern",
-    "exported_one": "{{count}} Buchung exportiert",
-    "exported_other": "{{count}} Buchungen exportiert",
     "backedUp": "Backup gespeichert",
     "demo": "Demo-Daten",
     "demoHint": "Sechs Monate Beispieldaten mit Abos, Krediten, Zielen und Budgets – ideal zum Ausprobieren.",
@@ -191,7 +190,8 @@
     "demoRemove": "Demo-Daten entfernen",
     "demoRemoved": "Demo-Daten entfernt",
     "general": "Allgemein",
-    "subtitle": "Alles so, wie du es magst – gilt für dieses Gerät."
+    "subtitle": "Alles so, wie du es magst – gilt für dieses Gerät.",
+    "importCsv": "CSV importieren"
   },
   "errors": {
     "db": "Datenbankfehler",
@@ -203,7 +203,11 @@
     "pageTitle": "Hier ist etwas schiefgelaufen",
     "pageHint": "Deine Daten sind sicher – nur diese Ansicht konnte nicht angezeigt werden.",
     "retry": "Erneut versuchen",
-    "unreachable": "Gerät nicht erreichbar. Läuft ZCashflow auf dem anderen Gerät, sind beide im selben WLAN und lässt die Firewall Port 47811 durch?"
+    "unreachable": "Gerät nicht erreichbar. Läuft ZCashflow auf dem anderen Gerät, sind beide im selben WLAN und lässt die Firewall Port 47811 durch?",
+    "unsupported_heic": "HEIC/HEIF-Fotos können noch nicht gelesen werden. Bitte speichere das Foto als JPEG (iPhone: Einstellungen → Kamera → Formate → Maximale Kompatibilität).",
+    "unsupported_pdf_without_image": "Dieses PDF enthält kein gescanntes Bild. Bitte speichere den Scan als JPEG oder als Bild-PDF.",
+    "unsupported_missing_columns": "Die Datei braucht mindestens eine Spalte für Datum und Betrag. Nutze die ZCashflow-Vorlage oder benenne die Spaltenüberschriften um.",
+    "unsupported_empty_file": "Die Datei ist leer."
   },
   "freq": {
     "daily": "täglich",
@@ -268,7 +272,12 @@
     "variableHintRest": "anteilig für die restlichen Tage",
     "balanceToday": "Kontostand heute",
     "restOfMonth": "Rest von {{month}}",
-    "forecastNote": "Prognose inkl. Alltagsausgaben von ca. {{amount}} pro Tag (Ø der letzten 90 Tage)."
+    "forecastNote": "Prognose inkl. Alltagsausgaben von ca. {{amount}} pro Tag (Ø der letzten 90 Tage).",
+    "budgets": "Budgets",
+    "budgetsHintRest": "was diesen Monat noch übrig ist",
+    "variableOther": "Übrige laufende Ausgaben",
+    "forecastBudgets": "Eingeplante Budgets sind enthalten.",
+    "forecastSubset": "Es werden nur die gewählten Konten gezeigt."
   },
   "recurring": {
     "subtitle": "Gehalt, Miete, Abos – alles, was regelmäßig kommt und geht.",
@@ -416,7 +425,15 @@
     "edit": "Kategorie bearbeiten",
     "kind": "Art",
     "both": "Beides",
-    "parent": "Übergeordnet"
+    "parent": "Übergeordnet",
+    "moved": "Kategorie verschoben",
+    "dropTopLevel": "Hier ablegen, um sie zur Hauptkategorie zu machen",
+    "dragHint": "Zieh eine Kategorie am Griff auf eine andere, um sie zur Unterkategorie zu machen – beliebig viele Ebenen tief.",
+    "addSub": "Unterkategorie hinzufügen",
+    "moveTop": "Zur Hauptkategorie machen",
+    "dragHandle": "Verschieben",
+    "collapse": "Einklappen",
+    "expand": "Ausklappen"
   },
   "insights": {
     "severity": {
@@ -477,7 +494,23 @@
     "attached_other": "{{count}} Belege",
     "attach": "Beleg anhängen",
     "dropTitle": "Beleg hier ablegen",
-    "dropHint": "Wird sofort lokal erkannt"
+    "dropHint": "Wird sofort lokal erkannt",
+    "rest": "Rest",
+    "splitInvalid": "Die Einzelposten passen nicht zur Summe. Prüfe die Beträge – jede Kategorie braucht mehr als 0.",
+    "items_one": "{{count}} Einzelposten erkannt",
+    "items_other": "{{count}} Einzelposten erkannt",
+    "itemsHint": "Beleg aufteilen und jedem Posten eine eigene Kategorie geben",
+    "splitItems": "In Einzelposten aufteilen",
+    "noItems": "Keine Einzelposten erkannt – füge sie selbst hinzu.",
+    "itemName": "Posten",
+    "addItem": "Posten hinzufügen",
+    "itemsSum": "Posten:",
+    "restToMain": "Rest an {{category}}:",
+    "combine": "Posten gleicher Kategorie zusammenfassen",
+    "combineHint": "Eine Buchung pro Kategorie statt pro Posten",
+    "bookParts_one": "{{count}} Buchung anlegen",
+    "bookParts_other": "{{count}} Buchungen anlegen",
+    "sameAsMain": "↑ {{category}}"
   },
   "ocr": {
     "title": "Belegerkennung & KI",
@@ -590,14 +623,18 @@
     "hideAmounts": "Beträge verbergen",
     "showAmounts": "Beträge zeigen",
     "minimize": "Minimieren",
-    "maximize": "Maximieren"
+    "maximize": "Maximieren",
+    "restore": "Wiederherstellen",
+    "quit": "Beenden",
+    "fullscreenHint": "F11 für Vollbild"
   },
   "shortcuts": {
     "title": "Tastenkürzel",
     "general": "Allgemein",
     "navigate": "Navigation",
     "palette": "Suche & Schnellerfassung",
-    "privacy": "Beträge verbergen/zeigen"
+    "privacy": "Beträge verbergen/zeigen",
+    "fullscreen": "Vollbild"
   },
   "appearance": {
     "title": "Darstellung",
@@ -842,5 +879,107 @@
     "kofiHint": "Ein Kaffee über Ko-fi hilft, ZCashflow kostenlos zu halten",
     "license": "Lizenz",
     "privacy": "keine Cloud, keine Tracker"
+  },
+  "dataTransfer": {
+    "exportTitle": "Daten exportieren",
+    "exportHint": "Wähle aus, was exportiert wird. Öffnet sich in Excel, LibreOffice oder Numbers.",
+    "what": "Was",
+    "everything": "Alles",
+    "dataset": {
+      "transactions": "Buchungen",
+      "accounts": "Konten",
+      "categories": "Kategorien",
+      "recurring": "Wiederkehrende Zahlungen",
+      "budgets": "Budgets",
+      "goals": "Sparziele",
+      "debts": "Schulden"
+    },
+    "period": "Zeitraum (Buchungen)",
+    "periodAll": "Alle",
+    "periodYear": "Dieses Jahr",
+    "periodLast12": "Letzte 12 Monate",
+    "periodCustom": "Eigener",
+    "format": "Format",
+    "formatExcel": "Excel (;)",
+    "formatStandard": "Standard (,)",
+    "formatExcelHint": "Semikolon, Dezimalkomma – für deutsches Excel",
+    "formatStandardHint": "Komma, Dezimalpunkt – für englisches Excel und andere Programme",
+    "zipNote": "Mehrere Bereiche werden als eine ZIP-Datei mit je einer CSV-Datei gespeichert.",
+    "export": "Exportieren",
+    "exported": "Export gespeichert",
+    "exportedZip_one": "Export gespeichert ({{count}} Datei)",
+    "exportedZip_other": "Export gespeichert ({{count}} Dateien)",
+    "exportSelection": "Aktuelle Liste als CSV exportieren",
+    "exportRecurring": "Wiederkehrende Zahlungen als CSV exportieren",
+    "importTitle": "CSV importieren",
+    "importHint": "Importiere Buchungen aus der ZCashflow-Vorlage oder direkt aus dem CSV-Export deiner Bank.",
+    "chooseFile": "CSV-Datei wählen",
+    "otherFile": "Andere Datei",
+    "template": "Vorlage herunterladen",
+    "templateSaved": "Vorlage gespeichert",
+    "columnsTitle": "Welche Spalten werden erkannt?",
+    "columnsNote": "Nur Datum und Betrag sind Pflicht. Deutsche Spaltennamen gehen auch (z. B. Buchungstag, Betrag, Verwendungszweck, Empfänger) – ein Bank-CSV lässt sich daher oft direkt einlesen. Negative Beträge sind Ausgaben.",
+    "col": {
+      "date": "Datum – 2026-10-26, 26.10.2026 oder 26.10.26",
+      "type": "income, expense oder transfer (auch Einnahme/Ausgabe/Umbuchung) – optional, sonst nach Vorzeichen",
+      "amount": "Betrag – -12,50, 12.50 oder 1.234,56",
+      "currency": "Währungscode wie EUR – optional",
+      "account": "Kontoname – leer nimmt das Standardkonto, unbekannte Namen werden angelegt",
+      "to_account": "Zielkonto – nur bei Umbuchungen",
+      "category": "Kategorie, Unterkategorien mit > z. B. Essen > Lebensmittel – wird angelegt, falls neu",
+      "counterparty": "Händler, Empfänger oder Auftraggeber",
+      "title": "Beschreibung oder Verwendungszweck",
+      "note": "Notiz",
+      "tags": "Schlagwörter, mit Leerzeichen getrennt",
+      "reference": "ZCashflow-Referenz – erkennt bereits vorhandene Buchungen"
+    },
+    "defaultAccount": "Konto für Zeilen ohne Konto",
+    "defaultAccountHint": "z. B. dein Girokonto beim Bank-Export",
+    "autoCategory": "Kategorien vorschlagen",
+    "autoCategoryHint": "Zeilen ohne Kategorie bekommen eine aus deinem Verlauf oder anhand des Händlernamens",
+    "skipDuplicates": "Vorhandene Buchungen überspringen",
+    "skipDuplicatesHint": "Gleiches Datum, Betrag, Konto und Beschreibung – oder gleiche Referenz",
+    "keepBalances": "Heutige Kontostände beibehalten",
+    "keepBalancesHint": "Importierte Buchungen zählen als Verlauf und ändern deine aktuellen Kontostände nicht – ideal für vergangene Monate",
+    "rows": "Zeilen",
+    "ready": "Zu importieren",
+    "duplicates": "Schon vorhanden",
+    "errors": "Fehler",
+    "newAccounts": "Neue Konten",
+    "newCategories": "Neue Kategorien",
+    "errorsTitle": "Diese Zeilen werden übersprungen",
+    "line": "Zeile {{line}}",
+    "duplicate": "vorhanden",
+    "imported_one": "{{count}} Buchung importiert",
+    "imported_other": "{{count}} Buchungen importiert",
+    "skipped_one": "{{count}} übersprungen",
+    "skipped_other": "{{count}} übersprungen",
+    "importCount_one": "{{count}} Buchung importieren",
+    "importCount_other": "{{count}} Buchungen importieren",
+    "rowError": {
+      "invalid_date": "ungültiges Datum „{{value}}“",
+      "invalid_amount": "ungültiger Betrag „{{value}}“",
+      "zero_amount": "Betrag ist 0",
+      "no_account": "kein Konto",
+      "unknown_type": "unbekannter Typ „{{value}}“",
+      "missing_target": "Umbuchung ohne Zielkonto",
+      "same_target": "Umbuchung auf dasselbe Konto „{{value}}“"
+    }
+  },
+  "forecastView": {
+    "allAccounts": "Alle Konten",
+    "accounts_one": "{{count}} Konto",
+    "accounts_other": "{{count}} Konten",
+    "split": "Je Konto",
+    "sum": "Summe",
+    "mode": "Darstellung",
+    "hint": "Summe zeigt eine Kurve für die gewählten Konten, „Je Konto“ eine eigene Kurve pro Konto."
+  },
+  "budgetPlan": {
+    "off": "Budgets nicht eingeplant",
+    "all": "Alle Budgets eingeplant",
+    "some": "{{count}} von {{total}} Budgets eingeplant",
+    "title": "Budgets in die Vorschau einbeziehen",
+    "hint": "Eingeplante Budgets zählen als erwartete Ausgaben im Monatsplan, in der Prognose und bei „Frei pro Tag“. Bisherige Ausgaben dieser Kategorien werden dann nicht doppelt geschätzt."
   }
 }

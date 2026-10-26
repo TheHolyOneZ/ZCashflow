@@ -3,7 +3,7 @@ use std::time::Duration;
 use base64::Engine;
 use serde_json::{json, Value};
 
-use super::extract::Extracted;
+use super::extract::{Extracted, LineItem};
 use crate::error::{AppError, AppResult};
 
 #[derive(Debug, Clone)]
@@ -17,8 +17,10 @@ pub struct LlmConfig {
 const SYSTEM: &str = "You extract data from shop receipts. Reply with JSON only: \
 {\"merchant\": string|null, \"date\": \"YYYY-MM-DD\"|null, \"total\": number|null, \
 \"currency\": \"ISO 4217\"|null, \"category\": one of [groceries, food, housing, utilities, \
-transport, subscriptions, shopping, health, leisure, other]|null}. \
-`total` is the final amount paid, not subtotal or tax.";
+transport, subscriptions, shopping, health, leisure, other]|null, \
+\"items\": [{\"name\": string, \"amount\": number, \"category\": same choices|null}]}. \
+`total` is the final amount paid, not subtotal or tax. `items` lists every purchased line with its final price; \
+discounts are negative amounts.";
 
 fn endpoint(url: &str) -> String {
     let base = url.trim_end_matches('/');
@@ -77,12 +79,34 @@ fn parse_answer(text: &str) -> AppResult<Extracted> {
         _ => None,
     };
     let date = s("date").filter(|d| chrono::NaiveDate::parse_from_str(d, "%Y-%m-%d").is_ok());
+    let number = |v: &Value| match v {
+        Value::Number(n) => n.as_f64(),
+        Value::String(s) => s.replace(',', ".").trim().parse().ok(),
+        _ => None,
+    };
+    let items = v["items"]
+        .as_array()
+        .map(|list| {
+            list.iter()
+                .filter_map(|it| {
+                    let name = it["name"].as_str()?.trim().to_owned();
+                    let amount = (number(&it["amount"])? * 100.0).round() as i64;
+                    (!name.is_empty() && amount != 0).then(|| LineItem {
+                        name,
+                        amount_minor: amount,
+                        category_hint: it["category"].as_str().map(str::to_owned).filter(|c| !c.is_empty()),
+                    })
+                })
+                .collect()
+        })
+        .unwrap_or_default();
     Ok(Extracted {
         merchant: s("merchant"),
         date,
         total_minor: total.filter(|t| *t > 0.0).map(|t| (t * 100.0).round() as i64),
         currency: s("currency").map(|c| c.to_uppercase()).filter(|c| c.len() == 3),
         category_hint: s("category"),
+        items,
         source: "llm".into(),
     })
 }
@@ -109,6 +133,7 @@ pub fn merge(base: Extracted, llm: Extracted) -> Extracted {
         total_minor: llm.total_minor.or(base.total_minor),
         currency: llm.currency.or(base.currency),
         category_hint: llm.category_hint,
+        items: if llm.items.is_empty() { base.items } else { llm.items },
         source: "llm".into(),
     }
 }
@@ -132,5 +157,9 @@ mod tests {
         let e = parse_answer("{\"merchant\":null,\"date\":\"06.10.2026\",\"total\":12.5}").unwrap();
         assert_eq!(e.date, None);
         assert_eq!(e.total_minor, Some(1250));
+        let e = parse_answer("{\"total\":3.1,\"items\":[{\"name\":\"Milch\",\"amount\":1.19,\"category\":\"groceries\"},{\"name\":\"Rabatt\",\"amount\":\"-0,20\"},{\"name\":\"\",\"amount\":1}]}").unwrap();
+        assert_eq!(e.items.len(), 2);
+        assert_eq!(e.items[0].category_hint.as_deref(), Some("groceries"));
+        assert_eq!(e.items[1].amount_minor, -20);
     }
 }

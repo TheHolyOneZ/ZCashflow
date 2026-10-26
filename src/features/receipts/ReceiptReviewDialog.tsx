@@ -1,17 +1,19 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
-import { ChevronDown, Link2, RefreshCw, Sparkles } from "lucide-react";
+import { ChevronDown, Link2, ListTree, Plus, RefreshCw, Sparkles, X } from "lucide-react";
 import { Dialog } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { DateInput } from "@/components/ui/date-input";
 import { Field, Input } from "@/components/ui/field";
-import { Badge, ConfirmDeleteButton, Money, MoneyInput } from "@/components/ui/extra";
+import { Badge, ConfirmDeleteButton, Money, MoneyInput, parseSignedMoney, Switch } from "@/components/ui/extra";
 import { AccountSelect, CategorySelect, CounterpartyInput } from "@/components/selects";
-import { api, receipts, type Attachment, type Transaction } from "@/lib/api";
+import { receipts, type Attachment, type Category, type LineItem, type Transaction } from "@/lib/api";
 import { cn } from "@/lib/cn";
 import { formatDay, isoDate } from "@/lib/dates";
 import { activeLocale } from "@/lib/i18n";
-import { minorToInput, parseMoney } from "@/lib/money";
+import { formatMoney, minorToInput, parseMoney } from "@/lib/money";
+import { displayName } from "@/lib/i18n";
+import { CheckRow } from "@/features/data/CheckRow";
 import { useAccounts, useAppMutation, useCategories, useTransactions } from "@/lib/queries";
 import { useUi } from "@/stores/ui";
 import { Lightbox, ReceiptThumb } from "./receipt-ui";
@@ -43,6 +45,56 @@ function useMatches(amountMinor: number | null, date: string | null) {
   );
 }
 
+interface ItemRow {
+  key: number;
+  name: string;
+  amount: string;
+  categoryId: string;
+}
+
+let itemSeq = 0;
+
+function toRows(items: LineItem[] | undefined, categories: Category[], currency: string, loc: string): ItemRow[] {
+  return (items ?? []).map((i) => ({
+    key: ++itemSeq,
+    name: i.name,
+    amount: (i.amountMinor < 0 ? "-" : "") + minorToInput(Math.abs(i.amountMinor), currency, loc),
+    categoryId: (i.categoryHint && categories.find((c) => c.systemKey === `category.${i.categoryHint}`)?.id) || "",
+  }));
+}
+
+export interface SplitPart {
+  categoryId: string | null;
+  amountMinor: number;
+  note: string | null;
+}
+
+export function splitParts(
+  rows: { name: string; minor: number; categoryId: string }[],
+  totalMinor: number,
+  mainCategory: string,
+  combine: boolean,
+  restLabel: string,
+  money: (minor: number) => string,
+): SplitPart[] | null {
+  const groups = new Map<string, { categoryId: string; minor: number; names: string[] }>();
+  const add = (key: string, categoryId: string, minor: number, label: string) => {
+    const g = groups.get(key) ?? { categoryId, minor: 0, names: [] };
+    g.minor += minor;
+    g.names.push(`${label} ${money(minor)}`);
+    groups.set(key, g);
+  };
+  rows.forEach((r, i) => {
+    const cat = r.categoryId || mainCategory;
+    add(combine ? `c:${cat}` : `i:${i}`, cat, r.minor, r.name.trim() || "?");
+  });
+  const rest = totalMinor - rows.reduce((s, r) => s + r.minor, 0);
+  if (rest !== 0) add(combine ? `c:${mainCategory}` : "rest", mainCategory, rest, restLabel);
+  const parts = [...groups.values()];
+  if (!parts.length || parts.some((p) => p.minor <= 0)) return null;
+  return parts.map((p) => ({ categoryId: p.categoryId || null, amountMinor: p.minor, note: p.names.join(" · ") }));
+}
+
 function ReviewForm({ receipt: initial, onDone }: { receipt: Attachment; onDone: () => void }) {
   const { t } = useTranslation();
   const toast = useUi((s) => s.toast);
@@ -51,7 +103,12 @@ function ReviewForm({ receipt: initial, onDone }: { receipt: Attachment; onDone:
   const [receipt, setReceipt] = useState(initial);
   const ex = receipt.extracted;
   const loc = activeLocale();
-  const [amount, setAmount] = useState(ex?.totalMinor ? minorToInput(ex.totalMinor, ex.currency ?? "EUR", loc) : "");
+  const itemSum = (ex?.items ?? []).reduce((s, i) => s + i.amountMinor, 0);
+  const initialTotal = ex?.totalMinor ?? (itemSum > 0 ? itemSum : null);
+  const [amount, setAmount] = useState(initialTotal ? minorToInput(initialTotal, ex?.currency ?? "EUR", loc) : "");
+  const [split, setSplit] = useState(false);
+  const [combine, setCombine] = useState(true);
+  const [items, setItems] = useState<ItemRow[]>(() => toRows(ex?.items, categories, ex?.currency ?? "EUR", loc));
   const [date, setDate] = useState(ex?.date ?? isoDate());
   const [merchant, setMerchant] = useState(ex?.merchant ?? "");
   const [title, setTitle] = useState("");
@@ -84,20 +141,23 @@ function ReviewForm({ receipt: initial, onDone }: { receipt: Attachment; onDone:
   const amountMinor = parseMoney(amount, currency);
   const matches = useMatches(amountMinor, date);
 
+  const parsedItems = items
+    .map((i) => ({ name: i.name, minor: parseSignedMoney(i.amount, currency), categoryId: i.categoryId }))
+    .filter((i): i is { name: string; minor: number; categoryId: string } => i.minor !== null && i.minor !== 0);
+  const itemsTotal = parsedItems.reduce((s, i) => s + i.minor, 0);
+  const parts =
+    split && amountMinor !== null
+      ? splitParts(parsedItems, amountMinor, categoryId, combine, t("receipts.rest"), (m) => formatMoney(m, currency, loc))
+      : null;
   const book = useAppMutation(
-    async () => {
-      const tx = await api.createTransaction({
-        kind: "expense",
-        amountMinor: amountMinor!,
-        occurredOn: date,
+    (bookParts: SplitPart[]) =>
+      receipts.book(receipt.id, {
+        date,
         accountId,
-        categoryId: categoryId || null,
         counterparty: merchant.trim() || null,
         title: title.trim() || merchant.trim(),
-      });
-      await receipts.link(receipt.id, tx.id);
-      return tx;
-    },
+        parts: bookParts,
+      }),
     { success: t("receipts.booked") },
   );
   const link = useAppMutation((tx: Transaction) => receipts.link(receipt.id, tx.id), { success: t("receipts.linked") });
@@ -110,8 +170,12 @@ function ReviewForm({ receipt: initial, onDone }: { receipt: Attachment; onDone:
       setInvalid(true);
       return;
     }
+    if (split && !parts) {
+      toast(t("receipts.splitInvalid"), "error");
+      return;
+    }
     try {
-      await book.mutateAsync(undefined);
+      await book.mutateAsync(split && parts ? parts : [{ categoryId: categoryId || null, amountMinor, note: null }]);
       onDone();
     } catch {
     }
@@ -125,6 +189,7 @@ function ReviewForm({ receipt: initial, onDone }: { receipt: Attachment; onDone:
       if (x?.totalMinor) setAmount(minorToInput(x.totalMinor, x.currency ?? currency, loc));
       if (x?.date) setDate(x.date);
       if (x?.merchant) setMerchant(x.merchant);
+      if (x?.items?.length) setItems(toRows(x.items, categories, x.currency ?? currency, loc));
       toast(t("receipts.reprocessed"));
     } catch {
     }
@@ -237,6 +302,88 @@ function ReviewForm({ receipt: initial, onDone }: { receipt: Attachment; onDone:
             <AccountSelect id="rc-account" value={accountId} onChange={setAccountId} />
           </Field>
         </div>
+        <div className="rounded-xl border border-border">
+          <div className="flex items-center gap-2.5 px-3 py-2.5">
+            <ListTree className="size-4 shrink-0 text-accent" />
+            <div className="min-w-0 flex-1">
+              <div className="text-[13px] font-medium">{t("receipts.items", { count: items.length })}</div>
+              <div className="text-[11px] text-muted">{t("receipts.itemsHint")}</div>
+            </div>
+            <Switch aria-label={t("receipts.splitItems")} checked={split} onCheckedChange={setSplit} />
+          </div>
+          {split && (
+            <div className="flex flex-col gap-2 border-t border-border p-3">
+              {items.length === 0 && <p className="text-[12px] text-muted">{t("receipts.noItems")}</p>}
+              {items.map((it) => (
+                <div key={it.key} className="grid grid-cols-[minmax(0,1fr)_6.5rem_auto] gap-1.5 sm:grid-cols-[minmax(0,1fr)_6.5rem_minmax(0,11rem)_auto]">
+                  <Input
+                    aria-label={t("receipts.itemName")}
+                    value={it.name}
+                    placeholder={t("receipts.itemName")}
+                    onChange={(e) => setItems((list) => list.map((x) => (x.key === it.key ? { ...x, name: e.target.value } : x)))}
+                    className="h-8 text-[13px]"
+                  />
+                  <MoneyInput
+                    value={it.amount}
+                    allowNegative
+                    currency={currency}
+                    onChange={(v) => setItems((list) => list.map((x) => (x.key === it.key ? { ...x, amount: v } : x)))}
+                    className="h-8 pr-10 text-[13px]"
+                  />
+                  <div className="col-span-2 row-start-2 sm:col-span-1 sm:row-start-auto">
+                    <CategorySelect
+                      value={it.categoryId}
+                      kind="expense"
+                      noneLabel={t("receipts.sameAsMain", { category: mainLabel(categories, categoryId, t("category.uncategorized")) })}
+                      onChange={(v) => setItems((list) => list.map((x) => (x.key === it.key ? { ...x, categoryId: v } : x)))}
+                    />
+                  </div>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="size-8"
+                    aria-label={t("common.delete")}
+                    onClick={() => setItems((list) => list.filter((x) => x.key !== it.key))}
+                  >
+                    <X className="size-4" />
+                  </Button>
+                </div>
+              ))}
+              <Button
+                size="sm"
+                variant="ghost"
+                className="self-start"
+                onClick={() => setItems((list) => [...list, { key: ++itemSeq, name: "", amount: "", categoryId: "" }])}
+              >
+                <Plus className="size-3.5" />
+                {t("receipts.addItem")}
+              </Button>
+              <div className="flex flex-wrap justify-between gap-2 border-t border-border pt-2 text-[12px]">
+                <span className="text-muted">
+                  {t("receipts.itemsSum")} <Money minor={itemsTotal} currency={currency} className="font-medium text-fg" />
+                </span>
+                {amountMinor !== null && amountMinor !== itemsTotal && (
+                  <span className={amountMinor - itemsTotal < 0 ? "text-expense" : "text-muted"}>
+                    {t("receipts.restToMain", { category: mainLabel(categories, categoryId, t("category.uncategorized")) })}{" "}
+                    <Money minor={amountMinor - itemsTotal} currency={currency} signed className="font-medium" />
+                  </span>
+                )}
+              </div>
+              <CheckRow checked={combine} onChange={() => setCombine((c) => !c)} label={t("receipts.combine")} hint={t("receipts.combineHint")} className="-mx-2.5" />
+              {parts ? (
+                <div className="flex flex-wrap gap-1.5">
+                  {parts.map((p, i) => (
+                    <Badge key={i} tone="accent">
+                      {mainLabel(categories, p.categoryId ?? "", t("category.uncategorized"))} · <Money minor={p.amountMinor} currency={currency} />
+                    </Badge>
+                  ))}
+                </div>
+              ) : (
+                amountMinor !== null && <p className="text-[12px] text-expense">{t("receipts.splitInvalid")}</p>
+              )}
+            </div>
+          )}
+        </div>
         <div className="flex flex-wrap items-center gap-2 pt-1">
           <ConfirmDeleteButton
             onConfirm={async () => {
@@ -250,7 +397,7 @@ function ReviewForm({ receipt: initial, onDone }: { receipt: Attachment; onDone:
           <div className="ml-auto flex gap-2">
             <Button onClick={onDone}>{t("receipts.later")}</Button>
             <Button type="submit" variant="primary" disabled={book.isPending || !accountId}>
-              {t("receipts.book")}
+              {split && parts && parts.length > 1 ? t("receipts.bookParts", { count: parts.length }) : t("receipts.book")}
             </Button>
           </div>
         </div>
@@ -258,4 +405,9 @@ function ReviewForm({ receipt: initial, onDone }: { receipt: Attachment; onDone:
       <Lightbox attachment={lightbox ? receipt : null} onClose={() => setLightbox(false)} />
     </div>
   );
+}
+
+function mainLabel(categories: Category[], id: string, fallback: string) {
+  const c = categories.find((x) => x.id === id);
+  return c ? displayName(c) : fallback;
 }

@@ -5,6 +5,7 @@ import { Money } from "@/components/ui/extra";
 import { CategoryIcon, IconTile } from "@/components/category-icon";
 import { Autocomplete, Stepper } from "@/components/ui/inputs";
 import type { Freq, TxKind } from "@/lib/api";
+import { categoryTree } from "@/lib/categories";
 import { displayName } from "@/lib/i18n";
 import { useAccounts, useCategories, useCounterparties } from "@/lib/queries";
 
@@ -52,30 +53,31 @@ export function CategorySelect({
   onChange,
   kind,
   allowNone = true,
+  noneLabel,
 }: {
   id?: string;
   value: string;
   onChange: (id: string) => void;
   kind?: TxKind;
   allowNone?: boolean;
+  noneLabel?: string;
 }) {
   const { t } = useTranslation();
   const categories = (useCategories().data ?? []).filter(
     (c) => !kind || c.kind === "both" || c.kind === kind || c.id === value,
   );
-  const roots = categories.filter((c) => !c.parentId || !categories.some((p) => p.id === c.parentId));
-  const item = (c: (typeof categories)[number], indent = false): SelectItem => ({
+  const item = (c: (typeof categories)[number], depth: number): SelectItem => ({
     value: c.id,
     label: displayName(c),
     text: displayName(c),
-    indent,
+    depth,
     icon: <CategoryIcon category={c} className="size-6 rounded-md [&_svg]:size-3.5" />,
   });
   const items: SelectItem[] = [
     ...(allowNone
-      ? [{ value: "", label: t("category.uncategorized"), icon: <CategoryIcon className="size-6 rounded-md [&_svg]:size-3.5" /> }]
+      ? [{ value: "", label: noneLabel ?? t("category.uncategorized"), icon: <CategoryIcon className="size-6 rounded-md [&_svg]:size-3.5" /> }]
       : []),
-    ...roots.flatMap((c) => [item(c), ...categories.filter((s) => s.parentId === c.id).map((s) => item(s, true))]),
+    ...categoryTree(categories).map((n) => item(n.category, n.depth)),
   ];
   return <Select id={id} value={value} onValueChange={onChange} items={items} placeholder={t("category.choose")} />;
 }
