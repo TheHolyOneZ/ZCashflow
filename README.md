@@ -37,7 +37,7 @@ encrypted, over your own Wi-Fi.
 
 ## Contents
 
-- [What's new in 1.2.0](#-whats-new-in-120)
+- [What's new in 1.3.0](#-whats-new-in-130)
 - [Why ZCashflow?](#-why-zcashflow)
 - [Features](#-features)
 - [Screenshots](#-screenshots)
@@ -57,7 +57,15 @@ encrypted, over your own Wi-Fi.
 
 ---
 
-## 🆕 What's new in 1.2.0
+## 🆕 What's new in 1.3.0
+
+- **Totals in the transactions list** – income, expenses and net at the top for whatever the filters select (all, an account, a category, a period), and each day's income and expenses in its header.
+- **Time of day** – entries made today get the current time automatically; change or remove it in the dialog. Shown in the list and used to sort each day. Receipts are booked with the time printed on them, and CSV import/export carry a time column.
+- **Recurring payments with a time** – e.g. salary at 09:00: it's booked with that time, once the time has passed on the due day.
+
+The database gets optional time columns; the sync schema is unchanged, so 1.2.0 devices still sync – update all paired devices anyway.
+
+### 1.2.0
 
 - **Subcategories at any depth** – drag a category by its handle onto another one to nest it, or onto the drop zone to make it a main category. Budgets, filters and totals include every level.
 - **Export everything** – all data or a selection (transactions, accounts, categories, recurring payments, budgets, goals, debts) for any period, as CSV or one ZIP. *Excel (;)* format for European Excel.
@@ -69,10 +77,6 @@ encrypted, over your own Wi-Fi.
 - Fixed: importing a receipt on Android failed with "expected raw image bytes".
 
 No database or sync schema change. Older versions sync as before but don't show categories below the second level – update all paired devices.
-
-### 1.1.1
-
-- Fixed: a balance correction no longer appears to revert when an account has transactions dated in the future. Today's balance only counts transactions up to today; future-dated ones count on their date and are included in the forecast.
 
 See [changelog.md](changelog.md) for the full change list.
 
@@ -122,12 +126,13 @@ See [changelog.md](changelog.md) for the full change list.
 <td valign="top">
 
 ### 💳 Transactions
-- Income, expenses and transfers between accounts
+- Income, expenses and transfers between accounts, with an optional **time of day**
 - **Quick entry** understands `Kebab 8.50`, `+2500 salary yesterday`, `Fuel 60€ 03.10.`
 - Categories are **learned** from your history and recognized by keyword from the very first entry (`REWE`, `Aral`, `Netflix` …)
 - **Subcategories at any depth**, rearranged by drag & drop
 - **CSV import** from your bank's export or the ZCashflow template, with duplicate detection
 - Full-text search incl. receipt text, filters by account, category, date range
+- **Income, expenses and net** for the current filter, and per day in the list
 - Tags, notes, references (`TX-2026-000123`), duplicate, right-click menus everywhere
 
 </td>
@@ -136,7 +141,7 @@ See [changelog.md](changelog.md) for the full change list.
 ### 🧾 Receipts
 - Photo, file picker or drag & drop anywhere in the window
 - On-device OCR (built-in `ocrs` everywhere, Tesseract on desktop if installed)
-- Detects date, total, merchant and **line items**; finds the matching transaction
+- Detects date, time, total, merchant and **line items**; finds the matching transaction
 - **Split by category**: one receipt, one entry per category
 - Photos and PDF scans
 - One click: **book** the receipt or **link** it to an existing entry
@@ -149,7 +154,7 @@ See [changelog.md](changelog.md) for the full change list.
 
 ### 🔁 Recurring payments
 - Salary, rent, subscriptions, insurance – weekly, monthly, every *n* months, yearly
-- Booked **automatically** or **confirmed by you** for varying amounts
+- Booked **automatically** – optionally at a set time, e.g. salary at 09:00 – or **confirmed by you** for varying amounts
 - Upcoming occurrences refresh every minute while their list is open, so payments that become due appear without restarting the app
 - Pick *Repeat* right in the quick entry (e.g. insurance, twice a year)
 - Got a bonus? Adjust this month's salary – or apply the new amount to all future months
@@ -566,7 +571,7 @@ You don't need every toolchain locally – GitHub builds everything:
   - *Actions → Build → Run workflow* builds selected platforms as artifacts.
   - Pushing a version tag builds **all** platforms and creates a **draft release** with consistently named files and `SHA256SUMS.txt`:
     ```sh
-    git tag v1.2.0 && git push origin v1.2.0
+    git tag v1.3.0 && git push origin v1.3.0
     ```
   - Android signing uses the repository secrets `ANDROID_KEYSTORE_B64` (base64 of the keystore) and `ANDROID_KEY_PASSWORD`.
 

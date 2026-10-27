@@ -211,6 +211,13 @@ pub fn upsert(db: &Db, input: DebtInput, today: NaiveDate) -> AppResult<Debt> {
                 max_count: None,
                 auto_post: inst.auto_post,
                 backfill: false,
+                occurred_time: match &existing_rule {
+                    Some(id) => tx
+                        .query_row("SELECT occurred_time FROM recurring_rules WHERE id = ?1", [id], |r| r.get(0))
+                        .optional()?
+                        .flatten(),
+                    None => None,
+                },
                 note: None,
             };
             let id = recurring::upsert_in(db, &tx, &rule_input, today)?;
@@ -306,6 +313,7 @@ pub fn record_payment(
             amount_minor,
             currency: Some(debt.currency.clone()),
             occurred_on: on.into(),
+            occurred_time: None,
             account_id: account_id.into(),
             to_account_id: None,
             category_id: None,

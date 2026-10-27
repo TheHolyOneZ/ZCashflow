@@ -230,6 +230,8 @@ pub struct ReceiptPart {
 #[serde(rename_all = "camelCase")]
 pub struct BookReceipt {
     pub date: String,
+    #[serde(default)]
+    pub time: Option<String>,
     pub account_id: String,
     pub counterparty: Option<String>,
     pub title: String,
@@ -252,6 +254,7 @@ pub fn book(db: &Db, id: &str, input: BookReceipt) -> AppResult<Vec<String>> {
                 amount_minor: part.amount_minor,
                 currency: None,
                 occurred_on: input.date.clone(),
+                occurred_time: input.time.clone(),
                 account_id: input.account_id.clone(),
                 to_account_id: None,
                 category_id: part.category_id.clone().filter(|c| !c.is_empty()),
@@ -355,6 +358,7 @@ mod tests {
                 amount_minor: 432,
                 currency: None,
                 occurred_on: "2026-10-06".into(),
+                occurred_time: None,
                 account_id: acc,
                 to_account_id: None,
                 category_id: None,
@@ -394,6 +398,7 @@ mod tests {
             &a.id,
             BookReceipt {
                 date: "2026-10-07".into(),
+                time: Some("18:42".into()),
                 account_id: acc,
                 counterparty: Some("REWE".into()),
                 title: "REWE".into(),
@@ -410,6 +415,7 @@ mod tests {
         assert!(all.iter().all(|x| x.sha256 == a.sha256 && x.transaction_id.is_some()));
         let tx = crate::domain::transactions::get(&db.conn(), &ids[1]).unwrap();
         assert_eq!((tx.amount_minor, tx.attachment_count), (599, 1));
-        assert!(book(&db, "missing", BookReceipt { date: "2026-10-07".into(), account_id: tx.account_id, counterparty: None, title: "x".into(), parts: vec![ReceiptPart { category_id: None, amount_minor: 1, note: None }] }).is_err());
+        assert_eq!(tx.occurred_time.as_deref(), Some("18:42"));
+        assert!(book(&db, "missing", BookReceipt { date: "2026-10-07".into(), time: None, account_id: tx.account_id, counterparty: None, title: "x".into(), parts: vec![ReceiptPart { category_id: None, amount_minor: 1, note: None }] }).is_err());
     }
 }

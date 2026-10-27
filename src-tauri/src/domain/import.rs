@@ -75,6 +75,7 @@ pub struct ImportResult {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 enum Col {
     Date,
+    Time,
     Kind,
     Amount,
     Currency,
@@ -90,6 +91,7 @@ enum Col {
 
 const ALIASES: &[(Col, &[&str])] = &[
     (Col::Date, &["date", "datum", "buchungstag", "buchungsdatum", "fecha", "data", "tarih", "bookingdate", "transactiondate", "datadioperazione", "dataoperacji", "dateoperation"]),
+    (Col::Time, &["time", "uhrzeit", "zeit", "buchungszeit", "hora", "heure", "ora", "godzina", "saat", "zaman"]),
     (Col::Kind, &["type", "typ", "art", "kind", "tipo", "rodzaj", "tur", "tuer", "turu"]),
     (Col::Amount, &["amount", "betrag", "umsatz", "betrageur", "importe", "montant", "importo", "kwota", "tutar", "summe", "wert"]),
     (Col::Currency, &["currency", "waehrung", "wahrung", "moneda", "devise", "divisa", "waluta", "parabirimi"]),
@@ -218,6 +220,20 @@ pub fn parse_date(s: &str) -> Option<NaiveDate> {
         }
     }
     None
+}
+
+pub fn parse_time_of(date_cell: &str, time_cell: &str) -> Option<String> {
+    let rest = date_cell.trim().split_once(['T', ' ']).map(|(_, t)| t).unwrap_or("");
+    [time_cell, rest]
+        .into_iter()
+        .map(|s| {
+            let s = s.trim().trim_end_matches('Z');
+            let s = s.split(['+', '-']).next().unwrap_or("");
+            if s.contains(':') { s.split('.').next().unwrap_or("") } else { s }.trim()
+        })
+        .filter(|s| !s.is_empty())
+        .find_map(transactions::parse_time)
+        .map(|t| t.format("%H:%M").to_string())
 }
 
 pub fn parse_amount(s: &str, currency: &str) -> Option<i64> {
@@ -418,6 +434,7 @@ fn plan(conn: &Connection, text: &str, opts: &ImportOptions) -> AppResult<Parsed
             fail(&mut errors, "invalid_date", &date_s);
             continue;
         };
+        let time = parse_time_of(&date_s, &cell(row, &map, Col::Time));
         let account_name = cell(row, &map, Col::Account);
         let account = if account_name.is_empty() {
             match &default_account {
@@ -514,6 +531,7 @@ fn plan(conn: &Connection, text: &str, opts: &ImportOptions) -> AppResult<Parsed
                 amount_minor: abs,
                 currency: Some(currency),
                 occurred_on: date.to_string(),
+                occurred_time: time,
                 account_id: account.id.clone().unwrap_or_default(),
                 to_account_id: None,
                 category_id: None,
@@ -739,6 +757,12 @@ mod tests {
         assert_eq!(parse_date("2026-10-06T10:00:00"), Some(d("2026-10-06")));
         assert_eq!(parse_date("06/10/2026"), Some(d("2026-10-06")));
         assert_eq!(parse_date("31.02.2026"), None);
+        assert_eq!(parse_time_of("2026-10-06T10:05:00+02:00", "").as_deref(), Some("10:05"));
+        assert_eq!(parse_time_of("06.10.2026 18:30", "").as_deref(), Some("18:30"));
+        assert_eq!(parse_time_of("06.10.2026", "7:45").as_deref(), Some("07:45"));
+        assert_eq!(parse_time_of("06.10.2026", "14:30:12.250").as_deref(), Some("14:30"));
+        assert_eq!(parse_time_of("06.10.2026", ""), None);
+        assert_eq!(parse_time_of("06.10.2026", "25:00"), None);
         let rows = parse_csv("\u{feff}a;b;c\r\n1;\"x;\"\"y\"\"\";3\n\n4;\"multi\nline\";6");
         assert_eq!(rows.len(), 3);
         assert_eq!(rows[1].1, vec!["1", "x;\"y\"", "3"]);

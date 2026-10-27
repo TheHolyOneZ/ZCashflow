@@ -2,13 +2,15 @@ import { useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { Dialog } from "@/components/ui/dialog";
 import { DateInput } from "@/components/ui/date-input";
+import { TimeInput } from "@/components/ui/time-input";
 import { Field, Input, Textarea } from "@/components/ui/field";
 import { Segmented } from "@/components/ui/segmented";
 import { Stepper } from "@/components/ui/inputs";
 import { ConfirmDeleteButton, FormFooter, MoneyInput, SwitchRow } from "@/components/ui/extra";
 import { AccountSelect, CategorySelect, CounterpartyInput, FreqPicker } from "@/components/selects";
 import { planning, type Freq, type RecurringRule, type TxKind } from "@/lib/api";
-import { isoDate } from "@/lib/dates";
+import { formatTime, isoDate } from "@/lib/dates";
+import { normalizeTime } from "@/lib/time";
 import { activeLocale } from "@/lib/i18n";
 import { minorToInput, parseMoney } from "@/lib/money";
 import { useAccounts, useAppMutation } from "@/lib/queries";
@@ -70,7 +72,10 @@ function RecurringForm({
   const [autoPost, setAutoPost] = useState(rule?.autoPost ?? true);
   const [backfill, setBackfill] = useState(false);
   const [note, setNote] = useState(rule?.note ?? "");
+  const [time, setTime] = useState(rule?.occurredTime ?? "");
   const [amountError, setAmountError] = useState(false);
+  const [timeError, setTimeError] = useState(false);
+  const validTime = normalizeTime(time);
 
   const currency = accounts.find((a) => a.id === accountId)?.currency ?? "EUR";
   const save = useAppMutation(planning.upsertRecurring, { success: t("common.saved") });
@@ -82,6 +87,11 @@ function RecurringForm({
     const amountMinor = parseMoney(amount, currency);
     if (amountMinor === null) {
       setAmountError(true);
+      return;
+    }
+    if (validTime === null) {
+      setTimeError(true);
+      document.getElementById("rr-time")?.focus();
       return;
     }
     try {
@@ -101,6 +111,7 @@ function RecurringForm({
         maxCount: endMode === "count" ? maxCount : null,
         autoPost,
         backfill: !rule && startsInPast && autoPost && backfill,
+        occurredTime: validTime || null,
         note: note.trim() || null,
       });
       onDone();
@@ -158,11 +169,27 @@ function RecurringForm({
         />
       </Field>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-[10.5rem_1fr]">
+      <div className="grid grid-cols-[1fr_7.5rem] gap-3 sm:grid-cols-[12rem_7.5rem]">
         <Field label={t("recurring.firstOn")} htmlFor="rr-start">
           <DateInput id="rr-start" required value={startOn} onChange={setStartOn} />
         </Field>
-        <Field label={t("recurring.ends")}>
+        <Field label={t("tx.time")} htmlFor="rr-time" hint={t("common.optional")}>
+          <TimeInput
+            id="rr-time"
+            value={time}
+            invalid={timeError}
+            onChange={(v) => {
+              setTime(v);
+              setTimeError(false);
+            }}
+          />
+          {timeError && (
+            <span role="alert" className="text-[12px] text-expense">
+              {t("tx.timeInvalid")}
+            </span>
+          )}
+        </Field>
+        <Field label={t("recurring.ends")} className="col-span-2">
           <div className="flex flex-col gap-2">
             <Segmented<EndMode>
               aria-label={t("recurring.ends")}
@@ -216,7 +243,13 @@ function RecurringForm({
       <div className="flex flex-col gap-3 rounded-xl bg-surface-2/60 p-3">
         <SwitchRow
           label={t("recurring.autoPost")}
-          hint={autoPost ? t("recurring.autoPostOn") : t("recurring.autoPostOff")}
+          hint={
+            autoPost
+              ? validTime
+                ? `${t("recurring.autoPostOn")} ${t("recurring.autoPostAt", { time: formatTime(validTime) })}`
+                : t("recurring.autoPostOn")
+              : t("recurring.autoPostOff")
+          }
           checked={autoPost}
           onCheckedChange={setAutoPost}
         />

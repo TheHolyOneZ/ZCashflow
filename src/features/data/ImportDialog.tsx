@@ -14,7 +14,7 @@ import { invalidateData, useAccounts, useAppInfo, useErrorMessage } from "@/lib/
 import { useUi } from "@/stores/ui";
 import { defaultCsvFormat, formatOptions, pickSavePath, useLabels } from "./export";
 
-const COLUMNS = ["date", "type", "amount", "currency", "account", "to_account", "category", "counterparty", "title", "note", "tags", "reference"] as const;
+const COLUMNS = ["date", "time", "type", "amount", "currency", "account", "to_account", "category", "counterparty", "title", "note", "tags", "reference"] as const;
 
 export function ImportDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
   const { t } = useTranslation();

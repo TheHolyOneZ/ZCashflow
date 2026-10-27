@@ -16,6 +16,7 @@ export function ruleInput(rule: RecurringRule, patch: Partial<RecurringInput> = 
     endOn: rule.endOn,
     maxCount: rule.maxCount,
     autoPost: rule.autoPost,
+    occurredTime: rule.occurredTime,
     note: rule.note,
     ...patch,
   };

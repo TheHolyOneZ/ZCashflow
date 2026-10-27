@@ -114,6 +114,7 @@ pub struct RecurringRule {
     pub max_count: Option<u32>,
     pub auto_post: bool,
     pub post_from: String,
+    pub occurred_time: Option<String>,
     pub note: Option<String>,
     pub debt_id: Option<String>,
     pub next_on: Option<String>,
@@ -161,6 +162,8 @@ pub struct RecurringInput {
 
     #[serde(default)]
     pub backfill: bool,
+    #[serde(default)]
+    pub occurred_time: Option<String>,
     pub note: Option<String>,
 }
 
@@ -169,7 +172,8 @@ const SELECT: &str = "
            r.category_id, r.counterparty_id, c.name, r.freq, r.interval_n, r.start_on, r.end_on,
            r.max_count, r.auto_post, coalesce(r.post_from, r.start_on), r.note,
            (SELECT d.id FROM debts d WHERE d.recurring_rule_id = r.id AND d.deleted = 0 LIMIT 1),
-           (SELECT count(*) FROM transactions t WHERE t.recurring_rule_id = r.id AND t.deleted = 0)
+           (SELECT count(*) FROM transactions t WHERE t.recurring_rule_id = r.id AND t.deleted = 0),
+           r.occurred_time
     FROM recurring_rules r
     LEFT JOIN counterparties c ON c.id = r.counterparty_id
     WHERE r.deleted = 0";
@@ -193,6 +197,7 @@ fn from_row(r: &Row) -> rusqlite::Result<RecurringRule> {
         max_count: r.get(14)?,
         auto_post: r.get(15)?,
         post_from: r.get(16)?,
+        occurred_time: r.get(20)?,
         note: r.get(17)?,
         debt_id: r.get(18)?,
         posted_count: r.get(19)?,
@@ -257,6 +262,15 @@ pub fn upsert_in(db: &Db, conn: &Connection, input: &RecurringInput, today: Naiv
         None => None,
     };
     let post_from = if input.backfill { start } else { today.max(start) }.to_string();
+    let occurred_time = match input.occurred_time.as_deref().map(str::trim).filter(|s| !s.is_empty()) {
+        Some(s) => Some(
+            transactions::parse_time(s)
+                .ok_or_else(|| AppError::Invalid(format!("invalid time {s:?}")))?
+                .format("%H:%M")
+                .to_string(),
+        ),
+        None => None,
+    };
     let hlc = db.hlc.tick();
 
     match &input.id {
@@ -266,13 +280,14 @@ pub fn upsert_in(db: &Db, conn: &Connection, input: &RecurringInput, today: Naiv
                         account_id = ?6, to_account_id = ?7, category_id = ?8, counterparty_id = ?9,
                         freq = ?10, interval_n = ?11, start_on = ?12, end_on = ?13, max_count = ?14,
                         auto_post = ?15, note = ?16, updated_hlc = ?17,
-                        post_from = CASE WHEN ?18 THEN ?19 ELSE post_from END
+                        post_from = CASE WHEN ?18 THEN ?19 ELSE post_from END, occurred_time = ?20
                  WHERE id = ?1 AND deleted = 0",
                 params![
                     id, input.title.trim(), input.kind, input.amount_minor, account.currency,
                     input.account_id, input.to_account_id, input.category_id, counterparty_id,
                     input.freq, input.interval_n.max(1), input.start_on, input.end_on,
-                    input.max_count, input.auto_post, input.note, hlc, input.backfill, post_from
+                    input.max_count, input.auto_post, input.note, hlc, input.backfill, post_from,
+                    occurred_time
                 ],
             )?;
             if n == 0 {
@@ -285,14 +300,15 @@ pub fn upsert_in(db: &Db, conn: &Connection, input: &RecurringInput, today: Naiv
             conn.execute(
                 "INSERT INTO recurring_rules (id, title, kind, amount_minor, currency, account_id,
                         to_account_id, category_id, counterparty_id, freq, interval_n, start_on,
-                        end_on, max_count, auto_post, post_from, note, created_at, device_id, updated_hlc)
-                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20)",
+                        end_on, max_count, auto_post, post_from, note, created_at, device_id, updated_hlc,
+                        occurred_time)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21)",
                 params![
                     id, input.title.trim(), input.kind, input.amount_minor, account.currency,
                     input.account_id, input.to_account_id, input.category_id, counterparty_id,
                     input.freq, input.interval_n.max(1), input.start_on, input.end_on,
                     input.max_count, input.auto_post, post_from, input.note, now_rfc3339(),
-                    db.device_id(), hlc
+                    db.device_id(), hlc, occurred_time
                 ],
             )?;
             Ok(id)
@@ -316,6 +332,7 @@ pub fn delete(db: &Db, id: &str) -> AppResult<()> {
 pub struct Occurrence {
     pub rule_id: String,
     pub date: String,
+    pub time: Option<String>,
     pub title: String,
     pub kind: String,
     pub amount_minor: i64,
@@ -355,6 +372,7 @@ pub fn occurrences(conn: &Connection, today: NaiveDate, to: NaiveDate) -> AppRes
             out.push(Occurrence {
                 rule_id: rule.id.clone(),
                 date: d.to_string(),
+                time: rule.occurred_time.clone(),
                 title: rule.title.clone(),
                 kind: rule.kind.clone(),
                 amount_minor: rule.amount_minor,
@@ -368,7 +386,7 @@ pub fn occurrences(conn: &Connection, today: NaiveDate, to: NaiveDate) -> AppRes
             });
         }
     }
-    out.sort_by(|a, b| a.date.cmp(&b.date).then(b.amount_minor.cmp(&a.amount_minor)));
+    out.sort_by(|a, b| a.date.cmp(&b.date).then(a.time.cmp(&b.time)).then(b.amount_minor.cmp(&a.amount_minor)));
     Ok(out)
 }
 
@@ -379,6 +397,7 @@ fn post(db: &Db, conn: &Connection, rule: &RecurringRule, on: NaiveDate, amount_
         amount_minor,
         currency: Some(rule.currency.clone()),
         occurred_on: on.to_string(),
+        occurred_time: rule.occurred_time.clone(),
         account_id: rule.account_id.clone(),
         to_account_id: rule.to_account_id.clone(),
         category_id: rule.category_id.clone(),
@@ -402,6 +421,17 @@ fn post(db: &Db, conn: &Connection, rule: &RecurringRule, on: NaiveDate, amount_
 }
 
 pub fn materialize_due(db: &Db, today: NaiveDate) -> AppResult<usize> {
+    let now = chrono::Local::now().naive_local();
+    materialize_until(db, today, (now.date() == today).then(|| now.time()))
+}
+
+fn materialize_until(db: &Db, today: NaiveDate, now: Option<chrono::NaiveTime>) -> AppResult<usize> {
+    let not_yet = |rule: &RecurringRule, d: NaiveDate| {
+        d == today
+            && now.is_some_and(|now| {
+                rule.occurred_time.as_deref().and_then(transactions::parse_time).is_some_and(|at| at > now)
+            })
+    };
     let mut conn = db.conn();
     let tx = conn.transaction()?;
     let rules = list(&tx, today)?;
@@ -409,7 +439,7 @@ pub fn materialize_due(db: &Db, today: NaiveDate) -> AppResult<usize> {
     let mut posted = 0;
     for rule in rules.iter().filter(|r| r.auto_post) {
         for d in rule.schedule().between(date(&rule.post_from), today) {
-            if !handled.contains(&occurrence_key(&rule.id, d)) {
+            if !handled.contains(&occurrence_key(&rule.id, d)) && !not_yet(rule, d) {
                 post(db, &tx, rule, d, rule.amount_minor)?;
                 posted += 1;
             }
@@ -510,6 +540,7 @@ mod tests {
                 max_count: None,
                 auto_post: auto,
                 backfill,
+                occurred_time: None,
                 note: None,
             },
             today,
@@ -536,6 +567,48 @@ mod tests {
             .count();
         assert_eq!(n, 0, "without backfill only occurrences from today on are posted");
         assert_eq!(materialize_due(&db, d("2026-11-01")).unwrap(), 2, "both rules post November");
+    }
+
+    #[test]
+    fn timed_rules_post_once_their_time_has_come() {
+        let db = Db::open_in_memory().unwrap();
+        let today = d("2026-10-08");
+        let acc = accounts::list(&db.conn()).unwrap()[0].id.clone();
+        let input = RecurringInput {
+            id: None,
+            title: "Gehalt".into(),
+            kind: "income".into(),
+            amount_minor: 250_000,
+            account_id: acc,
+            to_account_id: None,
+            category_id: None,
+            counterparty: None,
+            freq: "daily".into(),
+            interval_n: 1,
+            start_on: "2026-10-07".into(),
+            end_on: None,
+            max_count: None,
+            auto_post: true,
+            backfill: true,
+            occurred_time: Some("9.30".into()),
+            note: None,
+        };
+        let id = upsert_in(&db, &db.conn(), &input, today).unwrap();
+        assert_eq!(get(&db.conn(), &id, today).unwrap().occurred_time.as_deref(), Some("09:30"));
+        let at = |s: &str| Some(chrono::NaiveTime::parse_from_str(s, "%H:%M").unwrap());
+
+        assert_eq!(materialize_until(&db, today, at("09:29")).unwrap(), 1, "yesterday is due, today waits for 09:30");
+        let upcoming = occurrences(&db.conn(), today, today).unwrap();
+        assert_eq!((upcoming[0].date.as_str(), upcoming[0].time.as_deref()), ("2026-10-08", Some("09:30")));
+
+        assert_eq!(materialize_until(&db, today, at("09:30")).unwrap(), 1);
+        let txs = transactions::list(&db.conn(), &Default::default()).unwrap();
+        assert!(txs.iter().all(|t| t.occurred_time.as_deref() == Some("09:30")));
+        assert_eq!(txs.len(), 2);
+
+        let mut bad = input.clone();
+        bad.occurred_time = Some("9:75".into());
+        assert!(upsert_in(&db, &db.conn(), &bad, today).is_err());
     }
 
     #[test]

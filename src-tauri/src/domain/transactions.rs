@@ -1,4 +1,4 @@
-use chrono::{Datelike, NaiveDate};
+use chrono::{Datelike, NaiveDate, NaiveTime};
 use rusqlite::{params, params_from_iter, types::Value, Connection, OptionalExtension, Row};
 use serde::{Deserialize, Serialize};
 
@@ -15,6 +15,7 @@ pub struct Transaction {
     pub amount_minor: i64,
     pub currency: String,
     pub occurred_on: String,
+    pub occurred_time: Option<String>,
     pub account_id: String,
     pub to_account_id: Option<String>,
     pub category_id: Option<String>,
@@ -38,6 +39,8 @@ pub struct TransactionInput {
 
     pub currency: Option<String>,
     pub occurred_on: String,
+    #[serde(default)]
+    pub occurred_time: Option<String>,
     pub account_id: String,
     pub to_account_id: Option<String>,
     pub category_id: Option<String>,
@@ -68,7 +71,8 @@ const SELECT: &str = "
     SELECT t.id, t.ref, t.kind, t.amount_minor, t.currency, t.occurred_on, t.account_id,
            t.to_account_id, t.category_id, t.counterparty_id, c.name, t.title, t.note, t.tags,
            t.recurring_rule_id, t.debt_id, t.goal_id, t.created_at,
-           (SELECT count(*) FROM attachments a WHERE a.transaction_id = t.id AND a.deleted = 0)
+           (SELECT count(*) FROM attachments a WHERE a.transaction_id = t.id AND a.deleted = 0),
+           t.occurred_time
     FROM transactions t
     LEFT JOIN counterparties c ON c.id = t.counterparty_id
     WHERE t.deleted = 0";
@@ -82,6 +86,7 @@ fn from_row(r: &Row) -> rusqlite::Result<Transaction> {
         amount_minor: r.get(3)?,
         currency: r.get(4)?,
         occurred_on: r.get(5)?,
+        occurred_time: r.get(19)?,
         account_id: r.get(6)?,
         to_account_id: r.get(7)?,
         category_id: r.get(8)?,
@@ -114,8 +119,8 @@ fn fts_query(input: &str) -> Option<String> {
     (!parts.is_empty()).then(|| parts.join(" "))
 }
 
-pub fn list(conn: &Connection, f: &TransactionFilter) -> AppResult<Vec<Transaction>> {
-    let mut sql = String::from(SELECT);
+fn filter_sql(f: &TransactionFilter) -> (String, Vec<Value>) {
+    let mut sql = String::new();
     let mut args: Vec<Value> = Vec::new();
     let mut push = |clause: &str, v: Value| {
         args.push(v);
@@ -149,7 +154,13 @@ pub fn list(conn: &Connection, f: &TransactionFilter) -> AppResult<Vec<Transacti
             args.len()
         ));
     }
-    sql.push_str(" ORDER BY t.occurred_on DESC, t.created_at DESC");
+    (sql, args)
+}
+
+pub fn list(conn: &Connection, f: &TransactionFilter) -> AppResult<Vec<Transaction>> {
+    let (filter, args) = filter_sql(f);
+    let mut sql = format!("{SELECT}{filter}");
+    sql.push_str(" ORDER BY t.occurred_on DESC, t.occurred_time DESC, t.created_at DESC");
     sql.push_str(&format!(
         " LIMIT {} OFFSET {}",
         f.limit.unwrap_or(500).min(5000),
@@ -160,8 +171,81 @@ pub fn list(conn: &Connection, f: &TransactionFilter) -> AppResult<Vec<Transacti
     Ok(rows.collect::<Result<_, _>>()?)
 }
 
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct CurrencyTotal {
+    pub currency: String,
+    pub count: u32,
+    pub income_minor: i64,
+    pub expense_minor: i64,
+}
+
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct DayTotal {
+    pub date: String,
+    pub currency: String,
+    pub income_minor: i64,
+    pub expense_minor: i64,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Totals {
+    pub count: u32,
+    pub currencies: Vec<CurrencyTotal>,
+    pub days: Vec<DayTotal>,
+}
+
+pub fn totals(conn: &Connection, f: &TransactionFilter) -> AppResult<Totals> {
+    let (filter, args) = filter_sql(f);
+    let mut stmt = conn.prepare(&format!(
+        "SELECT t.occurred_on, t.currency, count(*),
+                coalesce(sum(CASE WHEN t.kind = 'income'  THEN t.amount_minor END), 0),
+                coalesce(sum(CASE WHEN t.kind = 'expense' THEN t.amount_minor END), 0)
+         FROM transactions t WHERE t.deleted = 0{filter}
+         GROUP BY t.occurred_on, t.currency
+         ORDER BY t.occurred_on DESC, t.currency"
+    ))?;
+    let rows = stmt.query_map(params_from_iter(args), |r| {
+        Ok((
+            r.get::<_, u32>(2)?,
+            DayTotal { date: r.get(0)?, currency: r.get(1)?, income_minor: r.get(3)?, expense_minor: r.get(4)? },
+        ))
+    })?;
+    let mut out = Totals { count: 0, currencies: Vec::new(), days: Vec::new() };
+    for row in rows {
+        let (n, day) = row?;
+        out.count += n;
+        match out.currencies.iter_mut().find(|c| c.currency == day.currency) {
+            Some(c) => {
+                c.count += n;
+                c.income_minor += day.income_minor;
+                c.expense_minor += day.expense_minor;
+            }
+            None => out.currencies.push(CurrencyTotal {
+                currency: day.currency.clone(),
+                count: n,
+                income_minor: day.income_minor,
+                expense_minor: day.expense_minor,
+            }),
+        }
+        out.days.push(day);
+    }
+    out.currencies.sort_by_key(|c| std::cmp::Reverse(c.count));
+    Ok(out)
+}
+
+pub fn parse_time(s: &str) -> Option<NaiveTime> {
+    let s = s.trim();
+    ["%H:%M", "%H:%M:%S", "%H.%M", "%H%M"]
+        .iter()
+        .find_map(|fmt| NaiveTime::parse_from_str(s, fmt).ok())
+}
+
 struct Validated {
     occurred_on: NaiveDate,
+    occurred_time: Option<String>,
     currency: String,
     title: String,
     tags: String,
@@ -176,6 +260,15 @@ fn validate(conn: &Connection, input: &TransactionInput) -> AppResult<Validated>
     }
     let occurred_on = NaiveDate::parse_from_str(&input.occurred_on, "%Y-%m-%d")
         .map_err(|_| AppError::Invalid(format!("invalid date {:?}", input.occurred_on)))?;
+    let occurred_time = match input.occurred_time.as_deref().map(str::trim).filter(|s| !s.is_empty()) {
+        Some(s) => Some(
+            parse_time(s)
+                .ok_or_else(|| AppError::Invalid(format!("invalid time {s:?}")))?
+                .format("%H:%M")
+                .to_string(),
+        ),
+        None => None,
+    };
     let account = accounts::get(conn, &input.account_id)?;
     match (input.kind.as_str(), &input.to_account_id) {
         ("transfer", None) => return Err(AppError::Invalid("transfer needs a target account".into())),
@@ -197,6 +290,7 @@ fn validate(conn: &Connection, input: &TransactionInput) -> AppResult<Validated>
     let tags: Vec<&str> = input.tags.iter().map(|t| t.trim()).filter(|t| !t.is_empty()).collect();
     Ok(Validated {
         occurred_on,
+        occurred_time,
         currency,
         title: input.title.trim().to_owned(),
         tags: serde_json::to_string(&tags).expect("tags serialize"),
@@ -229,13 +323,13 @@ pub fn insert(db: &Db, conn: &Connection, input: &TransactionInput, links: Syste
         "INSERT INTO transactions (id, ref, kind, amount_minor, currency, occurred_on, account_id,
                                    to_account_id, category_id, counterparty_id, title, note, tags,
                                    recurring_rule_id, occurrence_key, debt_id, goal_id, created_at,
-                                   device_id, updated_hlc)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20)",
+                                   device_id, updated_hlc, occurred_time)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21)",
         params![
             id, r#ref, input.kind, input.amount_minor, v.currency, v.occurred_on.to_string(),
             input.account_id, input.to_account_id, input.category_id, counterparty_id, v.title,
             input.note, v.tags, links.recurring_rule_id, links.occurrence_key, input.debt_id,
-            input.goal_id, now_rfc3339(), db.device_id(), db.hlc.tick()
+            input.goal_id, now_rfc3339(), db.device_id(), db.hlc.tick(), v.occurred_time
         ],
     )?;
     Ok(id)
@@ -261,12 +355,13 @@ pub fn update(db: &Db, id: &str, input: TransactionInput) -> AppResult<Transacti
     let n = tx.execute(
         "UPDATE transactions SET kind = ?2, amount_minor = ?3, currency = ?4, occurred_on = ?5,
                 account_id = ?6, to_account_id = ?7, category_id = ?8, counterparty_id = ?9,
-                title = ?10, note = ?11, tags = ?12, debt_id = ?13, goal_id = ?14, updated_hlc = ?15
+                title = ?10, note = ?11, tags = ?12, debt_id = ?13, goal_id = ?14, updated_hlc = ?15,
+                occurred_time = ?16
          WHERE id = ?1 AND deleted = 0",
         params![
             id, input.kind, input.amount_minor, v.currency, v.occurred_on.to_string(),
             input.account_id, input.to_account_id, input.category_id, counterparty_id, v.title,
-            input.note, v.tags, input.debt_id, input.goal_id, db.hlc.tick()
+            input.note, v.tags, input.debt_id, input.goal_id, db.hlc.tick(), v.occurred_time
         ],
     )?;
     if n == 0 {
@@ -419,6 +514,7 @@ mod tests {
             amount_minor: cents,
             currency: None,
             occurred_on: date.into(),
+            occurred_time: None,
             account_id: account_id.into(),
             to_account_id: None,
             category_id: None,
@@ -569,6 +665,50 @@ mod tests {
         assert_eq!(suggest_category(&conn, "Netflix").unwrap(), Some(id("category.subscriptions")));
         assert_eq!(suggest_category(&conn, "Bargeld").unwrap(), None);
         assert_eq!(suggest_category(&conn, "Barbara").unwrap(), None);
+    }
+
+    #[test]
+    fn totals_cover_every_match_and_times_order_the_day() {
+        let db = Db::open_in_memory().unwrap();
+        let acc = cash_account(&db);
+        let at = |title: &str, cents: i64, date: &str, time: Option<&str>| {
+            let mut t = expense(&acc, title, cents, date);
+            t.occurred_time = time.map(str::to_owned);
+            t
+        };
+        create(&db, at("Frühstück", 500, "2026-10-08", Some("8:15"))).unwrap();
+        create(&db, at("Abendessen", 300, "2026-10-08", Some("19.40"))).unwrap();
+        let mut salary = at("Lohn", 10_000, "2026-10-08", None);
+        salary.kind = "income".into();
+        create(&db, salary).unwrap();
+        create(&db, at("Gestern", 200, "2026-10-07", None)).unwrap();
+
+        let titles: Vec<(String, Option<String>)> = list(&db.conn(), &TransactionFilter::default())
+            .unwrap()
+            .into_iter()
+            .map(|t| (t.title, t.occurred_time))
+            .collect();
+        assert_eq!(
+            titles,
+            vec![
+                ("Abendessen".into(), Some("19:40".into())),
+                ("Frühstück".into(), Some("08:15".into())),
+                ("Lohn".into(), None),
+                ("Gestern".into(), None),
+            ]
+        );
+
+        let t = totals(&db.conn(), &TransactionFilter { limit: Some(1), ..Default::default() }).unwrap();
+        assert_eq!(t.count, 4);
+        assert_eq!(t.currencies, vec![CurrencyTotal { currency: "EUR".into(), count: 4, income_minor: 10_000, expense_minor: 1_000 }]);
+        assert_eq!(t.days.len(), 2);
+        assert_eq!((t.days[0].date.as_str(), t.days[0].income_minor, t.days[0].expense_minor), ("2026-10-08", 10_000, 800));
+
+        let only_yesterday = totals(&db.conn(), &TransactionFilter { from: Some("2026-10-07".into()), to: Some("2026-10-07".into()), ..Default::default() }).unwrap();
+        assert_eq!(only_yesterday.currencies[0].expense_minor, 200);
+
+        assert!(create(&db, at("x", 1, "2026-10-08", Some("25:99"))).is_err());
+        assert_eq!(create(&db, at("x", 1, "2026-10-08", Some(" "))).unwrap().occurred_time, None);
     }
 
     #[test]

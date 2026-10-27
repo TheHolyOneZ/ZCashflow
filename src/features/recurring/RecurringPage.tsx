@@ -12,7 +12,7 @@ import { Badge, Money } from "@/components/ui/extra";
 import { Segmented } from "@/components/ui/segmented";
 import { CategoryIcon } from "@/components/category-icon";
 import type { RecurringRule, TxKind } from "@/lib/api";
-import { formatDay } from "@/lib/dates";
+import { formatDay, formatTime } from "@/lib/dates";
 import { daysFromToday, freqLabel, relativeDays } from "@/lib/format";
 import { displayName } from "@/lib/i18n";
 import { StatTile } from "@/components/stat-tile";
@@ -181,6 +181,7 @@ function RuleRow({ rule, onClick }: { rule: RecurringRule; onClick: () => void }
                 {" · "}
                 <span className={days <= 3 ? "font-medium text-fg" : undefined}>
                   {t("recurring.next")} {days <= 7 ? relativeDays(days) : formatDay(rule.nextOn)}
+                  {rule.occurredTime && `, ${formatTime(rule.occurredTime)}`}
                 </span>
               </>
             )}

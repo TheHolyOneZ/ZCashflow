@@ -923,6 +923,7 @@ mod tests {
                 amount_minor: 850,
                 currency: None,
                 occurred_on: "2026-10-08".into(),
+                occurred_time: None,
                 account_id: acc,
                 to_account_id: None,
                 category_id: None,

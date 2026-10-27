@@ -73,6 +73,7 @@ function IncomeRow({ tx, onDone }: { tx: Transaction; onDone: () => void }) {
           kind: tx.kind,
           amountMinor: minor,
           occurredOn: tx.occurredOn,
+          occurredTime: tx.occurredTime,
           accountId: tx.accountId,
           toAccountId: tx.toAccountId,
           categoryId: tx.categoryId,

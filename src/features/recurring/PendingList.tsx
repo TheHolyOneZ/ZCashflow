@@ -6,7 +6,7 @@ import { MoneyInput } from "@/components/ui/extra";
 import { Tip } from "@/components/ui/inputs";
 import { CategoryIcon } from "@/components/category-icon";
 import { planning, type Occurrence } from "@/lib/api";
-import { formatDay } from "@/lib/dates";
+import { formatDay, formatTime } from "@/lib/dates";
 import { activeLocale } from "@/lib/i18n";
 import { minorToInput, parseMoney } from "@/lib/money";
 import { useAppMutation, useCategories } from "@/lib/queries";
@@ -42,7 +42,8 @@ function PendingRow({ o }: { o: Occurrence }) {
       <div className="min-w-[9rem] flex-1">
         <div className="truncate font-medium">{o.title}</div>
         <div className="text-[12px] text-muted">
-          {formatDay(o.date)} · {relativeDays(days)}
+          {formatDay(o.date)}
+          {o.time && `, ${formatTime(o.time)}`} · {relativeDays(days)}
         </div>
       </div>
       <div className="flex w-full items-center gap-1.5 sm:w-auto">

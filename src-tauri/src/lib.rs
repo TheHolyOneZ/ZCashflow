@@ -34,7 +34,7 @@ fn spawn_scheduler(app: tauri::AppHandle) {
             }
             Err(e) => eprintln!("scheduler: {e}"),
         }
-        std::thread::sleep(std::time::Duration::from_secs(600));
+        std::thread::sleep(std::time::Duration::from_secs(60));
     });
 }
 
@@ -96,6 +96,7 @@ pub fn run() {
             commands::move_category,
             commands::list_counterparties,
             commands::list_transactions,
+            commands::transaction_totals,
             commands::create_transaction,
             commands::update_transaction,
             commands::delete_transaction,

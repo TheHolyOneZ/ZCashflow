@@ -88,7 +88,7 @@ pub fn minor_digits(currency: &str) -> u32 {
 }
 
 pub const TRANSACTION_HEADER: &[&str] =
-    &["date", "type", "amount", "currency", "account", "to_account", "category", "counterparty", "title", "note", "tags", "reference"];
+    &["date", "time", "type", "amount", "currency", "account", "to_account", "category", "counterparty", "title", "note", "tags", "reference"];
 
 pub struct Names {
     labels: HashMap<String, String>,
@@ -151,13 +151,14 @@ fn transactions_rows(conn: &Connection, f: &Format, names: &Names, filter: &Tran
         }
         page.offset = Some(page.offset.unwrap_or(0) + 5000);
     }
-    all.sort_by(|a, b| a.occurred_on.cmp(&b.occurred_on).then(a.created_at.cmp(&b.created_at)));
+    all.sort_by(|a, b| a.occurred_on.cmp(&b.occurred_on).then(a.occurred_time.cmp(&b.occurred_time)).then(a.created_at.cmp(&b.created_at)));
     Ok(all
         .into_iter()
         .map(|t| {
             let signed = if t.kind == "expense" { -t.amount_minor } else { t.amount_minor };
             vec![
                 t.occurred_on.clone(),
+                t.occurred_time.clone().unwrap_or_default(),
                 t.kind.clone(),
                 f.money(signed, &t.currency),
                 t.currency.clone(),
@@ -215,7 +216,7 @@ fn dataset(conn: &Connection, name: &str, f: &Format, names: &Names, filter: &Tr
         "recurring" => f.table(
             &[
                 "title", "type", "amount", "currency", "account", "to_account", "category", "counterparty", "frequency", "every",
-                "start", "end", "max_count", "automatic", "next", "per_month", "note",
+                "start", "end", "time", "max_count", "automatic", "next", "per_month", "note",
             ],
             recurring::list(conn, today)?
                 .into_iter()
@@ -233,6 +234,7 @@ fn dataset(conn: &Connection, name: &str, f: &Format, names: &Names, filter: &Tr
                         r.interval_n.to_string(),
                         r.start_on.clone(),
                         r.end_on.clone().unwrap_or_default(),
+                        r.occurred_time.clone().unwrap_or_default(),
                         r.max_count.map(|n| n.to_string()).unwrap_or_default(),
                         yes_no(r.auto_post),
                         r.next_on.clone().unwrap_or_default(),
@@ -456,7 +458,7 @@ mod tests {
 
         let single = export(&db.conn(), &ExportOptions { datasets: vec!["transactions".into()], ..opts.clone() }, NaiveDate::from_ymd_opt(2026, 10, 8).unwrap()).unwrap();
         let text = String::from_utf8(single.bytes).unwrap();
-        assert!(text.starts_with("\u{feff}date;type;amount;"));
+        assert!(text.starts_with("\u{feff}date;time;type;amount;"));
         assert!(text.contains("Essen & Trinken > "), "subcategories are exported with their path");
         assert!(text.lines().count() > 50);
     }

@@ -19,6 +19,8 @@ fn migrations() -> Migrations<'static> {
         M::up(include_str!("../../migrations/004_sync.sql")),
         M::up(include_str!("../../migrations/005_balance_anchor.sql")),
         M::up(include_str!("../../migrations/006_balance_anchor_sync.sql")),
+        M::up(include_str!("../../migrations/007_transaction_time.sql")),
+        M::up(include_str!("../../migrations/008_recurring_time.sql")),
     ])
 }
 

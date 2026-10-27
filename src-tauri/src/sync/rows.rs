@@ -195,6 +195,7 @@ mod tests {
                 amount_minor: 500,
                 currency: None,
                 occurred_on: "2026-10-08".into(),
+                occurred_time: None,
                 account_id: acc,
                 to_account_id: None,
                 category_id: None,
@@ -236,6 +237,7 @@ mod tests {
             amount_minor: 600,
             currency: None,
             occurred_on: "2026-10-08".into(),
+            occurred_time: None,
             account_id: t.account_id.clone(),
             to_account_id: None,
             category_id: None,
@@ -261,6 +263,24 @@ mod tests {
 
         let stats = sync(&b, &a, &mut cb);
         assert_eq!(stats.applied, 0);
+    }
+
+    #[test]
+    fn edits_from_older_versions_keep_the_time() {
+        let a = Db::open_in_memory().unwrap();
+        let t = expense(&a, "Kaffee");
+        a.conn()
+            .execute("UPDATE transactions SET occurred_time = '09:15', updated_hlc = ?1 WHERE id = ?2", rusqlite::params![a.hlc.tick(), t.id])
+            .unwrap();
+        let (rows, _, _) = changes_since(&a.conn(), 0, 10_000).unwrap();
+        let mut old = rows.into_iter().find(|r| r.tbl == "transactions").unwrap();
+        old.row.remove("occurred_time");
+        old.row.insert("title".into(), Value::from("Kaffee groß"));
+        old.row.insert("updated_hlc".into(), Value::from(a.hlc.tick()));
+        old.row.insert("column_from_the_future".into(), Value::from(1));
+        assert_eq!(apply(&a, &[old], None).unwrap().applied, 1);
+        let now = transactions::get(&a.conn(), &t.id).unwrap();
+        assert_eq!((now.title.as_str(), now.occurred_time.as_deref()), ("Kaffee groß", Some("09:15")));
     }
 
     #[test]
@@ -306,6 +326,7 @@ mod tests {
                 max_count: None,
                 auto_post: true,
                 backfill: false,
+                occurred_time: None,
                 note: None,
             },
             today,

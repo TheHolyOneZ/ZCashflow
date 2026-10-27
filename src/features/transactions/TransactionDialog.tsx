@@ -12,11 +12,13 @@ import type { Attachment } from "@/lib/api";
 import { Dialog } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { DateInput } from "@/components/ui/date-input";
+import { TimeInput } from "@/components/ui/time-input";
 import { Field, Input, Textarea } from "@/components/ui/field";
 import { Segmented } from "@/components/ui/segmented";
 import type { Transaction, TransactionInput, TxKind } from "@/lib/api";
 import { activeLocale } from "@/lib/i18n";
-import { isoDate } from "@/lib/dates";
+import { entryTime, isoDate } from "@/lib/dates";
+import { normalizeTime } from "@/lib/time";
 import { minorToInput, parseMoney } from "@/lib/money";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -34,6 +36,7 @@ interface FormState {
   amount: string;
   title: string;
   occurredOn: string;
+  time: string;
   accountId: string;
   toAccountId: string;
   categoryId: string;
@@ -53,6 +56,7 @@ function initialState(
       amount: minorToInput(tx.amountMinor, tx.currency, activeLocale()),
       title: tx.title,
       occurredOn: tx.occurredOn,
+      time: tx.occurredTime ?? "",
       accountId: tx.accountId,
       toAccountId: tx.toAccountId ?? "",
       categoryId: tx.categoryId ?? "",
@@ -62,11 +66,13 @@ function initialState(
     };
   }
   const d = source.draft;
+  const occurredOn = d.occurredOn ?? isoDate();
   return {
     kind: d.kind ?? "expense",
     amount: d.amountMinor ? minorToInput(d.amountMinor, "EUR", activeLocale()) : "",
     title: d.title ?? "",
-    occurredOn: d.occurredOn ?? isoDate(),
+    occurredOn,
+    time: d.occurredTime ?? entryTime(occurredOn) ?? "",
     accountId: d.accountId ?? fallbackAccount,
     toAccountId: d.toAccountId ?? "",
     categoryId: d.categoryId ?? "",
@@ -117,6 +123,8 @@ function TransactionForm({
   );
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [amountError, setAmountError] = useState(false);
+  const [timeError, setTimeError] = useState(false);
+  const [timeTouched, setTimeTouched] = useState(!!editing || ("draft" in source && source.draft.occurredTime !== undefined));
   const rule = (useRecurring().data ?? []).find((r) => r.id === editing?.recurringRuleId);
   const [applyToRule, setApplyToRule] = useState(false);
   const qc = useQueryClient();
@@ -141,10 +149,17 @@ function TransactionForm({
       document.getElementById("tx-amount")?.focus();
       return;
     }
+    const time = normalizeTime(form.time);
+    if (time === null) {
+      setTimeError(true);
+      document.getElementById("tx-time")?.focus();
+      return;
+    }
     const input: TransactionInput = {
       kind: form.kind,
       amountMinor,
       occurredOn: form.occurredOn,
+      occurredTime: time || null,
       accountId: form.accountId,
       toAccountId: form.kind === "transfer" ? form.toAccountId || null : null,
       categoryId: form.kind === "transfer" ? null : form.categoryId || null,
@@ -203,8 +218,8 @@ function TransactionForm({
         }))}
       />
 
-      <div className="grid grid-cols-[1fr_auto] items-end gap-3">
-        <Field label={t("tx.amount")} htmlFor="tx-amount">
+      <div className="grid grid-cols-[1fr_auto] items-end gap-3 sm:grid-cols-[1fr_auto_auto]">
+        <Field label={t("tx.amount")} htmlFor="tx-amount" className="col-span-2 sm:col-span-1">
           <div className="relative">
             <Input
               id="tx-amount"
@@ -238,9 +253,29 @@ function TransactionForm({
             id="tx-date"
             required
             value={form.occurredOn}
-            onChange={(v) => set("occurredOn", v)}
-            className="h-12 w-[10.5rem]"
+            onChange={(v) =>
+              setForm((f) => ({ ...f, occurredOn: v, time: timeTouched ? f.time : (entryTime(v) ?? "") }))
+            }
+            className="h-12 sm:w-[10.5rem]"
           />
+        </Field>
+        <Field label={t("tx.time")} htmlFor="tx-time">
+          <TimeInput
+            id="tx-time"
+            value={form.time}
+            invalid={timeError}
+            onChange={(v) => {
+              setTimeTouched(true);
+              setTimeError(false);
+              set("time", v);
+            }}
+            className="h-12 w-[7.5rem]"
+          />
+          {timeError && (
+            <span role="alert" className="text-[12px] text-expense">
+              {t("tx.timeInvalid")}
+            </span>
+          )}
         </Field>
       </div>
 

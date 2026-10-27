@@ -11,10 +11,11 @@ import { Select } from "@/components/ui/field";
 import { SearchInput, Tip } from "@/components/ui/inputs";
 import { Card, EmptyState, Kbd, PageHeader } from "@/components/ui/misc";
 import { Segmented } from "@/components/ui/segmented";
-import type { TransactionFilter, TxKind } from "@/lib/api";
+import type { TransactionFilter, TransactionTotals, TxKind } from "@/lib/api";
 import { categoryTree } from "@/lib/categories";
 import { displayName } from "@/lib/i18n";
-import { useAccounts, useCategories, useTransactions } from "@/lib/queries";
+import { useAccounts, useCategories, useTransactionTotals, useTransactions } from "@/lib/queries";
+import { Money } from "@/components/ui/extra";
 import { useUi } from "@/stores/ui";
 import { TransactionList } from "./TransactionList";
 import { CategoryIcon } from "@/components/category-icon";
@@ -56,6 +57,7 @@ export function TransactionsPage() {
     [deferredQuery, kind, accountId, categoryId, from, to],
   );
   const { data: items = [], isLoading } = useTransactions(filter);
+  const totals = useTransactionTotals(filter).data;
   const filtered = Object.values(filter).some((v) => v !== undefined);
 
   function clear() {
@@ -72,7 +74,7 @@ export function TransactionsPage() {
     <div className="flex flex-col">
       <PageHeader
         title={t("nav.transactions")}
-        subtitle={t("tx.count", { count: items.length })}
+        subtitle={t("tx.count", { count: Math.max(totals?.count ?? 0, items.length) })}
         actions={
           <>
             <Tip label={t("dataTransfer.exportSelection")}>
@@ -182,6 +184,8 @@ export function TransactionsPage() {
           </div>
         </div>
 
+        {totals && totals.count > 0 && kind !== "transfer" && <TotalsBar totals={totals} />}
+
         {isLoading ? (
           <p className="p-6 text-center text-muted">{t("common.loading")}</p>
         ) : items.length === 0 ? (
@@ -201,10 +205,36 @@ export function TransactionsPage() {
             />
           )
         ) : (
-          <TransactionList items={items} />
+          <TransactionList items={items} days={totals?.days} />
         )}
       </Card>
       <ImportDialog open={importOpen} onOpenChange={setImportOpen} />
+    </div>
+  );
+}
+
+function TotalsBar({ totals }: { totals: TransactionTotals }) {
+  const { t } = useTranslation();
+  const several = totals.currencies.length > 1;
+  return (
+    <div className="flex flex-col divide-y divide-border border-b border-border bg-surface-2/40">
+      {totals.currencies.map((c) => (
+        <dl key={c.currency} className="grid grid-cols-3 gap-1.5 px-3 py-2.5 text-center sm:gap-2 sm:px-4">
+          {[
+            { label: t("kind.incomes"), value: <Money minor={c.incomeMinor} currency={c.currency} className="text-income" /> },
+            { label: t("kind.expenses"), value: <Money minor={c.expenseMinor} currency={c.currency} className="text-expense" /> },
+            {
+              label: several ? `${t("dashboard.net")} · ${c.currency}` : t("dashboard.net"),
+              value: <Money minor={c.incomeMinor - c.expenseMinor} currency={c.currency} signed tone="auto" />,
+            },
+          ].map((x) => (
+            <div key={x.label} className="flex min-w-0 flex-col gap-0.5">
+              <dt className="truncate text-[11px] font-medium text-muted">{x.label}</dt>
+              <dd className="truncate text-[13px] font-semibold sm:text-[15px]">{x.value}</dd>
+            </div>
+          ))}
+        </dl>
+      ))}
     </div>
   );
 }

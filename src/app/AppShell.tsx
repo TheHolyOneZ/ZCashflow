@@ -18,7 +18,7 @@ import { CommandPalette } from "./CommandPalette";
 import { Onboarding } from "@/features/onboarding/Onboarding";
 import { ReceiptReviewDialog } from "@/features/receipts/ReceiptReviewDialog";
 import { PairRequestDialog } from "@/features/devices/PairRequestDialog";
-import { sync } from "@/lib/api";
+import { planning, sync } from "@/lib/api";
 import i18n from "i18next";
 import { useReceiptImport } from "@/features/receipts/receipt-ui";
 import { navGroups, navItems, type NavItem } from "./nav";
@@ -116,7 +116,14 @@ function useLedgerEvents() {
           useUi.getState().toast(i18n.t("sync.receivedGeneric"));
         });
         const wake = () => {
-          if (document.visibilityState === "visible") sync.now().catch(() => {});
+          if (document.visibilityState !== "visible") return;
+          sync.now().catch(() => {});
+          planning
+            .runScheduler()
+            .then((n) => {
+              if (n > 0) return invalidateData(qc);
+            })
+            .catch(() => {});
         };
         document.addEventListener("visibilitychange", wake);
         window.addEventListener("focus", wake);

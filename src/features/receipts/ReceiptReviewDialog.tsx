@@ -4,6 +4,8 @@ import { ChevronDown, Link2, ListTree, Plus, RefreshCw, Sparkles, X } from "luci
 import { Dialog } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { DateInput } from "@/components/ui/date-input";
+import { TimeInput } from "@/components/ui/time-input";
+import { normalizeTime } from "@/lib/time";
 import { Field, Input } from "@/components/ui/field";
 import { Badge, ConfirmDeleteButton, Money, MoneyInput, parseSignedMoney, Switch } from "@/components/ui/extra";
 import { AccountSelect, CategorySelect, CounterpartyInput } from "@/components/selects";
@@ -110,6 +112,8 @@ function ReviewForm({ receipt: initial, onDone }: { receipt: Attachment; onDone:
   const [combine, setCombine] = useState(true);
   const [items, setItems] = useState<ItemRow[]>(() => toRows(ex?.items, categories, ex?.currency ?? "EUR", loc));
   const [date, setDate] = useState(ex?.date ?? isoDate());
+  const [time, setTime] = useState(ex?.time ?? "");
+  const [timeInvalid, setTimeInvalid] = useState(false);
   const [merchant, setMerchant] = useState(ex?.merchant ?? "");
   const [title, setTitle] = useState("");
   const [categoryId, setCategoryId] = useState("");
@@ -153,6 +157,7 @@ function ReviewForm({ receipt: initial, onDone }: { receipt: Attachment; onDone:
     (bookParts: SplitPart[]) =>
       receipts.book(receipt.id, {
         date,
+        time: normalizeTime(time) || null,
         accountId,
         counterparty: merchant.trim() || null,
         title: title.trim() || merchant.trim(),
@@ -168,6 +173,11 @@ function ReviewForm({ receipt: initial, onDone }: { receipt: Attachment; onDone:
     e.preventDefault();
     if (amountMinor === null) {
       setInvalid(true);
+      return;
+    }
+    if (normalizeTime(time) === null) {
+      setTimeInvalid(true);
+      document.getElementById("rc-time")?.focus();
       return;
     }
     if (split && !parts) {
@@ -188,6 +198,7 @@ function ReviewForm({ receipt: initial, onDone }: { receipt: Attachment; onDone:
       const x = updated.extracted;
       if (x?.totalMinor) setAmount(minorToInput(x.totalMinor, x.currency ?? currency, loc));
       if (x?.date) setDate(x.date);
+      if (x?.time) setTime(x.time);
       if (x?.merchant) setMerchant(x.merchant);
       if (x?.items?.length) setItems(toRows(x.items, categories, x.currency ?? currency, loc));
       toast(t("receipts.reprocessed"));
@@ -269,8 +280,8 @@ function ReviewForm({ receipt: initial, onDone }: { receipt: Attachment; onDone:
           </div>
         )}
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_10rem]">
-          <Field label={t("tx.amount")} htmlFor="rc-amount">
+        <div className="grid grid-cols-[1fr_7rem] gap-3 sm:grid-cols-[1fr_10rem_7rem]">
+          <Field label={t("tx.amount")} htmlFor="rc-amount" className="col-span-2 sm:col-span-1">
             <MoneyInput
               id="rc-amount"
               autoFocus
@@ -287,7 +298,24 @@ function ReviewForm({ receipt: initial, onDone }: { receipt: Attachment; onDone:
           <Field label={t("tx.date")} htmlFor="rc-date">
             <DateInput id="rc-date" required value={date} onChange={setDate} className="h-12" />
           </Field>
+          <Field label={t("tx.time")} htmlFor="rc-time">
+            <TimeInput
+              id="rc-time"
+              value={time}
+              invalid={timeInvalid}
+              onChange={(v) => {
+                setTime(v);
+                setTimeInvalid(false);
+              }}
+              className="h-12"
+            />
+          </Field>
         </div>
+        {timeInvalid && (
+          <span role="alert" className="-mt-2 text-[12px] text-expense">
+            {t("tx.timeInvalid")}
+          </span>
+        )}
         <Field label={t("receipts.merchant")} htmlFor="rc-merchant">
           <CounterpartyInput id="rc-merchant" value={merchant} onChange={setMerchant} />
         </Field>

@@ -9,6 +9,8 @@ use serde::{Deserialize, Serialize};
 pub struct Extracted {
     pub merchant: Option<String>,
     pub date: Option<String>,
+    #[serde(default)]
+    pub time: Option<String>,
     pub total_minor: Option<i64>,
     pub currency: Option<String>,
 
@@ -44,6 +46,9 @@ static QTY_PREFIX: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"(?i)^\d+(?:[.
 static HAS_DATE_OR_TIME: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"\b\d{1,2}[./-]\d{1,2}[./-]\d{2,4}\b|\b\d{1,2}:\d{2}\b").unwrap());
 
+static TIME: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"(?:^|[^\d:.,])([01]?\d|2[0-3]):([0-5]\d)(?::[0-5]\d)?(?:[^\d:.,]|$)").unwrap());
+const NOT_TIME: &[&str] = &["öffnungs", "oeffnungs", "geöffnet", "geoffnet", "mo-", "mo.-", "mo -", "open", "hours", "horario", "orari", "heures"];
 static DATE_ISO: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"\b(\d{4})-(\d{2})-(\d{2})\b").unwrap());
 
 const TOTAL_KEYS: &[&str] = &[
@@ -202,6 +207,23 @@ fn find_date(text: &str, today: NaiveDate) -> Option<NaiveDate> {
 
 use chrono::Datelike;
 
+fn find_time(lines: &[&str]) -> Option<String> {
+    let times = |l: &str| -> Vec<String> {
+        TIME.captures_iter(l).map(|c| format!("{:02}:{}", c[1].parse::<u32>().unwrap_or(0), &c[2])).collect()
+    };
+    let usable = |l: &&&str| {
+        let lower = l.to_lowercase();
+        !NOT_TIME.iter().any(|n| lower.contains(n)) && times(l).len() == 1
+    };
+    let dated = |l: &&&str| DATE_ISO.is_match(l) || DATE_DMY.is_match(l) || DATE_DMY_LOOSE.is_match(l);
+    lines
+        .iter()
+        .filter(usable)
+        .find(dated)
+        .or_else(|| lines.iter().find(usable))
+        .and_then(|l| times(l).into_iter().next())
+}
+
 fn find_merchant(lines: &[&str]) -> Option<String> {
     lines.iter().take(6).find_map(|l| {
         let lower = l.to_lowercase();
@@ -266,6 +288,7 @@ pub fn extract(text: &str, today: NaiveDate) -> Extracted {
     Extracted {
         merchant,
         date: find_date(text, today).map(|d| d.to_string()),
+        time: find_time(&lines),
         total_minor: total,
         currency: find_currency(text),
         category_hint: None,
@@ -322,6 +345,7 @@ VISA ****1234";
         assert_eq!(e.merchant.as_deref(), Some("Rewe Markt GmbH"));
         assert_eq!(e.total_minor, Some(432));
         assert_eq!(e.date.as_deref(), Some("2026-10-06"));
+        assert_eq!(e.time.as_deref(), Some("18:42"));
         assert_eq!(e.currency.as_deref(), Some("EUR"));
     }
 
@@ -331,6 +355,7 @@ VISA ****1234";
         assert_eq!(e.merchant.as_deref(), Some("Kebab Haus Istanbul"));
         assert_eq!(e.total_minor, Some(950));
         assert_eq!(e.date.as_deref(), Some("2026-10-07"));
+        assert_eq!(e.time, None);
     }
 
     #[test]
@@ -339,6 +364,15 @@ VISA ****1234";
         assert_eq!(e.merchant.as_deref(), Some("Blue Bottle Coffee"));
         assert_eq!(e.total_minor, Some(1060));
         assert_eq!(e.date.as_deref(), Some("2026-10-05"));
+        assert_eq!(e.time.as_deref(), Some("08:12"));
+    }
+
+    #[test]
+    fn time_skips_opening_hours_and_ranges() {
+        let lines = ["Bäckerei Sonne", "Öffnungszeiten Mo-Sa 7:00", "Kasse 2  9:05 - 18:00", "Brot 3,20", "Beleg 06.10.2026 Kasse 1", "Uhrzeit 7:31:09"];
+        assert_eq!(find_time(&lines).as_deref(), Some("07:31"));
+        assert_eq!(find_time(&["Lidl", "Zeit: 14:03", "Summe 4,32"]).as_deref(), Some("14:03"));
+        assert_eq!(find_time(&["Summe 4,32", "Datum 06.10.2026"]), None);
     }
 
     #[test]

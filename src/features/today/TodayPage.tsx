@@ -27,7 +27,7 @@ import { CategoryIcon } from "@/components/category-icon";
 import { AccountSelect, CounterpartyInput } from "@/components/selects";
 import { api, planning, receipts, type Attachment, type Category, type Transaction, type TxKind } from "@/lib/api";
 import { cn } from "@/lib/cn";
-import { formatDay, isoDate } from "@/lib/dates";
+import { entryTime, formatDay, formatTime, isoDate } from "@/lib/dates";
 import { activeLocale, displayName } from "@/lib/i18n";
 import { isTauri, os } from "@/lib/platform";
 import { minorDigits, parseMoney } from "@/lib/money";
@@ -426,6 +426,7 @@ function QuickAdd({ day, onAdded }: { day: string; onAdded: () => void }) {
         kind: h.kind,
         amountMinor: h.amountMinor,
         occurredOn: day,
+        occurredTime: entryTime(day),
         accountId: accounts.some((a) => a.id === h.accountId && !a.archived) ? h.accountId : (account?.id ?? h.accountId),
         categoryId: h.categoryId,
         counterparty: null,
@@ -481,6 +482,7 @@ function QuickAdd({ day, onAdded }: { day: string; onAdded: () => void }) {
           kind: finalKind,
           amountMinor: minor,
           occurredOn: day,
+          occurredTime: entryTime(day),
           accountId: account.id,
           categoryId: cat,
           counterparty: null,
@@ -695,6 +697,7 @@ function ReceiptRow({ attachment: a, day, entries }: { attachment: Attachment; d
         kind: "expense",
         amountMinor: ex!.totalMinor!,
         occurredOn: day,
+        occurredTime: ex?.time ?? entryTime(day),
         accountId: account!.id,
         categoryId: cat,
         counterparty: ex?.merchant ?? null,
@@ -786,6 +789,7 @@ function DayList({ entries }: { entries: Transaction[] }) {
                   {e.attachmentCount > 0 && <Paperclip className="ml-1.5 inline size-3 text-muted" />}
                 </span>
                 <span className="block truncate text-[12px] text-muted">
+                  {e.occurredTime && `${formatTime(e.occurredTime)} · `}
                   {e.kind === "transfer"
                     ? t("kind.transfer")
                     : categories.find((c) => c.id === e.categoryId)

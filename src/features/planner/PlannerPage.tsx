@@ -11,7 +11,7 @@ import { BudgetPlanPicker } from "@/features/budgets/BudgetPlanPicker";
 import { CategoryIcon } from "@/components/category-icon";
 import type { MonthPreview, Occurrence } from "@/lib/api";
 import { cn } from "@/lib/cn";
-import { formatDay, isoDate } from "@/lib/dates";
+import { formatDay, formatTime, isoDate } from "@/lib/dates";
 import { monthLabel, relativeDays, daysFromToday } from "@/lib/format";
 import { activeLocale } from "@/lib/i18n";
 import { formatMoney } from "@/lib/money";
@@ -312,6 +312,7 @@ export function OccurrenceList({ items, showDate }: { items: Occurrence[]; showD
               {showDate && (
                 <div className="text-[11px] text-muted">
                   {o.overdue && !o.autoPost ? t("planner.awaiting") : days <= 7 ? relativeDays(days) : formatDay(o.date)}
+                  {o.time && `, ${formatTime(o.time)}`}
                 </div>
               )}
             </div>

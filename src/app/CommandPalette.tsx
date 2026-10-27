@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "@tanstack/react-router";
 import { FilePenLine, Moon, Plus, ScanLine, Search, Zap } from "lucide-react";
 import { api, type QuickEntry } from "@/lib/api";
-import { formatDay } from "@/lib/dates";
+import { entryTime, formatDay } from "@/lib/dates";
 import { activeLocale } from "@/lib/i18n";
 import { formatMoney } from "@/lib/money";
 import { useAccounts, useAppInfo, useSaveTransaction } from "@/lib/queries";
@@ -68,6 +68,7 @@ export function CommandPalette() {
           kind: parsed.kind,
           amountMinor: parsed.amountMinor,
           occurredOn: parsed.occurredOn,
+          occurredTime: entryTime(parsed.occurredOn),
           accountId: account.id,
           title: parsed.title,
         },

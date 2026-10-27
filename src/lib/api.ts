@@ -67,6 +67,7 @@ export interface Transaction {
   amountMinor: number;
   currency: string;
   occurredOn: string;
+  occurredTime: string | null;
   accountId: string;
   toAccountId: string | null;
   categoryId: string | null;
@@ -87,6 +88,7 @@ export interface TransactionInput {
   amountMinor: number;
   currency?: string | null;
   occurredOn: string;
+  occurredTime?: string | null;
   accountId: string;
   toAccountId?: string | null;
   categoryId?: string | null;
@@ -107,6 +109,26 @@ export interface TransactionFilter {
   query?: string;
   limit?: number;
   offset?: number;
+}
+
+export interface CurrencyTotal {
+  currency: string;
+  count: number;
+  incomeMinor: number;
+  expenseMinor: number;
+}
+
+export interface DayTotal {
+  date: string;
+  currency: string;
+  incomeMinor: number;
+  expenseMinor: number;
+}
+
+export interface TransactionTotals {
+  count: number;
+  currencies: CurrencyTotal[];
+  days: DayTotal[];
 }
 
 export interface QuickEntry {
@@ -152,6 +174,8 @@ export const api = {
 
   listTransactions: (filter?: TransactionFilter) =>
     invoke<Transaction[]>("list_transactions", { filter }),
+  transactionTotals: (filter?: TransactionFilter) =>
+    invoke<TransactionTotals>("transaction_totals", { filter }),
   createTransaction: (input: TransactionInput) =>
     invoke<Transaction>("create_transaction", { input }),
   updateTransaction: (id: string, input: TransactionInput) =>
@@ -183,6 +207,7 @@ export interface RecurringRule {
   maxCount: number | null;
   autoPost: boolean;
   postFrom: string;
+  occurredTime: string | null;
   note: string | null;
   debtId: string | null;
   nextOn: string | null;
@@ -206,12 +231,14 @@ export interface RecurringInput {
   maxCount?: number | null;
   autoPost: boolean;
   backfill?: boolean;
+  occurredTime?: string | null;
   note?: string | null;
 }
 
 export interface Occurrence {
   ruleId: string;
   date: string;
+  time: string | null;
   title: string;
   kind: TxKind;
   amountMinor: number;
@@ -546,6 +573,7 @@ export interface Extracted {
   items?: LineItem[];
   merchant: string | null;
   date: string | null;
+  time?: string | null;
   totalMinor: number | null;
   currency: string | null;
   categoryHint: string | null;
@@ -570,6 +598,7 @@ export interface Attachment {
 
 export interface BookReceiptInput {
   date: string;
+  time?: string | null;
   accountId: string;
   counterparty: string | null;
   title: string;

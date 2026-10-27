@@ -15,7 +15,7 @@ pub struct LlmConfig {
 }
 
 const SYSTEM: &str = "You extract data from shop receipts. Reply with JSON only: \
-{\"merchant\": string|null, \"date\": \"YYYY-MM-DD\"|null, \"total\": number|null, \
+{\"merchant\": string|null, \"date\": \"YYYY-MM-DD\"|null, \"time\": \"HH:MM\"|null, \"total\": number|null, \
 \"currency\": \"ISO 4217\"|null, \"category\": one of [groceries, food, housing, utilities, \
 transport, subscriptions, shopping, health, leisure, other]|null, \
 \"items\": [{\"name\": string, \"amount\": number, \"category\": same choices|null}]}. \
@@ -79,6 +79,7 @@ fn parse_answer(text: &str) -> AppResult<Extracted> {
         _ => None,
     };
     let date = s("date").filter(|d| chrono::NaiveDate::parse_from_str(d, "%Y-%m-%d").is_ok());
+    let time = s("time").and_then(|t| crate::domain::transactions::parse_time(&t)).map(|t| t.format("%H:%M").to_string());
     let number = |v: &Value| match v {
         Value::Number(n) => n.as_f64(),
         Value::String(s) => s.replace(',', ".").trim().parse().ok(),
@@ -103,6 +104,7 @@ fn parse_answer(text: &str) -> AppResult<Extracted> {
     Ok(Extracted {
         merchant: s("merchant"),
         date,
+        time,
         total_minor: total.filter(|t| *t > 0.0).map(|t| (t * 100.0).round() as i64),
         currency: s("currency").map(|c| c.to_uppercase()).filter(|c| c.len() == 3),
         category_hint: s("category"),
@@ -130,6 +132,7 @@ pub fn merge(base: Extracted, llm: Extracted) -> Extracted {
     Extracted {
         merchant: llm.merchant.or(base.merchant),
         date: llm.date.or(base.date),
+        time: llm.time.or(base.time),
         total_minor: llm.total_minor.or(base.total_minor),
         currency: llm.currency.or(base.currency),
         category_hint: llm.category_hint,

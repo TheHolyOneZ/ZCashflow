@@ -75,6 +75,11 @@ pub fn list_transactions(db: State<SharedDb>, filter: Option<TransactionFilter>)
 }
 
 #[tauri::command]
+pub fn transaction_totals(db: State<SharedDb>, filter: Option<TransactionFilter>) -> AppResult<transactions::Totals> {
+    transactions::totals(&db.conn(), &filter.unwrap_or_default())
+}
+
+#[tauri::command]
 pub fn create_transaction(db: State<SharedDb>, input: TransactionInput) -> AppResult<Transaction> {
     transactions::create(&db, input)
 }

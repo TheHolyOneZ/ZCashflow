@@ -1,5 +1,26 @@
 # Changelog
 
+## 1.3.0
+
+### Added
+
+- The transactions list shows income, expenses and net at the top, for exactly what the filters select: everything, one account, one category, or a period set with *From* and *To*. With several currencies, each currency gets its own line.
+- Every day in the transactions list shows that day's income and expenses in its header.
+- Transactions can have a time. New entries made for today get the current time automatically – in the transaction dialog, the quick entry (Ctrl+K) and the *Simple* view. The time can be changed or removed, and older or past entries can stay without one.
+- The time is shown in the transactions list and in the *Simple* view, and entries of the same day are sorted by it.
+- Receipt recognition reads the time printed on the receipt and books the entry with it. Opening hours on the receipt are ignored.
+- The time is exported as its own CSV column and can be imported – from a *time* / *Uhrzeit* column or from a date like `26.10.2026 14:30`.
+- Recurring payments can have an optional time, e.g. 09:00 for a salary. Automatic bookings get that time, and on the due day they are booked once that time has passed. The time is shown in the recurring list, the planner and the pending confirmations, and included in the CSV export of recurring payments.
+
+### Changed
+
+- The number of transactions in the page header counts all matches, not only the entries loaded into the list.
+- Due recurring payments are checked every minute instead of every ten minutes, and again whenever the app comes back to the foreground – so on phones they are booked as soon as the app is opened.
+
+### Notes
+
+- The database gets new optional time columns for transactions and recurring payments; existing entries keep working without a time. The sync schema stays at version 6, so devices on 1.2.0 still sync. A device on 1.2.0 doesn't show or change the time, and its edits keep the time set on an updated device. A device on 1.2.0 books timed recurring payments at the start of the day without a time, so please update all paired devices.
+
 ## 1.2.0
 
 ### Added
