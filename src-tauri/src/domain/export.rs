@@ -82,7 +82,9 @@ impl Format {
 
 pub fn minor_digits(currency: &str) -> u32 {
     match currency {
-        "JPY" | "KRW" | "ISK" | "CLP" | "VND" | "PYG" | "UGX" | "XAF" | "XOF" => 0,
+        "BIF" | "CLP" | "DJF" | "GNF" | "ISK" | "JPY" | "KMF" | "KRW" | "PYG" | "RWF" | "UGX" | "UYI" | "VND" | "VUV" | "XAF"
+        | "XOF" | "XPF" => 0,
+        "BHD" | "IQD" | "JOD" | "KWD" | "LYD" | "OMR" | "TND" => 3,
         _ => 2,
     }
 }

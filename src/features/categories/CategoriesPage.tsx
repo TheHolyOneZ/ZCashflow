@@ -89,7 +89,7 @@ function useCategoryDrag(categories: Category[], onDrop: (c: Category, target: s
 export function CategoriesPage() {
   const { t } = useTranslation();
   const categories = useCategories().data ?? [];
-  const currency = useAppInfo().data?.defaultCurrency;
+  const currency = useAppInfo().data?.mainCurrency;
   const range = useMemo(() => monthRange(), []);
   const summary = useSummary(range.from, range.to, currency).data;
   const [edit, setEdit] = useState<{ category?: Category; kind?: CategoryKind; parentId?: string } | null>(null);

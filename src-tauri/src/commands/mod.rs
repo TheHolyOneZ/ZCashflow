@@ -18,20 +18,28 @@ pub struct AppInfo {
     pub version: String,
     pub device_id: String,
     pub default_currency: String,
+    pub main_currency: String,
 }
 
 #[tauri::command]
 pub fn app_info(db: State<SharedDb>) -> AppResult<AppInfo> {
+    let conn = db.conn();
     Ok(AppInfo {
         version: env!("CARGO_PKG_VERSION").into(),
         device_id: db.device_id().into(),
-        default_currency: get_meta(&db.conn(), "default_currency")?.unwrap_or_else(|| "EUR".into()),
+        default_currency: get_meta(&conn, "default_currency")?.unwrap_or_else(|| "EUR".into()),
+        main_currency: crate::domain::currency::main_currency(&conn)?,
     })
 }
 
 #[tauri::command]
 pub fn set_default_currency(db: State<SharedDb>, currency: String) -> AppResult<()> {
     set_meta(&db.conn(), "default_currency", &currency.trim().to_uppercase())
+}
+
+#[tauri::command]
+pub fn relabel_currency(db: State<SharedDb>, from: String, to: String) -> AppResult<crate::domain::currency::Relabeled> {
+    crate::domain::currency::relabel(&db, &from, &to)
 }
 
 #[tauri::command]
@@ -75,8 +83,13 @@ pub fn list_transactions(db: State<SharedDb>, filter: Option<TransactionFilter>)
 }
 
 #[tauri::command]
+pub fn recent_titles(db: State<SharedDb>, kind: Option<String>, limit: Option<u32>) -> AppResult<Vec<String>> {
+    transactions::recent_titles(&db.conn(), kind.as_deref(), limit.unwrap_or(300))
+}
+
+#[tauri::command]
 pub fn transaction_totals(db: State<SharedDb>, filter: Option<TransactionFilter>) -> AppResult<transactions::Totals> {
-    transactions::totals(&db.conn(), &filter.unwrap_or_default())
+    transactions::totals(&db.conn(), &filter.unwrap_or_default(), today())
 }
 
 #[tauri::command]
@@ -122,7 +135,7 @@ fn today() -> chrono::NaiveDate {
 }
 
 fn default_currency(db: &Db) -> AppResult<String> {
-    Ok(get_meta(&db.conn(), "default_currency")?.unwrap_or_else(|| "EUR".into()))
+    crate::domain::currency::main_currency(&db.conn())
 }
 
 #[tauri::command]

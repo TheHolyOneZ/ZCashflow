@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use super::export::minor_digits;
 use super::transactions::{self, SystemLinks, TransactionInput};
 use super::{accounts, categories};
-use crate::db::{get_meta, new_id, now_rfc3339, Db};
+use crate::db::{new_id, now_rfc3339, Db};
 use crate::error::{AppError, AppResult};
 
 #[derive(Debug, Clone, Default, Deserialize)]
@@ -309,7 +309,7 @@ impl Lookup {
             accounts,
             categories: categories::list(conn)?,
             labels,
-            default_currency: get_meta(conn, "default_currency")?.unwrap_or_else(|| "EUR".into()),
+            default_currency: super::currency::main_currency(conn)?,
         })
     }
 

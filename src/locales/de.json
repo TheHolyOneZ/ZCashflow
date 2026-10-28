@@ -93,7 +93,14 @@
     "fromRule": "Automatisch aus „{{title}}“ · {{freq}}",
     "usually": "sonst",
     "applyToRule": "Neuen Betrag auch künftig verwenden",
-    "applyToRuleHint": "Z. B. nach einer Gehaltserhöhung. Sonst gilt die Änderung nur für diese Buchung."
+    "applyToRuleHint": "Z. B. nach einer Gehaltserhöhung. Sonst gilt die Änderung nur für diese Buchung.",
+    "prevMonth": "Vorheriger Monat",
+    "nextMonth": "Nächster Monat",
+    "allTime": "Gesamter Zeitraum",
+    "monthView": "Monatsansicht",
+    "carriedOver": "Übertrag",
+    "balanceToday": "Kontostand heute",
+    "balanceOn": "Kontostand am {{date}}"
   },
   "account": {
     "cash": "Bargeld",
@@ -147,7 +154,8 @@
     "upcoming": "Nächste 14 Tage",
     "noUpcoming": "Keine geplanten Zahlungen. Leg wiederkehrende Buchungen an, damit hier etwas steht.",
     "cashflowEmpty": "Sobald du Buchungen erfasst, siehst du hier Einnahmen und Ausgaben der letzten Monate.",
-    "budgetsReserved": "{{amount}} für Budgets reserviert"
+    "budgetsReserved": "{{amount}} für Budgets reserviert",
+    "inCurrency": "auf {{currency}}-Konten"
   },
   "palette": {
     "placeholder": "Schnell erfassen („Döner 8,50“) oder suchen …",
@@ -209,7 +217,8 @@
     "unsupported_heic": "HEIC/HEIF-Fotos können noch nicht gelesen werden. Bitte speichere das Foto als JPEG (iPhone: Einstellungen → Kamera → Formate → Maximale Kompatibilität).",
     "unsupported_pdf_without_image": "Dieses PDF enthält kein gescanntes Bild. Bitte speichere den Scan als JPEG oder als Bild-PDF.",
     "unsupported_missing_columns": "Die Datei braucht mindestens eine Spalte für Datum und Betrag. Nutze die ZCashflow-Vorlage oder benenne die Spaltenüberschriften um.",
-    "unsupported_empty_file": "Die Datei ist leer."
+    "unsupported_empty_file": "Die Datei ist leer.",
+    "unsupported_currency_decimals": "Diese Währungen haben unterschiedlich viele Nachkommastellen, deshalb lassen sich die Beträge nicht einfach umstellen."
   },
   "freq": {
     "daily": "täglich",
@@ -579,7 +588,6 @@
       "view": "Sieht alles, Änderungen von dort werden ignoriert",
       "capture": "Darf nur Belegfotos schicken"
     },
-    "firewallHint": "Kommt von anderen Geräten keine Verbindung an? Dann blockiert vermutlich die Firewall dieses PCs den Sync-Port. Einmalig im Terminal freigeben:",
     "scan": "Suchen",
     "scanning": "Suche …",
     "scanningHint": "Suche im WLAN nach ZCashflow-Geräten …",
@@ -985,5 +993,44 @@
     "some": "{{count}} von {{total}} Budgets eingeplant",
     "title": "Budgets in die Vorschau einbeziehen",
     "hint": "Eingeplante Budgets zählen als erwartete Ausgaben im Monatsplan, in der Prognose und bei „Frei pro Tag“. Bisherige Ausgaben dieser Kategorien werden dann nicht doppelt geschätzt."
+  },
+  "amounts": {
+    "title": "Beträge & Buchungen",
+    "hint": "Wie Beträge aussehen und womit die Buchungsliste startet – auf diesem Gerät.",
+    "currencySymbol": "Währungssymbol",
+    "currencySymbolHint": "Wird nur ausgeblendet, solange alle Konten dieselbe Währung haben.",
+    "symbolShow": "Anzeigen",
+    "symbolSingle": "Bei einer Währung ausblenden",
+    "expenses": "Ausgaben",
+    "expensesHint": "Mit Minuszeichen oder rot ohne Minus.",
+    "expenseMinus": "Mit Minus",
+    "expenseRed": "Rot, ohne Minus",
+    "txPeriod": "Buchungen starten mit",
+    "txPeriodHint": "Über den Datumsfilter kannst du jederzeit einen anderen Zeitraum wählen.",
+    "periodAll": "Gesamter Zeitraum",
+    "periodMonth": "Aktueller Monat"
+  },
+  "currencySwitch": {
+    "title": "Konten auch auf {{currency}} umstellen?",
+    "text": "Alle deine Konten nutzen {{from}}. ZCashflow kann sie – samt Buchungen, wiederkehrenden Zahlungen, Budgets, Sparzielen und Schulden – auf {{to}} umstellen. Die Beträge bleiben genau gleich, nur die Währung ändert sich. Das ist gedacht, falls du am Anfang die falsche Währung gewählt hast.",
+    "onlyDefault": "Nur Standard ändern",
+    "switchAll": "Alles auf {{currency}} umstellen",
+    "done": "Alles nutzt jetzt {{currency}}"
+  },
+  "syncHelp": {
+    "title": "Geräte finden sich nicht oder synchronisieren nicht?",
+    "thisDevice": "dieses Gerät",
+    "sameWifi": "Beide Geräte sind im selben WLAN – nicht im Gästenetz, und der Router trennt die Geräte nicht voneinander („AP-Isolation“ bzw. „Client-Isolation“).",
+    "bothOpen": "ZCashflow ist auf beiden Geräten geöffnet. Handys pausieren Apps im Hintergrund – öffne die App zum Synchronisieren.",
+    "vpn": "VPNs sind auf beiden Geräten ausgeschaltet.",
+    "byAddress": "Wird ein Gerät nicht gefunden, kopple es über „{{button}}“ und gib die Adresse ein, die unter „{{label}}“ steht.",
+    "windowsTitle": "Windows",
+    "windowsText": "Wenn Windows fragt, erlaube ZCashflow für private Netzwerke und stelle dein WLAN auf „Privat“ (Einstellungen → Netzwerk und Internet → WLAN → dein Netzwerk → Privates Netzwerk). Oder gib Port {{port}} einmal in PowerShell als Administrator frei:",
+    "macTitle": "macOS",
+    "macText": "Ist die Firewall an, erlaube eingehende Verbindungen für ZCashflow (Systemeinstellungen → Netzwerk → Firewall → Optionen).",
+    "linuxTitle": "Linux",
+    "linuxText": "Die meisten Desktop-Distributionen blockieren eingehende Verbindungen. Gib Port {{port}} einmal im Terminal frei:",
+    "mobileTitle": "Android & iPhone",
+    "mobileText": "Auf dem iPhone „Lokales Netzwerk“ für ZCashflow erlauben (Einstellungen → Datenschutz & Sicherheit → Lokales Netzwerk). Auf beiden muss WLAN an sein – über mobile Daten erreicht das Handy das andere Gerät nicht. Lass die App offen, während sie synchronisiert."
   }
 }

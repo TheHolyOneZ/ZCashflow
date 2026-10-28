@@ -30,7 +30,7 @@ import { useAppInfo, useAppMutation, useGoalAllocations, useGoals } from "@/lib/
 export function GoalsPage() {
   const { t } = useTranslation();
   const goals = useGoals().data ?? [];
-  const currency = useAppInfo().data?.defaultCurrency ?? "EUR";
+  const currency = useAppInfo().data?.mainCurrency ?? "EUR";
   const [edit, setEdit] = useState<{ goal?: Goal } | null>(null);
   const [allocate, setAllocate] = useState<Goal | null>(null);
   const delGoal = useAppMutation(planning.deleteGoal, { success: t("common.deleted") });
@@ -190,8 +190,8 @@ function GoalCard({ goal: g, onEdit, onAllocate }: { goal: Goal; onEdit: () => v
 
 function GoalForm({ goal, onDone }: { goal?: Goal; onDone: () => void }) {
   const { t } = useTranslation();
-  const defaultCurrency = useAppInfo().data?.defaultCurrency;
-  const currency = goal?.currency ?? defaultCurrency ?? "EUR";
+  const mainCurrency = useAppInfo().data?.mainCurrency;
+  const currency = goal?.currency ?? mainCurrency ?? "EUR";
   const [title, setTitle] = useState(goal?.title ?? "");
   const [target, setTarget] = useState(goal ? minorToInput(goal.targetMinor, currency, activeLocale()) : "");
   const [targetOn, setTargetOn] = useState(goal?.targetOn ?? "");

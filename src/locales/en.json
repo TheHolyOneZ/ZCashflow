@@ -93,7 +93,14 @@
     "fromRule": "Automatic from “{{title}}” · {{freq}}",
     "usually": "usually",
     "applyToRule": "Use the new amount from now on",
-    "applyToRuleHint": "E.g. after a raise. Otherwise the change only applies to this entry."
+    "applyToRuleHint": "E.g. after a raise. Otherwise the change only applies to this entry.",
+    "prevMonth": "Previous month",
+    "nextMonth": "Next month",
+    "allTime": "All time",
+    "monthView": "Month view",
+    "carriedOver": "Carried over",
+    "balanceToday": "Balance today",
+    "balanceOn": "Balance on {{date}}"
   },
   "account": {
     "cash": "Cash",
@@ -147,7 +154,8 @@
     "upcoming": "Next 14 days",
     "noUpcoming": "No planned payments. Add recurring items to see them here.",
     "cashflowEmpty": "Once you add transactions, you'll see income and expenses for the last months here.",
-    "budgetsReserved": "{{amount}} reserved for budgets"
+    "budgetsReserved": "{{amount}} reserved for budgets",
+    "inCurrency": "in {{currency}} accounts"
   },
   "palette": {
     "placeholder": "Quick add (“Kebab 8.50”) or search …",
@@ -209,7 +217,8 @@
     "unsupported_heic": "HEIC/HEIF photos can't be read yet. Please save the photo as JPEG (iPhone: Settings → Camera → Formats → Most Compatible).",
     "unsupported_pdf_without_image": "This PDF contains no scanned image. Please save the scan as JPEG or as an image PDF.",
     "unsupported_missing_columns": "The file needs at least a date and an amount column. Use the ZCashflow template or rename the column headers.",
-    "unsupported_empty_file": "The file is empty."
+    "unsupported_empty_file": "The file is empty.",
+    "unsupported_currency_decimals": "These currencies have a different number of decimal places, so the amounts can't simply be switched."
   },
   "freq": {
     "daily": "daily",
@@ -579,7 +588,6 @@
       "view": "Sees everything; its changes are ignored",
       "capture": "May only send receipt photos"
     },
-    "firewallHint": "Other devices can't connect? This PC's firewall is probably blocking the sync port. Allow it once in a terminal:",
     "scan": "Search",
     "scanning": "Searching …",
     "scanningHint": "Searching Wi-Fi for ZCashflow devices …",
@@ -985,5 +993,44 @@
     "some": "{{count}} of {{total}} budgets planned",
     "title": "Include budgets in the plan",
     "hint": "Planned budgets count as expected spending in the month plan, forecast and safe to spend. Past spending in these categories is not estimated a second time."
+  },
+  "amounts": {
+    "title": "Amounts & transactions",
+    "hint": "How amounts look and how the transactions list opens – on this device.",
+    "currencySymbol": "Currency symbol",
+    "currencySymbolHint": "Hidden only while all accounts use the same currency.",
+    "symbolShow": "Show",
+    "symbolSingle": "Hide with one currency",
+    "expenses": "Expenses",
+    "expensesHint": "With a minus sign, or in red without one.",
+    "expenseMinus": "With minus",
+    "expenseRed": "Red, no minus",
+    "txPeriod": "Transactions open with",
+    "txPeriodHint": "You can still pick any period with the date filter.",
+    "periodAll": "All time",
+    "periodMonth": "Current month"
+  },
+  "currencySwitch": {
+    "title": "Switch your accounts to {{currency}} too?",
+    "text": "All your accounts use {{from}}. ZCashflow can switch them – with all entries, recurring payments, budgets, goals and debts – to {{to}}. The amounts stay exactly as they are; only the currency changes. Use this if you picked the wrong currency at the start.",
+    "onlyDefault": "Only change the default",
+    "switchAll": "Switch everything to {{currency}}",
+    "done": "Everything now uses {{currency}}"
+  },
+  "syncHelp": {
+    "title": "Devices don't find each other or don't sync?",
+    "thisDevice": "this device",
+    "sameWifi": "Both devices are in the same Wi-Fi – not a guest network, and the router doesn't isolate devices (\"AP isolation\" or \"client isolation\").",
+    "bothOpen": "ZCashflow is open on both devices. Phones pause apps in the background, so open the app to sync.",
+    "vpn": "VPNs are turned off on both devices.",
+    "byAddress": "If a device isn't found, pair it with “{{button}}” and enter the address shown under “{{label}}”.",
+    "windowsTitle": "Windows",
+    "windowsText": "When Windows asks, allow ZCashflow for private networks, and set your Wi-Fi to Private (Settings → Network & internet → Wi-Fi → your network → Private network). Or allow port {{port}} once in PowerShell as administrator:",
+    "macTitle": "macOS",
+    "macText": "If the firewall is on, allow incoming connections for ZCashflow (System Settings → Network → Firewall → Options).",
+    "linuxTitle": "Linux",
+    "linuxText": "Most desktop distributions block incoming connections. Allow port {{port}} once in a terminal:",
+    "mobileTitle": "Android & iPhone",
+    "mobileText": "On iPhone, allow Local Network for ZCashflow (Settings → Privacy & Security → Local Network). On both, Wi-Fi has to be on – mobile data alone doesn't reach the other device. Keep the app open while it syncs."
   }
 }

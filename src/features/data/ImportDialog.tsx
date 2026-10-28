@@ -32,7 +32,7 @@ function ImportForm({ onDone }: { onDone: () => void }) {
   const errorMessage = useErrorMessage();
   const labels = useLabels();
   const accounts = (useAccounts().data ?? []).filter((a) => !a.archived);
-  const currency = useAppInfo().data?.defaultCurrency ?? "EUR";
+  const currency = useAppInfo().data?.mainCurrency ?? "EUR";
   const fileRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<{ name: string; text: string } | null>(null);
   const [accountId, setAccountId] = useState(accounts[0]?.id ?? "");
@@ -249,6 +249,7 @@ function ImportForm({ onDone }: { onDone: () => void }) {
                           <td className="hidden max-w-40 truncate px-2 py-1 text-muted sm:table-cell">{r.category || "—"}</td>
                           <td className="px-2 py-1 text-right">
                             <Money
+                              flow
                               minor={r.kind === "expense" ? -r.amountMinor : r.amountMinor}
                               currency={r.currency}
                               signed={r.kind === "income"}

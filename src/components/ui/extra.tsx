@@ -4,7 +4,7 @@ import { Check, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/cn";
 import { activeLocale } from "@/lib/i18n";
-import { minorDigits, minorToInput, parseMoney } from "@/lib/money";
+import { dropCurrency, minorDigits, minorToInput, parseMoney, useCurrencyHidden, useExpensesInRed } from "@/lib/money";
 import { Button } from "./button";
 import { Input } from "./field";
 
@@ -13,6 +13,7 @@ export function Money({
   currency,
   signed,
   tone,
+  flow,
   className,
   fractionClassName = "opacity-55",
 }: {
@@ -21,20 +22,24 @@ export function Money({
   signed?: boolean;
 
   tone?: "auto" | "none";
+  flow?: boolean;
   className?: string;
   fractionClassName?: string;
 }) {
   useTranslation();
+  const hideCurrency = useCurrencyHidden();
+  const red = useExpensesInRed() && flow && minor < 0;
   const digits = minorDigits(currency);
-  const parts = new Intl.NumberFormat(activeLocale(), {
+  const formatted = new Intl.NumberFormat(activeLocale(), {
     style: "currency",
     currency,
-    signDisplay: signed ? "exceptZero" : "auto",
-  }).formatToParts(minor / 10 ** digits);
+    signDisplay: signed && !red ? "exceptZero" : "auto",
+  }).formatToParts((red ? -minor : minor) / 10 ** digits);
+  const parts = hideCurrency ? dropCurrency(formatted) : formatted;
   const color =
     tone === "auto" ? (minor < 0 ? "text-expense" : signed && minor > 0 ? "text-income" : undefined) : undefined;
   return (
-    <span className={cn("money tabular whitespace-nowrap", color, className)}>
+    <span className={cn("money tabular whitespace-nowrap", color, className, red && "text-expense")}>
       {parts.map((p, i) =>
         p.type === "fraction" || (p.type === "decimal" && parts[i + 1]?.type === "fraction") ? (
           <span key={i} className={fractionClassName}>

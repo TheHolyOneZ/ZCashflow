@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use super::recurring::{self, RecurringInput, RecurringRule};
 use super::{counterparties, transactions};
-use crate::db::{get_meta, new_id, now_rfc3339, Db};
+use crate::db::{new_id, now_rfc3339, Db};
 use crate::error::{AppError, AppResult};
 
 #[derive(Debug, Clone, Serialize)]
@@ -168,7 +168,7 @@ pub fn upsert(db: &Db, input: DebtInput, today: NaiveDate) -> AppResult<Debt> {
     let tx = conn.transaction()?;
     let currency = match &input.currency {
         Some(c) if !c.trim().is_empty() => c.trim().to_uppercase(),
-        _ => get_meta(&tx, "default_currency")?.unwrap_or_else(|| "EUR".into()),
+        _ => super::currency::main_currency(&tx)?,
     };
     let counterparty_id = match &input.counterparty {
         Some(name) => counterparties::find_or_create(db, &tx, name)?,

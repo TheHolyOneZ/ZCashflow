@@ -95,7 +95,14 @@
     "fromRule": "Automatycznie z „{{title}}” · {{freq}}",
     "usually": "zwykle",
     "applyToRule": "Używaj nowej kwoty od teraz",
-    "applyToRuleHint": "Np. po podwyżce. W przeciwnym razie zmiana dotyczy tylko tej transakcji."
+    "applyToRuleHint": "Np. po podwyżce. W przeciwnym razie zmiana dotyczy tylko tej transakcji.",
+    "prevMonth": "Poprzedni miesiąc",
+    "nextMonth": "Następny miesiąc",
+    "allTime": "Cały okres",
+    "monthView": "Widok miesiąca",
+    "carriedOver": "Przeniesione saldo",
+    "balanceToday": "Saldo dziś",
+    "balanceOn": "Saldo na {{date}}"
   },
   "account": {
     "cash": "Gotówka",
@@ -149,7 +156,8 @@
     "upcoming": "Najbliższe 14 dni",
     "noUpcoming": "Brak zaplanowanych płatności. Dodaj płatności cykliczne, aby je tu zobaczyć.",
     "cashflowEmpty": "Gdy dodasz transakcje, zobaczysz tu przychody i wydatki z ostatnich miesięcy.",
-    "budgetsReserved": "{{amount}} zarezerwowane na budżety"
+    "budgetsReserved": "{{amount}} zarezerwowane na budżety",
+    "inCurrency": "na kontach w {{currency}}"
   },
   "palette": {
     "placeholder": "Szybkie dodawanie („Kebab 8,50”) lub szukaj …",
@@ -213,7 +221,8 @@
     "unsupported_heic": "Zdjęć HEIC/HEIF nie da się jeszcze odczytać. Zapisz zdjęcie jako JPEG (iPhone: Ustawienia → Aparat → Formaty → Najbardziej zgodne).",
     "unsupported_pdf_without_image": "Ten PDF nie zawiera zeskanowanego obrazu. Zapisz skan jako JPEG lub PDF z obrazem.",
     "unsupported_missing_columns": "Plik musi mieć co najmniej kolumnę z datą i kwotą. Użyj szablonu ZCashflow lub zmień nagłówki kolumn.",
-    "unsupported_empty_file": "Plik jest pusty."
+    "unsupported_empty_file": "Plik jest pusty.",
+    "unsupported_currency_decimals": "Te waluty mają różną liczbę miejsc po przecinku, więc kwot nie da się po prostu przestawić."
   },
   "freq": {
     "daily": "codziennie",
@@ -633,7 +642,6 @@
       "view": "Widzi wszystko; jego zmiany są ignorowane",
       "capture": "Może tylko wysyłać zdjęcia paragonów"
     },
-    "firewallHint": "Inne urządzenia nie mogą się połączyć? Zapora tego komputera prawdopodobnie blokuje port synchronizacji. Odblokuj go raz w terminalu:",
     "scan": "Szukaj",
     "scanning": "Szukam …",
     "scanningHint": "Szukam urządzeń z ZCashflow w sieci Wi-Fi …",
@@ -1061,5 +1069,44 @@
     "some": "Uwzględniono {{count}} z {{total}} budżetów",
     "title": "Uwzględnij budżety w planie",
     "hint": "Uwzględnione budżety liczą się jako przewidywane wydatki w planie miesiąca, prognozie i kwocie na dzień. Dotychczasowe wydatki w tych kategoriach nie są szacowane podwójnie."
+  },
+  "amounts": {
+    "title": "Kwoty i transakcje",
+    "hint": "Jak wyglądają kwoty i od czego zaczyna się lista transakcji – na tym urządzeniu.",
+    "currencySymbol": "Symbol waluty",
+    "currencySymbolHint": "Ukrywany tylko, gdy wszystkie konta mają tę samą walutę.",
+    "symbolShow": "Pokazuj",
+    "symbolSingle": "Ukryj przy jednej walucie",
+    "expenses": "Wydatki",
+    "expensesHint": "Ze znakiem minus albo na czerwono bez minusa.",
+    "expenseMinus": "Z minusem",
+    "expenseRed": "Na czerwono, bez minusa",
+    "txPeriod": "Transakcje otwierają się z",
+    "txPeriodHint": "Filtrem dat zawsze możesz wybrać inny okres.",
+    "periodAll": "Cały okres",
+    "periodMonth": "Bieżący miesiąc"
+  },
+  "currencySwitch": {
+    "title": "Przestawić też konta na {{currency}}?",
+    "text": "Wszystkie Twoje konta używają {{from}}. ZCashflow może przestawić je – razem z transakcjami, płatnościami cyklicznymi, budżetami, celami i długami – na {{to}}. Kwoty pozostają dokładnie takie same; zmienia się tylko waluta. Użyj tego, jeśli na początku wybrano złą walutę.",
+    "onlyDefault": "Zmień tylko domyślną",
+    "switchAll": "Przestaw wszystko na {{currency}}",
+    "done": "Wszystko używa teraz {{currency}}"
+  },
+  "syncHelp": {
+    "title": "Urządzenia się nie widzą albo nie synchronizują?",
+    "thisDevice": "to urządzenie",
+    "sameWifi": "Oba urządzenia są w tej samej sieci Wi-Fi – nie w sieci dla gości, a router nie izoluje urządzeń („izolacja AP” lub „izolacja klientów”).",
+    "bothOpen": "ZCashflow jest otwarty na obu urządzeniach. Telefony wstrzymują aplikacje w tle – otwórz aplikację, aby zsynchronizować.",
+    "vpn": "VPN jest wyłączony na obu urządzeniach.",
+    "byAddress": "Jeśli urządzenie nie zostanie znalezione, sparuj je przez „{{button}}” i wpisz adres podany pod „{{label}}”.",
+    "windowsTitle": "Windows",
+    "windowsText": "Gdy Windows zapyta, zezwól ZCashflow na sieci prywatne i ustaw Wi-Fi jako prywatną (Ustawienia → Sieć i Internet → Wi-Fi → Twoja sieć → Sieć prywatna). Albo odblokuj port {{port}} raz w PowerShell jako administrator:",
+    "macTitle": "macOS",
+    "macText": "Jeśli zapora jest włączona, zezwól na połączenia przychodzące dla ZCashflow (Ustawienia systemowe → Sieć → Zapora → Opcje).",
+    "linuxTitle": "Linux",
+    "linuxText": "Większość dystrybucji desktopowych blokuje połączenia przychodzące. Odblokuj port {{port}} raz w terminalu:",
+    "mobileTitle": "Android i iPhone",
+    "mobileText": "Na iPhonie zezwól ZCashflow na „Sieć lokalna” (Ustawienia → Prywatność i ochrona → Sieć lokalna). Na obu Wi-Fi musi być włączone – przez dane komórkowe drugie urządzenie jest nieosiągalne. Nie zamykaj aplikacji podczas synchronizacji."
   }
 }

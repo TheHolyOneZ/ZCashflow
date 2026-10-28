@@ -93,7 +93,14 @@
     "fromRule": "„{{title}}“ kuralından otomatik · {{freq}}",
     "usually": "normalde",
     "applyToRule": "Yeni tutarı bundan sonra da kullan",
-    "applyToRuleHint": "Örn. maaş artışından sonra. Aksi halde değişiklik yalnızca bu işlem için geçerli olur."
+    "applyToRuleHint": "Örn. maaş artışından sonra. Aksi halde değişiklik yalnızca bu işlem için geçerli olur.",
+    "prevMonth": "Önceki ay",
+    "nextMonth": "Sonraki ay",
+    "allTime": "Tüm zamanlar",
+    "monthView": "Aylık görünüm",
+    "carriedOver": "Devreden",
+    "balanceToday": "Bugünkü bakiye",
+    "balanceOn": "{{date}} bakiyesi"
   },
   "account": {
     "cash": "Nakit",
@@ -147,7 +154,8 @@
     "upcoming": "Önümüzdeki 14 gün",
     "noUpcoming": "Planlanmış ödeme yok. Burada görmek için düzenli işlemler ekle.",
     "cashflowEmpty": "İşlem ekledikçe son ayların gelir ve giderlerini burada göreceksin.",
-    "budgetsReserved": "Bütçeler için {{amount}} ayrıldı"
+    "budgetsReserved": "Bütçeler için {{amount}} ayrıldı",
+    "inCurrency": "{{currency}} hesaplarında"
   },
   "palette": {
     "placeholder": "Hızlı ekle („Döner 8,50“) veya ara …",
@@ -209,7 +217,8 @@
     "unsupported_heic": "HEIC/HEIF fotoğraflar henüz okunamıyor. Lütfen fotoğrafı JPEG olarak kaydet (iPhone: Ayarlar → Kamera → Biçimler → En Uyumlu).",
     "unsupported_pdf_without_image": "Bu PDF taranmış bir görüntü içermiyor. Taramayı JPEG ya da görüntü PDF'i olarak kaydet.",
     "unsupported_missing_columns": "Dosyada en az bir tarih ve bir tutar sütunu olmalı. ZCashflow şablonunu kullan veya sütun başlıklarını yeniden adlandır.",
-    "unsupported_empty_file": "Dosya boş."
+    "unsupported_empty_file": "Dosya boş.",
+    "unsupported_currency_decimals": "Bu para birimlerinin ondalık basamak sayısı farklı, bu yüzden tutarlar doğrudan değiştirilemez."
   },
   "freq": {
     "daily": "günlük",
@@ -579,7 +588,6 @@
       "view": "Her şeyi görür; değişiklikleri yok sayılır",
       "capture": "Yalnızca fiş fotoğrafı gönderebilir"
     },
-    "firewallHint": "Diğer cihazlar bağlanamıyor mu? Muhtemelen bu PC'nin güvenlik duvarı senkronizasyon portunu engelliyor. Bir terminalde bir kez izin ver:",
     "scan": "Ara",
     "scanning": "Aranıyor …",
     "scanningHint": "Wi-Fi'da ZCashflow cihazları aranıyor …",
@@ -985,5 +993,44 @@
     "some": "{{total}} bütçeden {{count}} tanesi planlandı",
     "title": "Bütçeleri plana dahil et",
     "hint": "Planlanan bütçeler aylık planda, tahminde ve günlük harcanabilir tutarda beklenen gider sayılır. Bu kategorilerdeki geçmiş harcamalar iki kez tahmin edilmez."
+  },
+  "amounts": {
+    "title": "Tutarlar ve işlemler",
+    "hint": "Tutarların görünümü ve işlem listesinin hangi dönemle açılacağı – bu cihazda.",
+    "currencySymbol": "Para birimi simgesi",
+    "currencySymbolHint": "Yalnızca tüm hesaplar aynı para birimini kullandığında gizlenir.",
+    "symbolShow": "Göster",
+    "symbolSingle": "Tek para biriminde gizle",
+    "expenses": "Giderler",
+    "expensesHint": "Eksi işaretiyle ya da eksi olmadan kırmızı.",
+    "expenseMinus": "Eksiyle",
+    "expenseRed": "Kırmızı, eksisiz",
+    "txPeriod": "İşlemler şununla açılır",
+    "txPeriodHint": "Tarih filtresiyle her zaman başka bir dönem seçebilirsin.",
+    "periodAll": "Tüm zamanlar",
+    "periodMonth": "Bu ay"
+  },
+  "currencySwitch": {
+    "title": "Hesapların da {{currency}} olarak değiştirilsin mi?",
+    "text": "Tüm hesapların {{from}} kullanıyor. ZCashflow bunları – tüm işlemler, düzenli ödemeler, bütçeler, hedefler ve borçlarla birlikte – {{to}} olarak değiştirebilir. Tutarlar aynen kalır; yalnızca para birimi değişir. Başta yanlış para birimini seçtiysen bunu kullan.",
+    "onlyDefault": "Yalnızca varsayılanı değiştir",
+    "switchAll": "Hepsini {{currency}} yap",
+    "done": "Artık her şey {{currency}} kullanıyor"
+  },
+  "syncHelp": {
+    "title": "Cihazlar birbirini bulmuyor veya eşitlenmiyor mu?",
+    "thisDevice": "bu cihaz",
+    "sameWifi": "İki cihaz da aynı Wi-Fi ağında – misafir ağında değil ve modem cihazları birbirinden ayırmıyor (\"AP yalıtımı\" veya \"istemci yalıtımı\").",
+    "bothOpen": "ZCashflow iki cihazda da açık. Telefonlar arka plandaki uygulamaları duraklatır, eşitlemek için uygulamayı aç.",
+    "vpn": "VPN iki cihazda da kapalı.",
+    "byAddress": "Bir cihaz bulunamazsa \"{{button}}\" ile eşle ve \"{{label}}\" altında yazan adresi gir.",
+    "windowsTitle": "Windows",
+    "windowsText": "Windows sorduğunda ZCashflow'a özel ağlar için izin ver ve Wi-Fi'ını Özel olarak ayarla (Ayarlar → Ağ ve İnternet → Wi-Fi → ağın → Özel ağ). Ya da {{port}} numaralı bağlantı noktasına PowerShell'de yönetici olarak bir kez izin ver:",
+    "macTitle": "macOS",
+    "macText": "Güvenlik duvarı açıksa ZCashflow için gelen bağlantılara izin ver (Sistem Ayarları → Ağ → Güvenlik Duvarı → Seçenekler).",
+    "linuxTitle": "Linux",
+    "linuxText": "Çoğu masaüstü dağıtımı gelen bağlantıları engeller. {{port}} numaralı bağlantı noktasına terminalde bir kez izin ver:",
+    "mobileTitle": "Android ve iPhone",
+    "mobileText": "iPhone'da ZCashflow için \"Yerel Ağ\" iznini aç (Ayarlar → Gizlilik ve Güvenlik → Yerel Ağ). İkisinde de Wi-Fi açık olmalı – mobil veriyle diğer cihaza ulaşılamaz. Eşitleme sırasında uygulamayı açık tut."
   }
 }

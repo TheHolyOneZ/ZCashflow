@@ -12,12 +12,11 @@ import { Stepper } from "@/components/ui/inputs";
 import { Segmented } from "@/components/ui/segmented";
 import { api, demo, planning } from "@/lib/api";
 import { cn } from "@/lib/cn";
-import { languages } from "@/lib/i18n";
+import { activeLocale, languages } from "@/lib/i18n";
+import { currencyItems } from "@/lib/currencies";
 import { parseMoney } from "@/lib/money";
 import { invalidateData, useAccounts, useAppInfo, useErrorMessage, useSettings, useTransactions } from "@/lib/queries";
 import { useUi, type Theme } from "@/stores/ui";
-
-const CURRENCIES = ["EUR", "USD", "GBP", "CHF", "PLN", "CZK", "SEK", "NOK", "DKK", "TRY", "JPY"];
 
 function nextDay(day: number): string {
   const now = new Date();
@@ -146,7 +145,7 @@ function Wizard() {
               <Select id="ob-lang" value={i18n.language} onValueChange={(v) => i18n.changeLanguage(v)} items={languages.map((l) => ({ value: l.code, label: l.label }))} />
             </Field>
             <Field label={t("settings.currency")} htmlFor="ob-cur">
-              <Select id="ob-cur" value={currency} onValueChange={setCurrency} items={CURRENCIES.map((c) => ({ value: c, label: c }))} />
+              <Select id="ob-cur" value={currency} onValueChange={setCurrency} items={currencyItems(activeLocale(), currency)} />
             </Field>
           </div>
           <Field label={t("settings.theme")}>

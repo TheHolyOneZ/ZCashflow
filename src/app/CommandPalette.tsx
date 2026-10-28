@@ -28,7 +28,7 @@ export function CommandPalette() {
   const setTheme = useUi((s) => s.setTheme);
   const navigate = useNavigate();
   const accounts = useAccounts().data ?? [];
-  const defaultCurrency = useAppInfo().data?.defaultCurrency ?? "EUR";
+  const mainCurrency = useAppInfo().data?.mainCurrency ?? "EUR";
   const save = useSaveTransaction();
 
   const [text, setText] = useState("");
@@ -51,7 +51,7 @@ export function CommandPalette() {
   }, [text]);
 
   const account =
-    accounts.find((a) => !a.archived && a.currency === defaultCurrency) ??
+    accounts.find((a) => !a.archived && a.currency === mainCurrency) ??
     accounts.find((a) => !a.archived);
 
   function run(fn: () => void) {
@@ -87,7 +87,7 @@ export function CommandPalette() {
       }
     : {};
   const locale = activeLocale();
-  const currency = account?.currency ?? defaultCurrency;
+  const currency = account?.currency ?? mainCurrency;
 
   return (
     <Command.Dialog

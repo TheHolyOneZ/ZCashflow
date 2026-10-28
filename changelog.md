@@ -1,5 +1,28 @@
 # Changelog
 
+## 1.4.0
+
+### Added
+
+- All ISO currencies can be chosen for accounts, the default currency and during setup – e.g. LKR, INR or PKR – shown with their names. Before, only 11 currencies were available.
+- When the default currency is changed and all accounts use one other currency, ZCashflow offers to switch the accounts and all entries, recurring payments, budgets, goals and debts to the new currency. Amounts stay the same; only the currency changes. Not offered between currencies with a different number of decimal places.
+- New settings section *Amounts & transactions*, per device. The defaults stay as before:
+  - *Currency symbol*: hide it while all accounts use the same currency.
+  - *Expenses*: show them in red without a minus sign. Balances keep their minus sign.
+  - *Transactions open with*: the current month instead of all time.
+- The transactions list shows ◀ month ▶ arrows when a full month is selected, and *Month view* to jump to the current month.
+- The totals in the transactions list show the balance carried over from before the period and the balance at its end, when no category, type or search filter is set. The carried-over balance is left out for accounts corrected within the period, since their earlier history is not known.
+- The description field in the transaction dialog and the *Simple* view suggests earlier descriptions while typing, most used first. Picking one fills in its category. The typed part is highlighted in suggestions.
+- *Devices & sync* has a troubleshooting section for Windows, macOS, Linux, Android and iPhone, with copyable firewall commands. Before, only Linux had a hint.
+
+### Fixed
+
+- The overview showed a total balance of 0 when the default currency differed from the currency of the accounts. The overview, forecast, month plan and insights now use the currency the accounts actually use, and balances of accounts in other currencies are listed below the total.
+
+### Notes
+
+- No database or sync schema change; devices on 1.3.0 still sync. The default currency is stored per device, so after switching currencies on one device, choose the same default currency on the others.
+
 ## 1.3.0
 
 ### Added

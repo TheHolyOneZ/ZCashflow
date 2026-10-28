@@ -3,6 +3,7 @@ pub mod accounts;
 pub mod budgets;
 pub mod categories;
 pub mod counterparties;
+pub mod currency;
 pub mod debts;
 pub mod demo;
 pub mod export;

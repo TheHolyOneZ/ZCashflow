@@ -7,7 +7,7 @@ import { Autocomplete, Stepper } from "@/components/ui/inputs";
 import type { Freq, TxKind } from "@/lib/api";
 import { categoryTree } from "@/lib/categories";
 import { displayName } from "@/lib/i18n";
-import { useAccounts, useCategories, useCounterparties } from "@/lib/queries";
+import { useAccounts, useCategories, useCounterparties, useRecentTitles } from "@/lib/queries";
 
 const ACCOUNT_ICON: Record<string, string> = {
   cash: "banknote",
@@ -107,6 +107,28 @@ export function CounterpartyInput({
       suggestions={counterparties.map((c) => c.name)}
     />
   );
+}
+
+export function TitleInput({
+  id,
+  value,
+  onChange,
+  onPick,
+  kind,
+  placeholder,
+}: {
+  id?: string;
+  value: string;
+  onChange: (v: string) => void;
+  onPick?: (v: string) => void;
+  kind?: TxKind;
+  placeholder?: string;
+}) {
+  const titles = useRecentTitles(kind).data ?? [];
+  const counterparties = useCounterparties().data ?? [];
+  const seen = new Set(titles.map((s) => s.toLowerCase()));
+  const suggestions = [...titles, ...counterparties.map((c) => c.name).filter((n) => !seen.has(n.toLowerCase()))];
+  return <Autocomplete id={id} value={value} onChange={onChange} onPick={onPick} placeholder={placeholder} suggestions={suggestions} />;
 }
 
 export function FreqPicker({

@@ -5,7 +5,7 @@ import { planning, receipts } from "@/lib/api";
 import { SwitchRow, Money } from "@/components/ui/extra";
 import { freqLabel } from "@/lib/format";
 import { ruleInput } from "@/features/recurring/rule-input";
-import { AccountSelect, CategorySelect, CounterpartyInput } from "@/components/selects";
+import { AccountSelect, CategorySelect, CounterpartyInput, TitleInput } from "@/components/selects";
 import { useAttachments } from "@/lib/queries";
 import { IMAGE_ACCEPT, Lightbox, ReceiptThumb, useReceiptImport } from "@/features/receipts/receipt-ui";
 import type { Attachment } from "@/lib/api";
@@ -304,11 +304,17 @@ function TransactionForm({
       )}
 
       <Field label={t("tx.title")} htmlFor="tx-title">
-        <Input
+        <TitleInput
           id="tx-title"
+          kind={form.kind}
           placeholder={t("tx.titlePlaceholder")}
           value={form.title}
-          onChange={(e) => set("title", e.target.value)}
+          onChange={(v) => set("title", v)}
+          onPick={async (v) => {
+            if (form.kind === "transfer" || form.categoryId) return;
+            const id = await receipts.suggestCategory(v).catch(() => null);
+            if (id) setForm((f) => (f.categoryId ? f : { ...f, categoryId: id }));
+          }}
         />
       </Field>
 

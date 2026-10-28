@@ -24,13 +24,13 @@ import { Card } from "@/components/ui/misc";
 import { Money, MoneyInput } from "@/components/ui/extra";
 import { Select } from "@/components/ui/select";
 import { CategoryIcon } from "@/components/category-icon";
-import { AccountSelect, CounterpartyInput } from "@/components/selects";
+import { AccountSelect, TitleInput } from "@/components/selects";
 import { api, planning, receipts, type Attachment, type Category, type Transaction, type TxKind } from "@/lib/api";
 import { cn } from "@/lib/cn";
 import { entryTime, formatDay, formatTime, isoDate } from "@/lib/dates";
 import { activeLocale, displayName } from "@/lib/i18n";
 import { isTauri, os } from "@/lib/platform";
-import { minorDigits, parseMoney } from "@/lib/money";
+import { minorDigits, parseMoney, withCurrencyChoice } from "@/lib/money";
 import {
   invalidateData,
   useAccounts,
@@ -291,7 +291,7 @@ function WeekStrip({ day, done, onPick }: { day: string; done: Set<string>; onPi
                 ) : (
                   <>
                     <span className="sm:hidden">{bare.format(spent / 10 ** minorDigits(currency))}</span>
-                    <span className="hidden sm:inline">{fmt.format(spent / 10 ** minorDigits(currency))}</span>
+                    <span className="hidden sm:inline">{withCurrencyChoice(fmt.formatToParts(spent / 10 ** minorDigits(currency)))}</span>
                   </>
                 )
               ) : d === today ? (
@@ -548,7 +548,7 @@ function QuickAdd({ day, onAdded }: { day: string; onAdded: () => void }) {
             />
           </div>
           <div className="min-w-0 flex-[1_1_12rem] [&_input]:h-12 [&_input]:text-[15px]">
-            <CounterpartyInput value={title} onChange={setTitle} placeholder={t("today.whatFor")} />
+            <TitleInput kind={kind} value={title} onChange={setTitle} placeholder={t("today.whatFor")} />
           </div>
           <Button type="submit" variant="primary" disabled={busy} className="h-12 px-5">
             <Plus className="size-4" />
@@ -604,6 +604,7 @@ function QuickAdd({ day, onAdded }: { day: string; onAdded: () => void }) {
                   <Plus className="size-3.5 text-muted group-hover:text-accent" strokeWidth={2.5} />
                   <span className="max-w-40 truncate font-medium">{h.title}</span>
                   <Money
+                    flow
                     minor={h.kind === "income" ? h.amountMinor : -h.amountMinor}
                     currency={h.currency}
                     signed={h.kind === "income"}
@@ -798,6 +799,7 @@ function DayList({ entries }: { entries: Transaction[] }) {
                 </span>
               </span>
               <Money
+                flow
                 minor={e.kind === "transfer" ? e.amountMinor : signed(e)}
                 currency={e.currency}
                 signed={e.kind === "income"}

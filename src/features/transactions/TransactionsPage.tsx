@@ -3,7 +3,8 @@ import { DateInput } from "@/components/ui/date-input";
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { useNavigate, useSearch } from "@tanstack/react-router";
-import { Download, Plus, Receipt, Search, SlidersHorizontal, Upload, X } from "lucide-react";
+import { CalendarRange, ChevronLeft, ChevronRight, Download, Plus, Receipt, Search, SlidersHorizontal, Upload, X } from "lucide-react";
+import { addMonths, endOfMonth, parseISO, startOfMonth } from "date-fns";
 import { ImportDialog } from "@/features/data/ImportDialog";
 import { useExportFile } from "@/features/data/export";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,9 @@ import { useUi } from "@/stores/ui";
 import { TransactionList } from "./TransactionList";
 import { CategoryIcon } from "@/components/category-icon";
 import { modKey } from "@/lib/platform";
+import { formatDay, isoDate, monthRange } from "@/lib/dates";
+import { activeLocale } from "@/lib/i18n";
+import { usePrefs } from "@/stores/prefs";
 
 type KindFilter = TxKind | "all";
 
@@ -35,12 +39,15 @@ export function TransactionsPage() {
   const [kind, setKind] = useState<KindFilter>("all");
   const [accountId, setAccountId] = useState("");
   const [categoryId, setCategoryId] = useState("");
-  const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
+  const [initial] = useState(() =>
+    usePrefs.getState().txPeriod === "month" && !search.q ? monthRange() : { from: "", to: "" },
+  );
+  const [from, setFrom] = useState(initial.from);
+  const [to, setTo] = useState(initial.to);
   const [showMore, setShowMore] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const exportFile = useExportFile();
-  const advanced = !!(accountId || categoryId || from || to);
+  const advanced = !!(accountId || categoryId || ((from || to) && !fullMonth(from, to)));
 
   useEffect(() => setQuery(search.q ?? ""), [search.q]);
 
@@ -184,7 +191,17 @@ export function TransactionsPage() {
           </div>
         </div>
 
-        {totals && totals.count > 0 && kind !== "transfer" && <TotalsBar totals={totals} />}
+        <PeriodBar
+          from={from}
+          to={to}
+          onChange={(r) => {
+            setFrom(r.from);
+            setTo(r.to);
+          }}
+        />
+        {totals && kind !== "transfer" && (totals.count > 0 || totals.currencies.some((c) => c.closingMinor !== null)) && (
+          <TotalsBar totals={totals} to={to} />
+        )}
 
         {isLoading ? (
           <p className="p-6 text-center text-muted">{t("common.loading")}</p>
@@ -213,27 +230,85 @@ export function TransactionsPage() {
   );
 }
 
-function TotalsBar({ totals }: { totals: TransactionTotals }) {
+function fullMonth(from: string, to: string): Date | null {
+  if (!from || !to) return null;
+  const start = parseISO(from);
+  return isoDate(startOfMonth(start)) === from && isoDate(endOfMonth(start)) === to ? start : null;
+}
+
+function PeriodBar({ from, to, onChange }: { from: string; to: string; onChange: (r: { from: string; to: string }) => void }) {
+  const { t } = useTranslation();
+  const month = fullMonth(from, to);
+  if (from || to) {
+    if (!month) return null;
+    const label = new Intl.DateTimeFormat(activeLocale(), { month: "long", year: "numeric" }).format(month);
+    return (
+      <div className="flex items-center justify-between gap-2 border-b border-border px-2 py-1.5">
+        <Button variant="ghost" size="icon" aria-label={t("tx.prevMonth")} onClick={() => onChange(monthRange(addMonths(month, -1)))}>
+          <ChevronLeft className="size-4" />
+        </Button>
+        <span className="text-[13.5px] font-semibold capitalize">{label}</span>
+        <Button variant="ghost" size="icon" aria-label={t("tx.nextMonth")} onClick={() => onChange(monthRange(addMonths(month, 1)))}>
+          <ChevronRight className="size-4" />
+        </Button>
+      </div>
+    );
+  }
+  return (
+    <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-1.5 text-[12px] text-muted">
+      <span>{t("tx.allTime")}</span>
+      <Button variant="ghost" size="sm" onClick={() => onChange(monthRange())}>
+        <CalendarRange className="size-3.5" />
+        {t("tx.monthView")}
+      </Button>
+    </div>
+  );
+}
+
+function TotalsBar({ totals, to }: { totals: TransactionTotals; to: string }) {
   const { t } = useTranslation();
   const several = totals.currencies.length > 1;
+  const today = isoDate();
+  const endLabel = !to || to === today ? t("tx.balanceToday") : t("tx.balanceOn", { date: formatDay(to) });
   return (
     <div className="flex flex-col divide-y divide-border border-b border-border bg-surface-2/40">
       {totals.currencies.map((c) => (
-        <dl key={c.currency} className="grid grid-cols-3 gap-1.5 px-3 py-2.5 text-center sm:gap-2 sm:px-4">
-          {[
-            { label: t("kind.incomes"), value: <Money minor={c.incomeMinor} currency={c.currency} className="text-income" /> },
-            { label: t("kind.expenses"), value: <Money minor={c.expenseMinor} currency={c.currency} className="text-expense" /> },
-            {
-              label: several ? `${t("dashboard.net")} · ${c.currency}` : t("dashboard.net"),
-              value: <Money minor={c.incomeMinor - c.expenseMinor} currency={c.currency} signed tone="auto" />,
-            },
-          ].map((x) => (
-            <div key={x.label} className="flex min-w-0 flex-col gap-0.5">
-              <dt className="truncate text-[11px] font-medium text-muted">{x.label}</dt>
-              <dd className="truncate text-[13px] font-semibold sm:text-[15px]">{x.value}</dd>
-            </div>
-          ))}
-        </dl>
+        <div key={c.currency} className="flex flex-col gap-2 px-3 py-2.5 sm:px-4">
+          {c.count > 0 && (
+            <dl className="grid grid-cols-3 gap-1.5 text-center sm:gap-2">
+              {[
+                { label: t("kind.incomes"), value: <Money minor={c.incomeMinor} currency={c.currency} className="text-income" /> },
+                { label: t("kind.expenses"), value: <Money minor={c.expenseMinor} currency={c.currency} className="text-expense" /> },
+                {
+                  label: several ? `${t("dashboard.net")} · ${c.currency}` : t("dashboard.net"),
+                  value: <Money minor={c.incomeMinor - c.expenseMinor} currency={c.currency} signed tone="auto" />,
+                },
+              ].map((x) => (
+                <div key={x.label} className="flex min-w-0 flex-col gap-0.5">
+                  <dt className="truncate text-[11px] font-medium text-muted">{x.label}</dt>
+                  <dd className="truncate text-[13px] font-semibold sm:text-[15px]">{x.value}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
+          {c.closingMinor !== null && (
+            <p
+              className={cn(
+                "flex flex-wrap items-center justify-center gap-x-4 gap-y-0.5 text-[12px] text-muted",
+                c.count > 0 && "border-t border-border/60 pt-2",
+              )}
+            >
+              {c.openingMinor !== null && (
+                <span>
+                  {t("tx.carriedOver")}: <Money minor={c.openingMinor} currency={c.currency} tone="auto" className="font-medium" />
+                </span>
+              )}
+              <span>
+                {endLabel}: <Money minor={c.closingMinor} currency={c.currency} tone="auto" className="font-medium text-fg" />
+              </span>
+            </p>
+          )}
+        </div>
       ))}
     </div>
   );

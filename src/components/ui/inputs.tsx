@@ -101,6 +101,7 @@ export function Autocomplete({
   value,
   onChange,
   onBlur,
+  onPick,
   suggestions,
   placeholder,
   renderIcon,
@@ -109,6 +110,7 @@ export function Autocomplete({
   value: string;
   onChange: (v: string) => void;
   onBlur?: (v: string) => void;
+  onPick?: (v: string) => void;
   suggestions: string[];
   placeholder?: string;
   renderIcon?: (s: string) => ReactNode;
@@ -130,7 +132,9 @@ export function Autocomplete({
     onChange(s);
     setOpen(false);
     onBlur?.(s);
+    onPick?.(s);
   };
+  const q = value.trim();
 
   return (
     <P.Root open={show} onOpenChange={setOpen}>
@@ -201,13 +205,27 @@ export function Autocomplete({
                 )}
               >
                 {renderIcon?.(s)}
-                <span className="truncate">{s}</span>
+                <span className="truncate">
+                  <Highlight text={s} query={q} />
+                </span>
               </li>
             ))}
           </ul>
         </P.Content>
       </P.Portal>
     </P.Root>
+  );
+}
+
+function Highlight({ text, query }: { text: string; query: string }) {
+  const at = query ? text.toLowerCase().indexOf(query.toLowerCase()) : -1;
+  if (at < 0) return <>{text}</>;
+  return (
+    <>
+      {text.slice(0, at)}
+      <span className="font-semibold text-accent">{text.slice(at, at + query.length)}</span>
+      {text.slice(at + query.length)}
+    </>
   );
 }
 

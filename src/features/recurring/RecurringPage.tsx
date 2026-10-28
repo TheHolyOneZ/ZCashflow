@@ -25,7 +25,7 @@ export function RecurringPage() {
   const { t } = useTranslation();
   const rules = useRecurring().data ?? [];
   const pending = (useUpcoming(0).data ?? []).filter((o) => o.overdue && !o.autoPost);
-  const currency = useAppInfo().data?.defaultCurrency ?? "EUR";
+  const currency = useAppInfo().data?.mainCurrency ?? "EUR";
   const [filter, setFilter] = useState<Filter>("all");
   const [dialog, setDialog] = useState<{ rule?: RecurringRule } | null>(null);
   const exportFile = useExportFile();
@@ -190,6 +190,7 @@ function RuleRow({ rule, onClick }: { rule: RecurringRule; onClick: () => void }
         </div>
         <div className="flex flex-col items-end">
           <Money
+            flow
             minor={sign * rule.amountMinor}
             currency={rule.currency}
             signed={rule.kind === "income"}

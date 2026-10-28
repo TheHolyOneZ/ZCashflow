@@ -154,7 +154,7 @@ pub fn upsert(db: &Db, input: BudgetInput, today: NaiveDate) -> AppResult<Budget
     }
     period_range(&input.period, today)?;
     let conn = db.conn();
-    let currency = get_meta(&conn, "default_currency")?.unwrap_or_else(|| "EUR".into());
+    let currency = super::currency::main_currency(&conn)?;
     let hlc = db.hlc.tick();
     let id = match &input.id {
         Some(id) => {

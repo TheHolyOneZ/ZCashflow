@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Bell,
+  Coins,
   Database,
   Download,
   HardDriveDownload,
@@ -21,6 +22,10 @@ import { Card, PageHeader } from "@/components/ui/misc";
 import { Select } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { SwitchRow } from "@/components/ui/extra";
+import { Dialog } from "@/components/ui/dialog";
+import { Segmented } from "@/components/ui/segmented";
+import { minorDigits } from "@/lib/money";
+import { usePrefs, type CurrencySymbol, type ExpenseStyle, type TxPeriod } from "@/stores/prefs";
 import { cn } from "@/lib/cn";
 import { OcrSettings } from "./OcrSettings";
 import { DemoControls } from "./DemoControls";
@@ -32,15 +37,15 @@ import { ImportDialog } from "@/features/data/ImportDialog";
 import { pickSavePath } from "@/features/data/export";
 import { api, planning } from "@/lib/api";
 import { isoDate } from "@/lib/dates";
-import { languages } from "@/lib/i18n";
-import { keys, useAppInfo, useErrorMessage, useSettings } from "@/lib/queries";
+import { activeLocale, languages } from "@/lib/i18n";
+import { currencyItems } from "@/lib/currencies";
+import { invalidateData, useAccounts, useAppInfo, useErrorMessage, useSettings } from "@/lib/queries";
 import { useUi } from "@/stores/ui";
-
-const CURRENCIES = ["EUR", "USD", "GBP", "CHF", "PLN", "CZK", "SEK", "NOK", "DKK", "TRY", "JPY"];
 
 const SECTIONS: { id: string; icon: LucideIcon; key: string }[] = [
   { id: "general", icon: SlidersHorizontal, key: "settings.general" },
   { id: "appearance", icon: Palette, key: "appearance.title" },
+  { id: "amounts", icon: Coins, key: "amounts.title" },
   { id: "dashboard", icon: LayoutDashboard, key: "dashboardSettings.title" },
   { id: "reminders", icon: Bell, key: "settings.reminders" },
   { id: "receipts", icon: ScanLine, key: "ocr.title" },
@@ -84,6 +89,12 @@ export function SettingsPage() {
   const errorMessage = useErrorMessage();
   const info = useAppInfo().data;
   const qc = useQueryClient();
+  const accounts = useAccounts().data ?? [];
+  const [switchTo, setSwitchTo] = useState<{ from: string; to: string } | null>(null);
+  const currencySymbol = usePrefs((s) => s.currencySymbol);
+  const expenseStyle = usePrefs((s) => s.expenseStyle);
+  const txPeriod = usePrefs((s) => s.txPeriod);
+  const setPref = usePrefs((s) => s.set);
   const settings = useSettings().data ?? {};
   const [active, setActive] = useState("general");
   const [exportOpen, setExportOpen] = useState(false);
@@ -131,9 +142,31 @@ export function SettingsPage() {
   }
 
   async function changeCurrency(currency: string) {
+    const used = [...new Set(accounts.map((a) => a.currency))];
+    const from = used.length === 1 ? used[0] : null;
+    if (from && from !== currency && minorDigits(from) === minorDigits(currency)) {
+      setSwitchTo({ from, to: currency });
+      return;
+    }
+    await keepAccounts(currency);
+  }
+
+  async function keepAccounts(currency: string) {
+    setSwitchTo(null);
     try {
       await api.setDefaultCurrency(currency);
-      await qc.invalidateQueries({ queryKey: keys.appInfo });
+      await invalidateData(qc);
+    } catch (e) {
+      toast(errorMessage(e), "error");
+    }
+  }
+
+  async function switchAccounts(from: string, to: string) {
+    setSwitchTo(null);
+    try {
+      await api.relabelCurrency(from, to);
+      await invalidateData(qc);
+      toast(t("currencySwitch.done", { currency: to }));
     } catch (e) {
       toast(errorMessage(e), "error");
     }
@@ -182,13 +215,52 @@ export function SettingsPage() {
                 aria-label={t("settings.currency")}
                 value={info?.defaultCurrency ?? ""}
                 onValueChange={changeCurrency}
-                items={CURRENCIES.map((c) => ({ value: c, label: c }))}
+                items={currencyItems(activeLocale(), info?.defaultCurrency)}
               />
             </Field2>
           </Section>
 
           <Section id="appearance" icon={Palette} title={t("appearance.title")} hint={t("appearance.hint")}>
             <AppearanceSettings />
+          </Section>
+
+          <Section id="amounts" icon={Coins} title={t("amounts.title")} hint={t("amounts.hint")}>
+            <Field2 label={t("amounts.currencySymbol")} hint={t("amounts.currencySymbolHint")}>
+              <Segmented<CurrencySymbol>
+                aria-label={t("amounts.currencySymbol")}
+                value={currencySymbol}
+                onChange={(v) => setPref("currencySymbol", v)}
+                className="w-full"
+                options={[
+                  { value: "show", label: t("amounts.symbolShow") },
+                  { value: "single", label: t("amounts.symbolSingle") },
+                ]}
+              />
+            </Field2>
+            <Field2 label={t("amounts.expenses")} hint={t("amounts.expensesHint")}>
+              <Segmented<ExpenseStyle>
+                aria-label={t("amounts.expenses")}
+                value={expenseStyle}
+                onChange={(v) => setPref("expenseStyle", v)}
+                className="w-full"
+                options={[
+                  { value: "minus", label: t("amounts.expenseMinus") },
+                  { value: "red", label: t("amounts.expenseRed"), className: "text-expense" },
+                ]}
+              />
+            </Field2>
+            <Field2 label={t("amounts.txPeriod")} hint={t("amounts.txPeriodHint")}>
+              <Segmented<TxPeriod>
+                aria-label={t("amounts.txPeriod")}
+                value={txPeriod}
+                onChange={(v) => setPref("txPeriod", v)}
+                className="w-full"
+                options={[
+                  { value: "all", label: t("amounts.periodAll") },
+                  { value: "month", label: t("amounts.periodMonth") },
+                ]}
+              />
+            </Field2>
           </Section>
 
           <Section id="dashboard" icon={LayoutDashboard} title={t("dashboardSettings.title")}>
@@ -259,6 +331,23 @@ export function SettingsPage() {
           </Section>
         </div>
       </div>
+      <Dialog
+        open={!!switchTo}
+        onOpenChange={(o) => !o && setSwitchTo(null)}
+        title={t("currencySwitch.title", { currency: switchTo?.to ?? "" })}
+      >
+        {switchTo && (
+          <div className="flex flex-col gap-4">
+            <p className="text-[13px] text-muted">{t("currencySwitch.text", switchTo)}</p>
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <Button onClick={() => keepAccounts(switchTo.to)}>{t("currencySwitch.onlyDefault")}</Button>
+              <Button variant="primary" onClick={() => switchAccounts(switchTo.from, switchTo.to)}>
+                {t("currencySwitch.switchAll", { currency: switchTo.to })}
+              </Button>
+            </div>
+          </div>
+        )}
+      </Dialog>
     </div>
   );
 }

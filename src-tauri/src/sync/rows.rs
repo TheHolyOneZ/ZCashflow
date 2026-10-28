@@ -266,6 +266,38 @@ mod tests {
     }
 
     #[test]
+    fn deletions_made_offline_on_both_devices_are_all_kept() {
+        let pc = Db::open_in_memory().unwrap();
+        let phone = Db::open_in_memory().unwrap();
+        let (mut c_pc, mut c_phone) = (0, 0);
+        let all: Vec<String> = (1..=20).map(|i| expense(&pc, &format!("#{i}")).id).collect();
+        sync(&pc, &phone, &mut c_pc);
+        sync(&phone, &pc, &mut c_phone);
+
+        for id in &all[14..18] {
+            transactions::delete(&phone, id).unwrap();
+        }
+        for id in &all[9..14] {
+            transactions::delete(&pc, id).unwrap();
+        }
+        sync(&pc, &phone, &mut c_pc);
+        sync(&phone, &pc, &mut c_phone);
+
+        let left = |db: &Db| {
+            let mut t: Vec<u32> = transactions::list(&db.conn(), &Default::default())
+                .unwrap()
+                .iter()
+                .map(|t| t.title[1..].parse().unwrap())
+                .collect();
+            t.sort();
+            t
+        };
+        let expected: Vec<u32> = (1..=9).chain(19..=20).collect();
+        assert_eq!(left(&pc), expected);
+        assert_eq!(left(&phone), expected);
+    }
+
+    #[test]
     fn edits_from_older_versions_keep_the_time() {
         let a = Db::open_in_memory().unwrap();
         let t = expense(&a, "Kaffee");

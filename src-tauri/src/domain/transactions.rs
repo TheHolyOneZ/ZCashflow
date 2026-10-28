@@ -178,6 +178,8 @@ pub struct CurrencyTotal {
     pub count: u32,
     pub income_minor: i64,
     pub expense_minor: i64,
+    pub opening_minor: Option<i64>,
+    pub closing_minor: Option<i64>,
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
@@ -197,7 +199,7 @@ pub struct Totals {
     pub days: Vec<DayTotal>,
 }
 
-pub fn totals(conn: &Connection, f: &TransactionFilter) -> AppResult<Totals> {
+pub fn totals(conn: &Connection, f: &TransactionFilter, today: NaiveDate) -> AppResult<Totals> {
     let (filter, args) = filter_sql(f);
     let mut stmt = conn.prepare(&format!(
         "SELECT t.occurred_on, t.currency, count(*),
@@ -228,12 +230,60 @@ pub fn totals(conn: &Connection, f: &TransactionFilter) -> AppResult<Totals> {
                 count: n,
                 income_minor: day.income_minor,
                 expense_minor: day.expense_minor,
+                opening_minor: None,
+                closing_minor: None,
             }),
         }
         out.days.push(day);
     }
+    add_balances(conn, f, today, &mut out.currencies)?;
     out.currencies.sort_by_key(|c| std::cmp::Reverse(c.count));
     Ok(out)
+}
+
+fn add_balances(conn: &Connection, f: &TransactionFilter, today: NaiveDate, out: &mut Vec<CurrencyTotal>) -> AppResult<()> {
+    if f.kind.is_some() || f.category_id.is_some() || f.query.as_deref().is_some_and(|q| !q.trim().is_empty()) {
+        return Ok(());
+    }
+    let date = |s: &Option<String>| s.as_deref().and_then(|d| NaiveDate::parse_from_str(d, "%Y-%m-%d").ok());
+    let from = date(&f.from);
+    let end = date(&f.to).unwrap_or(today);
+    let picked = |a: &accounts::Account| match &f.account_id {
+        Some(id) => &a.id == id,
+        None => !a.archived,
+    };
+    let at_end: Vec<accounts::Account> = accounts::list_as_of(conn, end)?.into_iter().filter(picked).collect();
+    let before = match from.and_then(|d| d.pred_opt()) {
+        Some(d) => Some(accounts::list_as_of(conn, d)?.into_iter().filter(picked).collect::<Vec<_>>()),
+        None => None,
+    };
+    for a in &at_end {
+        let row = match out.iter_mut().position(|c| c.currency == a.currency) {
+            Some(i) => &mut out[i],
+            None => {
+                out.push(CurrencyTotal {
+                    currency: a.currency.clone(),
+                    count: 0,
+                    income_minor: 0,
+                    expense_minor: 0,
+                    opening_minor: None,
+                    closing_minor: None,
+                });
+                out.last_mut().expect("just pushed")
+            }
+        };
+        row.closing_minor = Some(row.closing_minor.unwrap_or(0) + a.balance_minor);
+    }
+    if let (Some(from), Some(before)) = (from, before) {
+        for row in out.iter_mut() {
+            let mine: Vec<&accounts::Account> = before.iter().filter(|a| a.currency == row.currency).collect();
+            let corrected_in_period = mine.iter().any(|a| a.anchor_on.as_deref().is_some_and(|on| on >= (from - chrono::Duration::days(1)).to_string().as_str()));
+            if !mine.is_empty() && !corrected_in_period {
+                row.opening_minor = Some(mine.iter().map(|a| a.balance_minor).sum());
+            }
+        }
+    }
+    Ok(())
 }
 
 pub fn parse_time(s: &str) -> Option<NaiveTime> {
@@ -464,6 +514,18 @@ fn keyword_category(name: &str) -> Option<&'static str> {
             .any(|w| list.iter().any(|k| w == k || (k.len() >= 4 && w.starts_with(k))))
             .then_some(*key)
     })
+}
+
+pub fn recent_titles(conn: &Connection, kind: Option<&str>, limit: u32) -> AppResult<Vec<String>> {
+    let mut stmt = conn.prepare(
+        "SELECT min(title) FROM transactions
+         WHERE deleted = 0 AND trim(title) <> '' AND (?1 IS NULL OR kind = ?1)
+         GROUP BY lower(trim(title))
+         ORDER BY count(*) DESC, max(occurred_on) DESC
+         LIMIT ?2",
+    )?;
+    let rows = stmt.query_map(params![kind, limit.min(1000)], |r| r.get(0))?;
+    Ok(rows.collect::<Result<_, _>>()?)
 }
 
 pub fn suggest_category(conn: &Connection, name: &str) -> AppResult<Option<String>> {
@@ -698,17 +760,54 @@ mod tests {
             ]
         );
 
-        let t = totals(&db.conn(), &TransactionFilter { limit: Some(1), ..Default::default() }).unwrap();
+        let today = d("2026-10-08");
+        let t = totals(&db.conn(), &TransactionFilter { limit: Some(1), ..Default::default() }, today).unwrap();
         assert_eq!(t.count, 4);
-        assert_eq!(t.currencies, vec![CurrencyTotal { currency: "EUR".into(), count: 4, income_minor: 10_000, expense_minor: 1_000 }]);
+        assert_eq!(
+            t.currencies,
+            vec![CurrencyTotal {
+                currency: "EUR".into(),
+                count: 4,
+                income_minor: 10_000,
+                expense_minor: 1_000,
+                opening_minor: None,
+                closing_minor: Some(9_000)
+            }]
+        );
         assert_eq!(t.days.len(), 2);
         assert_eq!((t.days[0].date.as_str(), t.days[0].income_minor, t.days[0].expense_minor), ("2026-10-08", 10_000, 800));
 
-        let only_yesterday = totals(&db.conn(), &TransactionFilter { from: Some("2026-10-07".into()), to: Some("2026-10-07".into()), ..Default::default() }).unwrap();
+        let only_today = totals(&db.conn(), &TransactionFilter { from: Some("2026-10-08".into()), ..Default::default() }, today).unwrap();
+        let c = &only_today.currencies[0];
+        assert_eq!((c.opening_minor, c.income_minor - c.expense_minor, c.closing_minor), (Some(-200), 9_200, Some(9_000)));
+        let food = totals(&db.conn(), &TransactionFilter { query: Some("Lohn".into()), ..Default::default() }, today).unwrap();
+        assert_eq!(food.currencies[0].closing_minor, None, "balances only make sense without category, kind or search filters");
+
+        accounts::set_balance(&db, &acc, 50_000, "2026-10-08").unwrap();
+        let corrected = totals(&db.conn(), &TransactionFilter { from: Some("2026-10-08".into()), ..Default::default() }, today).unwrap();
+        assert_eq!((corrected.currencies[0].opening_minor, corrected.currencies[0].closing_minor), (None, Some(50_000)));
+
+        let only_yesterday = totals(&db.conn(), &TransactionFilter { from: Some("2026-10-07".into()), to: Some("2026-10-07".into()), ..Default::default() }, today).unwrap();
         assert_eq!(only_yesterday.currencies[0].expense_minor, 200);
 
         assert!(create(&db, at("x", 1, "2026-10-08", Some("25:99"))).is_err());
         assert_eq!(create(&db, at("x", 1, "2026-10-08", Some(" "))).unwrap().occurred_time, None);
+    }
+
+    #[test]
+    fn recent_titles_put_the_most_used_first() {
+        let db = Db::open_in_memory().unwrap();
+        let acc = cash_account(&db);
+        for (title, date) in [("Uber warehouse", "2026-10-01"), ("uber warehouse", "2026-10-02"), ("Uber school", "2026-10-03"), ("  ", "2026-10-03")] {
+            create(&db, expense(&acc, title, 100, date)).unwrap();
+        }
+        let mut salary = expense(&acc, "Salary", 100, "2026-10-04");
+        salary.kind = "income".into();
+        create(&db, salary).unwrap();
+        let conn = db.conn();
+        assert_eq!(recent_titles(&conn, Some("expense"), 10).unwrap(), vec!["Uber warehouse", "Uber school"]);
+        assert_eq!(recent_titles(&conn, None, 10).unwrap().len(), 3);
+        assert_eq!(recent_titles(&conn, Some("expense"), 1).unwrap().len(), 1);
     }
 
     #[test]

@@ -24,7 +24,8 @@ import { useReceiptImport } from "@/features/receipts/receipt-ui";
 import { navGroups, navItems, type NavItem } from "./nav";
 import { useInsightNotifications } from "@/features/insights/insights";
 import { useDailyReminder } from "@/features/today/reminder";
-import { invalidateData, useInsights, useSyncStatus } from "@/lib/queries";
+import { invalidateData, useAccounts, useInsights, useSyncStatus } from "@/lib/queries";
+import { useMoneyDisplay } from "@/lib/money";
 
 function isTyping(target: EventTarget | null) {
   const el = target as HTMLElement | null;
@@ -97,6 +98,13 @@ function useStartPage() {
     const start = simpleMode ? "/today" : startPage;
     if (start !== "/" && window.location.pathname === "/") navigate({ to: start, replace: true });
   }, [navigate]);
+}
+
+function useSingleCurrency() {
+  const accounts = useAccounts().data;
+  useEffect(() => {
+    if (accounts) useMoneyDisplay.setState({ single: new Set(accounts.map((a) => a.currency)).size <= 1 });
+  }, [accounts]);
 }
 
 function useLedgerEvents() {
@@ -222,6 +230,7 @@ export function AppShell() {
   useStartPage();
   useApplyTitleBar();
   useLedgerEvents();
+  useSingleCurrency();
   useInsightNotifications();
   useDailyReminder();
   const badges = useNavBadges();

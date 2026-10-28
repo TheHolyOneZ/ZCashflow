@@ -94,7 +94,14 @@
     "usually": "d'habitude",
     "applyToRule": "Utiliser ce montant à l'avenir",
     "applyToRuleHint": "P. ex. après une augmentation. Sinon, la modification ne concerne que cette opération.",
-    "count_many": "{{count}} opérations"
+    "count_many": "{{count}} opérations",
+    "prevMonth": "Mois précédent",
+    "nextMonth": "Mois suivant",
+    "allTime": "Toute la période",
+    "monthView": "Vue mensuelle",
+    "carriedOver": "Report",
+    "balanceToday": "Solde aujourd'hui",
+    "balanceOn": "Solde au {{date}}"
   },
   "account": {
     "cash": "Espèces",
@@ -148,7 +155,8 @@
     "upcoming": "14 prochains jours",
     "noUpcoming": "Aucun paiement prévu. Ajoute des éléments récurrents pour les voir ici.",
     "cashflowEmpty": "Dès que tu ajoutes des opérations, tu verras ici les revenus et dépenses des derniers mois.",
-    "budgetsReserved": "{{amount}} réservés pour les budgets"
+    "budgetsReserved": "{{amount}} réservés pour les budgets",
+    "inCurrency": "sur les comptes en {{currency}}"
   },
   "palette": {
     "placeholder": "Saisie rapide (« Kebab 8,50 ») ou recherche …",
@@ -211,7 +219,8 @@
     "unsupported_heic": "Les photos HEIC/HEIF ne peuvent pas encore être lues. Enregistre la photo en JPEG (iPhone : Réglages → Appareil photo → Formats → Le plus compatible).",
     "unsupported_pdf_without_image": "Ce PDF ne contient aucune image numérisée. Enregistre le scan en JPEG ou en PDF image.",
     "unsupported_missing_columns": "Le fichier doit contenir au moins une colonne date et une colonne montant. Utilise le modèle ZCashflow ou renomme les en-têtes.",
-    "unsupported_empty_file": "Le fichier est vide."
+    "unsupported_empty_file": "Le fichier est vide.",
+    "unsupported_currency_decimals": "Ces devises n'ont pas le même nombre de décimales, les montants ne peuvent donc pas être simplement convertis."
   },
   "freq": {
     "daily": "quotidien",
@@ -605,7 +614,6 @@
       "view": "Voit tout ; ses modifications sont ignorées",
       "capture": "Peut seulement envoyer des photos de tickets"
     },
-    "firewallHint": "Les autres appareils ne peuvent pas se connecter ? Le pare-feu de ce PC bloque probablement le port de synchro. Autorise-le une fois dans un terminal :",
     "scan": "Rechercher",
     "scanning": "Recherche …",
     "scanningHint": "Recherche d'appareils ZCashflow sur le Wi-Fi …",
@@ -1023,5 +1031,44 @@
     "some": "{{count}} budgets sur {{total}} planifiés",
     "title": "Inclure les budgets dans le plan",
     "hint": "Les budgets planifiés comptent comme dépenses prévues dans le plan du mois, la prévision et le disponible par jour. Les dépenses passées de ces catégories ne sont pas estimées deux fois."
+  },
+  "amounts": {
+    "title": "Montants et opérations",
+    "hint": "L'apparence des montants et la période d'ouverture de la liste des opérations – sur cet appareil.",
+    "currencySymbol": "Symbole monétaire",
+    "currencySymbolHint": "Masqué uniquement tant que tous les comptes utilisent la même devise.",
+    "symbolShow": "Afficher",
+    "symbolSingle": "Masquer avec une devise",
+    "expenses": "Dépenses",
+    "expensesHint": "Avec un signe moins ou en rouge sans signe.",
+    "expenseMinus": "Avec moins",
+    "expenseRed": "Rouge, sans moins",
+    "txPeriod": "Les opérations s'ouvrent sur",
+    "txPeriodHint": "Le filtre de dates permet toujours de choisir une autre période.",
+    "periodAll": "Toute la période",
+    "periodMonth": "Mois en cours"
+  },
+  "currencySwitch": {
+    "title": "Passer aussi vos comptes en {{currency}} ?",
+    "text": "Tous vos comptes utilisent {{from}}. ZCashflow peut les passer – avec toutes les opérations, paiements récurrents, budgets, objectifs et dettes – en {{to}}. Les montants restent exactement les mêmes ; seule la devise change. À utiliser si vous avez choisi la mauvaise devise au départ.",
+    "onlyDefault": "Changer seulement la devise par défaut",
+    "switchAll": "Tout passer en {{currency}}",
+    "done": "Tout utilise maintenant {{currency}}"
+  },
+  "syncHelp": {
+    "title": "Les appareils ne se trouvent pas ou ne se synchronisent pas ?",
+    "thisDevice": "cet appareil",
+    "sameWifi": "Les deux appareils sont sur le même Wi-Fi – pas un réseau invité, et le routeur n'isole pas les appareils (« isolation AP » ou « isolation des clients »).",
+    "bothOpen": "ZCashflow est ouvert sur les deux appareils. Les téléphones mettent les apps en pause en arrière-plan : ouvrez l'app pour synchroniser.",
+    "vpn": "Les VPN sont désactivés sur les deux appareils.",
+    "byAddress": "Si un appareil n'est pas trouvé, associez-le via « {{button}} » et saisissez l'adresse indiquée sous « {{label}} ».",
+    "windowsTitle": "Windows",
+    "windowsText": "Quand Windows le demande, autorisez ZCashflow sur les réseaux privés et définissez votre Wi-Fi comme privé (Paramètres → Réseau et Internet → Wi-Fi → votre réseau → Réseau privé). Ou autorisez le port {{port}} une fois dans PowerShell en tant qu'administrateur :",
+    "macTitle": "macOS",
+    "macText": "Si le pare-feu est activé, autorisez les connexions entrantes pour ZCashflow (Réglages Système → Réseau → Pare-feu → Options).",
+    "linuxTitle": "Linux",
+    "linuxText": "La plupart des distributions de bureau bloquent les connexions entrantes. Autorisez le port {{port}} une fois dans un terminal :",
+    "mobileTitle": "Android et iPhone",
+    "mobileText": "Sur iPhone, autorisez « Réseau local » pour ZCashflow (Réglages → Confidentialité et sécurité → Réseau local). Sur les deux, le Wi-Fi doit être activé – les données mobiles ne permettent pas d'atteindre l'autre appareil. Gardez l'app ouverte pendant la synchronisation."
   }
 }

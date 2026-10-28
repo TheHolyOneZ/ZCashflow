@@ -30,7 +30,7 @@ import { cn } from "@/lib/cn";
 export function DebtsPage() {
   const { t } = useTranslation();
   const debts = useDebts().data ?? [];
-  const currency = useAppInfo().data?.defaultCurrency ?? "EUR";
+  const currency = useAppInfo().data?.mainCurrency ?? "EUR";
   const [direction, setDirection] = useState<DebtDirection>("i_owe");
   const [edit, setEdit] = useState<{ debt?: Debt } | null>(null);
   const [pay, setPay] = useState<Debt | null>(null);
@@ -234,8 +234,8 @@ function DebtCard({ debt: d, onEdit, onPay }: { debt: Debt; onEdit: () => void; 
 function DebtForm({ debt, direction: initialDirection, onDone }: { debt?: Debt; direction: DebtDirection; onDone: () => void }) {
   const { t } = useTranslation();
   const accounts = useAccounts().data ?? [];
-  const defaultCurrency = useAppInfo().data?.defaultCurrency ?? "EUR";
-  const currency = debt?.currency ?? defaultCurrency;
+  const mainCurrency = useAppInfo().data?.mainCurrency ?? "EUR";
+  const currency = debt?.currency ?? mainCurrency;
   const loc = activeLocale();
   const inst = debt?.installment;
 

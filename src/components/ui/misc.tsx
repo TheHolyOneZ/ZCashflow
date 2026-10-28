@@ -1,6 +1,6 @@
 import type { HTMLAttributes, ReactNode } from "react";
 import { cn } from "@/lib/cn";
-import { formatMoney } from "@/lib/money";
+import { formatMoney, useCurrencyHidden, useExpensesInRed } from "@/lib/money";
 import { activeLocale } from "@/lib/i18n";
 import { useTranslation } from "react-i18next";
 import type { TxKind } from "@/lib/api";
@@ -46,12 +46,14 @@ export function Amount({
   className?: string;
 }) {
   useTranslation();
-  const signed = kind === "income" ? minor : kind === "expense" ? -minor : minor;
+  useCurrencyHidden();
+  const red = useExpensesInRed() && kind === "expense";
+  const signed = kind === "income" ? minor : kind === "expense" && !red ? -minor : minor;
   return (
     <span
       className={cn(
         "money tabular font-medium whitespace-nowrap",
-        kind ? kindColor[kind] : signed < 0 ? "text-expense" : "text-fg",
+        red ? "text-expense" : kind ? kindColor[kind] : signed < 0 ? "text-expense" : "text-fg",
         className,
       )}
     >

@@ -20,6 +20,9 @@ export type FontChoice = "inter" | "geist" | "manrope" | "system";
 export type Motion = "system" | "full" | "reduced";
 export type TitleBar = "custom" | "system";
 export type StartPage = "/" | "/transactions" | "/planner" | "/receipts";
+export type CurrencySymbol = "show" | "single";
+export type ExpenseStyle = "minus" | "red";
+export type TxPeriod = "all" | "month";
 
 export const DASHBOARD_WIDGETS = [
   "hero",
@@ -53,6 +56,9 @@ export interface Prefs {
   hiddenWidgets: DashboardWidget[];
   chartAccounts: string[];
   chartSplit: boolean;
+  currencySymbol: CurrencySymbol;
+  expenseStyle: ExpenseStyle;
+  txPeriod: TxPeriod;
 }
 
 export const DEFAULT_PREFS: Prefs = {
@@ -72,6 +78,9 @@ export const DEFAULT_PREFS: Prefs = {
   hiddenWidgets: [],
   chartAccounts: [],
   chartSplit: false,
+  currencySymbol: "show",
+  expenseStyle: "minus",
+  txPeriod: "all",
 };
 
 const KEY = "zc.prefs";

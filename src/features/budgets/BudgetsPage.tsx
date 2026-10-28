@@ -135,7 +135,7 @@ export function BudgetCard({ budget: b, onClick, compact }: { budget: Budget; on
 
 function BudgetForm({ budget, onDone }: { budget?: Budget; onDone: () => void }) {
   const { t } = useTranslation();
-  const currency = useAppInfo().data?.defaultCurrency ?? "EUR";
+  const currency = useAppInfo().data?.mainCurrency ?? "EUR";
   const [categoryId, setCategoryId] = useState(budget?.categoryId ?? "");
   const [period, setPeriod] = useState<BudgetPeriod>(budget?.period ?? "month");
   const [limit, setLimit] = useState(budget ? minorToInput(budget.limitMinor, budget.currency, activeLocale()) : "");

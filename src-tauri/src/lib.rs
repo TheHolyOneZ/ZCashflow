@@ -88,6 +88,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::app_info,
             commands::set_default_currency,
+            commands::relabel_currency,
             commands::list_accounts,
             commands::upsert_account,
             commands::set_account_balance,
@@ -97,6 +98,7 @@ pub fn run() {
             commands::list_counterparties,
             commands::list_transactions,
             commands::transaction_totals,
+            commands::recent_titles,
             commands::create_transaction,
             commands::update_transaction,
             commands::delete_transaction,

@@ -10,6 +10,7 @@ export interface AppInfo {
   version: string;
   deviceId: string;
   defaultCurrency: string;
+  mainCurrency: string;
 }
 
 export interface Account {
@@ -116,6 +117,8 @@ export interface CurrencyTotal {
   count: number;
   incomeMinor: number;
   expenseMinor: number;
+  openingMinor: number | null;
+  closingMinor: number | null;
 }
 
 export interface DayTotal {
@@ -160,6 +163,8 @@ export function isApiError(e: unknown): e is ApiError {
 export const api = {
   appInfo: () => invoke<AppInfo>("app_info"),
   setDefaultCurrency: (currency: string) => invoke<void>("set_default_currency", { currency }),
+  relabelCurrency: (from: string, to: string) =>
+    invoke<{ accounts: number; rows: number }>("relabel_currency", { from, to }),
 
   listAccounts: () => invoke<Account[]>("list_accounts"),
   upsertAccount: (input: AccountInput) => invoke<Account>("upsert_account", { input }),
@@ -174,6 +179,7 @@ export const api = {
 
   listTransactions: (filter?: TransactionFilter) =>
     invoke<Transaction[]>("list_transactions", { filter }),
+  recentTitles: (kind?: TxKind, limit?: number) => invoke<string[]>("recent_titles", { kind, limit }),
   transactionTotals: (filter?: TransactionFilter) =>
     invoke<TransactionTotals>("transaction_totals", { filter }),
   createTransaction: (input: TransactionInput) =>

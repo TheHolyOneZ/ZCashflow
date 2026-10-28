@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { api, isApiError, planning, receipts, sync, type TransactionFilter, type TransactionInput } from "@/lib/api";
+import { api, isApiError, planning, receipts, sync, type TransactionFilter, type TransactionInput, type TxKind } from "@/lib/api";
 import { useUi } from "@/stores/ui";
 
 export const keys = {
@@ -27,6 +27,9 @@ export const useTransactions = (filter?: TransactionFilter) =>
     queryFn: () => api.listTransactions(filter),
     placeholderData: (prev) => prev,
   });
+
+export const useRecentTitles = (kind?: TxKind) =>
+  useQuery({ queryKey: ["transactions", "titles", kind ?? "all"], queryFn: () => api.recentTitles(kind), staleTime: 60_000 });
 
 export const useTransactionTotals = (filter?: TransactionFilter) =>
   useQuery({

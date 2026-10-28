@@ -164,7 +164,7 @@ function MonthBudget({ preview: p }: { preview: MonthPreview }) {
                 {r.label}
                 {r.hint && <span className="ml-1.5 text-[12px] text-muted">{r.hint}</span>}
               </span>
-              <Money minor={r.sign * r.minor} currency={p.currency} signed className="text-right font-medium" />
+              <Money flow minor={r.sign * r.minor} currency={p.currency} signed className="text-right font-medium" />
               <div className="col-span-2 h-1.5 overflow-hidden rounded-full bg-surface-2">
                 <div className="h-full rounded-full" style={{ width: `${(r.minor / base) * 100}%`, background: r.color, opacity: r.sign < 0 ? 0.85 : 1 }} />
               </div>
@@ -317,6 +317,7 @@ export function OccurrenceList({ items, showDate }: { items: Occurrence[]; showD
               )}
             </div>
             <Money
+              flow
               minor={o.kind === "income" ? o.amountMinor : -o.amountMinor}
               currency={o.currency}
               signed={o.kind === "income"}

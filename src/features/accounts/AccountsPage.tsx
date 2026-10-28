@@ -22,6 +22,7 @@ import { IconTile } from "@/components/category-icon";
 import { StatTile } from "@/components/stat-tile";
 import { api, planning, type Account, type AccountKind } from "@/lib/api";
 import { activeLocale, displayName } from "@/lib/i18n";
+import { currencyItems } from "@/lib/currencies";
 import { minorToInput } from "@/lib/money";
 import { formatDay } from "@/lib/dates";
 import { useAccounts, useAppInfo, useAppMutation } from "@/lib/queries";
@@ -34,12 +35,10 @@ const KIND_ICON: Record<AccountKind, string> = {
   other: "coins",
 };
 
-const CURRENCIES = ["EUR", "USD", "GBP", "CHF", "PLN", "CZK", "SEK", "NOK", "DKK", "TRY", "JPY"];
-
 export function AccountsPage() {
   const { t } = useTranslation();
   const accounts = useAccounts().data ?? [];
-  const currency = useAppInfo().data?.defaultCurrency ?? "EUR";
+  const currency = useAppInfo().data?.mainCurrency ?? "EUR";
   const [edit, setEdit] = useState<{ account?: Account } | null>(null);
   const [correct, setCorrect] = useState<{ only?: string } | null>(null);
 
@@ -158,11 +157,13 @@ function AccountForm({ account, onDone }: { account?: Account; onDone: () => voi
           </Select>
         </Field>
         <Field label={t("settings.currency")} htmlFor="acc-currency">
-          <Select id="acc-currency" value={currency} onChange={(e) => setCurrency(e.target.value)} disabled={!!account}>
-            {CURRENCIES.map((c) => (
-              <option key={c}>{c}</option>
-            ))}
-          </Select>
+          <Select
+            id="acc-currency"
+            value={currency}
+            onValueChange={setCurrency}
+            disabled={!!account}
+            items={currencyItems(activeLocale(), currency)}
+          />
         </Field>
       </div>
       {account?.anchorOn ? (

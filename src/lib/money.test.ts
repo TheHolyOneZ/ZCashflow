@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatMoney, minorToInput, parseMoney } from "./money";
+import { dropCurrency, formatMoney, minorToInput, parseMoney } from "./money";
 
 describe("parseMoney", () => {
   it.each([
@@ -51,5 +51,22 @@ describe("privacy mask", () => {
     expect(maskParts(f.formatToParts(-1234.56)).replace(/\s/g, " ")).toBe("-•••,•• €");
     const c = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", notation: "compact" });
     expect(maskParts(c.formatToParts(12000))).toBe("$•••");
+  });
+});
+
+describe("dropCurrency", () => {
+  const plain = (locale: string, currency: string, value: number) =>
+    dropCurrency(new Intl.NumberFormat(locale, { style: "currency", currency }).formatToParts(value))
+      .map((p) => p.value)
+      .join("");
+
+  it.each([
+    ["de-DE", "EUR", -1234.5, "-1.234,50"],
+    ["en-US", "USD", -20, "-20.00"],
+    ["en-US", "LKR", 485207.58, "485,207.58"],
+    ["nl-NL", "EUR", -12.5, "-12,50"],
+    ["fr-FR", "EUR", 12.5, "12,50"],
+  ])("%s %s %d -> %s", (locale, currency, value, expected) => {
+    expect(plain(locale, currency, value).replace(/−/g, "-").replace(/[  ]/g, " ")).toBe(expected.replace(/[  ]/g, " "));
   });
 });

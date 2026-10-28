@@ -46,7 +46,7 @@ export function DashboardPage() {
   const { t } = useTranslation();
   const [balanceOpen, setBalanceOpen] = useState(false);
   const openNew = useUi((s) => s.openNewTx);
-  const currency = useAppInfo().data?.defaultCurrency ?? "EUR";
+  const currency = useAppInfo().data?.mainCurrency ?? "EUR";
   const accounts = useAccounts().data ?? [];
   const range = useMemo(() => monthRange(), []);
   const summary = useSummary(range.from, range.to, currency).data;
@@ -62,6 +62,9 @@ export function DashboardPage() {
 
   const activeAccounts = accounts.filter((a) => !a.archived);
   const total = activeAccounts.filter((a) => a.currency === currency).reduce((s, a) => s + a.balanceMinor, 0);
+  const otherTotals = [...new Set(activeAccounts.map((a) => a.currency))]
+    .filter((c) => c !== currency)
+    .map((c) => ({ currency: c, minor: activeAccounts.filter((a) => a.currency === c).reduce((s, a) => s + a.balanceMinor, 0) }));
   const fixed = rules
     .filter((r) => r.nextOn && r.kind === "expense" && r.currency === currency)
     .reduce((s, r) => s + r.monthlyMinor, 0);
@@ -108,6 +111,15 @@ export function DashboardPage() {
                 </Tip>
               </div>
               <Money minor={total} currency={currency} tone="auto" className="text-[34px] leading-tight font-semibold tracking-tight" />
+              {otherTotals.length > 0 && (
+                <div className="flex flex-wrap gap-x-3 text-[12px] text-muted">
+                  {otherTotals.map((o) => (
+                    <span key={o.currency}>
+                      + <Money minor={o.minor} currency={o.currency} tone="auto" /> {t("dashboard.inCurrency", { currency: o.currency })}
+                    </span>
+                  ))}
+                </div>
+              )}
               <BalanceDialog open={balanceOpen} onOpenChange={setBalanceOpen} />
             </div>
             {forecast && (

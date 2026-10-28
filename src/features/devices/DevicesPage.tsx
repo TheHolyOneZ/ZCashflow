@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
-import { Copy, Laptop, Link2, Loader2, Plug, Radar, RefreshCw, ShieldCheck, Smartphone, Unlink, Wifi, WifiOff } from "lucide-react";
+import { ChevronDown, Copy, Laptop, LifeBuoy, Link2, Loader2, Plug, Radar, RefreshCw, ShieldCheck, Smartphone, Unlink, Wifi, WifiOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { Field, Input, Select } from "@/components/ui/field";
@@ -154,7 +154,7 @@ export function DevicesPage() {
         <p className="border-t border-border px-4 py-2.5 text-[12px] text-muted">
           {t("sync.thisDeviceAt")} <span className="font-mono text-fg">{status.addresses.join(", ") || `:${status.port}`}</span>
         </p>
-        {os === "linux" && status.port > 0 && <FirewallHint port={status.port} />}
+        <SyncHelp port={status.port > 0 ? status.port : 47811} />
       </Card>
 
       <Dialog
@@ -168,31 +168,75 @@ export function DevicesPage() {
   );
 }
 
-function FirewallHint({ port }: { port: number }) {
+function CommandRow({ command }: { command: string }) {
   const { t } = useTranslation();
   const toast = useUi((s) => s.toast);
-  const commands = [
-    `sudo firewall-cmd --permanent --add-port=${port}/tcp && sudo firewall-cmd --reload`,
-    `sudo ufw allow ${port}/tcp`,
-  ];
   return (
-    <div className="border-t border-border px-4 py-3 text-[12px] text-muted">
-      <p>{t("sync.firewallHint")}</p>
-      <ul className="mt-2 flex flex-col gap-1.5">
-        {commands.map((c) => (
-          <li key={c} className="flex items-center gap-2 rounded-lg bg-surface-2 py-1.5 pr-1.5 pl-3">
-            <code className="min-w-0 flex-1 truncate font-mono text-[11.5px] text-fg">{c}</code>
-            <button
-              type="button"
-              aria-label={t("menu.copy")}
-              onClick={() => writeClipboard(c).then(() => toast(t("menu.copied")))}
-              className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted hover:bg-surface hover:text-fg"
-            >
-              <Copy className="size-3.5" />
-            </button>
-          </li>
-        ))}
-      </ul>
+    <li className="flex items-center gap-2 rounded-lg bg-surface-2 py-1.5 pr-1.5 pl-3">
+      <code className="min-w-0 flex-1 truncate font-mono text-[11.5px] text-fg">{command}</code>
+      <button
+        type="button"
+        aria-label={t("menu.copy")}
+        onClick={() => writeClipboard(command).then(() => toast(t("menu.copied")))}
+        className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted hover:bg-surface hover:text-fg"
+      >
+        <Copy className="size-3.5" />
+      </button>
+    </li>
+  );
+}
+
+type HelpPlatform = "windows" | "mac" | "linux" | "mobile";
+
+function SyncHelp({ port }: { port: number }) {
+  const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
+  const commands: Record<HelpPlatform, string[]> = {
+    windows: [
+      `New-NetFirewallRule -DisplayName "ZCashflow" -Direction Inbound -Protocol TCP -LocalPort ${port} -Action Allow -Profile Private`,
+    ],
+    mac: [],
+    linux: [`sudo firewall-cmd --permanent --add-port=${port}/tcp && sudo firewall-cmd --reload`, `sudo ufw allow ${port}/tcp`],
+    mobile: [],
+  };
+  const order: HelpPlatform[] = [os, ...(["windows", "mac", "linux", "mobile"] as const).filter((p) => p !== os)];
+  return (
+    <div className="border-t border-border px-4 py-3 text-[12.5px]">
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center gap-2 text-left font-medium text-muted hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+      >
+        <LifeBuoy className="size-4 shrink-0" />
+        <span className="flex-1">{t("syncHelp.title")}</span>
+        <ChevronDown className={cn("size-4 transition-transform", open && "rotate-180")} />
+      </button>
+      {open && (
+        <div className="mt-3 flex flex-col gap-4 text-muted">
+          <ul className="flex list-disc flex-col gap-1.5 pl-5">
+            {(["sameWifi", "bothOpen", "vpn", "byAddress"] as const).map((k) => (
+              <li key={k}>{t(`syncHelp.${k}`, { port, button: t("sync.byAddress"), label: t("sync.thisDeviceAt") })}</li>
+            ))}
+          </ul>
+          {order.map((p) => (
+            <div key={p} className="flex flex-col gap-1.5">
+              <div className="font-medium text-fg">
+                {t(`syncHelp.${p}Title`)}
+                {p === os && <span className="ml-1.5 text-[11px] font-normal text-accent">{t("syncHelp.thisDevice")}</span>}
+              </div>
+              <p>{t(`syncHelp.${p}Text`, { port })}</p>
+              {commands[p].length > 0 && (
+                <ul className="flex flex-col gap-1.5">
+                  {commands[p].map((c) => (
+                    <CommandRow key={c} command={c} />
+                  ))}
+                </ul>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

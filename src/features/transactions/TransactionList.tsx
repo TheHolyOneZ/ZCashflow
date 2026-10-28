@@ -68,7 +68,7 @@ export function TransactionList({ items, grouped = true, days }: { items: Transa
                 )}
                 {d.expenseMinor > 0 && (
                   <span className="text-expense" aria-label={t("kind.expenses")}>
-                    <Money minor={-d.expenseMinor} currency={d.currency} />
+                    <Money flow minor={-d.expenseMinor} currency={d.currency} />
                   </span>
                 )}
               </span>

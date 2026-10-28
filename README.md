@@ -37,7 +37,7 @@ encrypted, over your own Wi-Fi.
 
 ## Contents
 
-- [What's new in 1.3.0](#-whats-new-in-130)
+- [What's new in 1.4.0](#-whats-new-in-140)
 - [Why ZCashflow?](#-why-zcashflow)
 - [Features](#-features)
 - [Screenshots](#-screenshots)
@@ -57,26 +57,25 @@ encrypted, over your own Wi-Fi.
 
 ---
 
-## 🆕 What's new in 1.3.0
+## 🆕 What's new in 1.4.0
+
+- **Every currency** – all ISO currencies (e.g. LKR, INR, PKR) for accounts and the default currency, with their names.
+- **Switch currency** – when you change the default currency and all accounts use one other currency, ZCashflow offers to switch accounts and all entries to the new one. Amounts stay the same.
+- **Overview in the right currency** – the total balance and forecast follow the currency your accounts actually use, and accounts in other currencies are listed below the total.
+- **Month view with carry-over** – ◀ month ▶ in the transactions list, the balance carried over from before the period and the balance at its end.
+- **Suggestions while typing** – the description field suggests earlier descriptions, most used first, and fills in their category.
+- **New settings** under *Settings → Amounts & transactions*: hide the currency symbol when you only use one currency, show expenses in red without a minus, and open transactions with the current month. The defaults stay as before.
+- **Sync troubleshooting** for Windows, macOS, Linux, Android and iPhone on *Devices & sync*, with copyable firewall commands.
+
+No database or sync schema change – 1.3.0 devices still sync.
+
+### 1.3.0
 
 - **Totals in the transactions list** – income, expenses and net at the top for whatever the filters select (all, an account, a category, a period), and each day's income and expenses in its header.
 - **Time of day** – entries made today get the current time automatically; change or remove it in the dialog. Shown in the list and used to sort each day. Receipts are booked with the time printed on them, and CSV import/export carry a time column.
 - **Recurring payments with a time** – e.g. salary at 09:00: it's booked with that time, once the time has passed on the due day.
 
 The database gets optional time columns; the sync schema is unchanged, so 1.2.0 devices still sync – update all paired devices anyway.
-
-### 1.2.0
-
-- **Subcategories at any depth** – drag a category by its handle onto another one to nest it, or onto the drop zone to make it a main category. Budgets, filters and totals include every level.
-- **Export everything** – all data or a selection (transactions, accounts, categories, recurring payments, budgets, goals, debts) for any period, as CSV or one ZIP. *Excel (;)* format for European Excel.
-- **CSV import** – from the ZCashflow template or straight from your bank's export (`Buchungstag`, `Betrag`, `-1.234,56` …), with a preview of duplicates and errors before anything is saved.
-- **Receipt line items** – give each item its own category; booking creates one entry per category, all linked to the same photo. PDF scans from phone scanner apps work too.
-- **Forecast per account** – show selected accounts only, or one curve per account.
-- **Budgets in the plan** – include all or selected budgets in the month plan, forecast and safe-to-spend.
-- **Window controls** stay available in narrow windows; <kbd>F11</kbd> toggles full screen.
-- Fixed: importing a receipt on Android failed with "expected raw image bytes".
-
-No database or sync schema change. Older versions sync as before but don't show categories below the second level – update all paired devices.
 
 See [changelog.md](changelog.md) for the full change list.
 
@@ -194,7 +193,7 @@ See [changelog.md](changelog.md) for the full change list.
 </tr>
 </table>
 
-**Also included:** 7 languages (English, Deutsch, Español, Français, Italiano, Polski, Türkçe) · light / dark / midnight themes · accent colors, fonts, density, corner radius, interface size · privacy mode that blurs every amount (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>H</kbd>) · custom title bar · command palette · system notifications · CSV / ZIP export and CSV import · full database backup · demo data to explore · factory reset with backup.
+**Also included:** 7 languages (English, Deutsch, Español, Français, Italiano, Polski, Türkçe) · light / dark / midnight themes · accent colors, fonts, density, corner radius, interface size · privacy mode that blurs every amount (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>H</kbd>) · custom title bar · command palette · system notifications · CSV / ZIP export and CSV import · every ISO currency, optional hiding of the currency symbol and red expenses without a minus · full database backup · demo data to explore · factory reset with backup.
 
 ---
 
@@ -445,7 +444,7 @@ ZCashflow syncs directly between your devices – no server involved. Connection
 **Pair two devices (e.g. iPhone ↔ PC):**
 
 1. Both devices on the **same Wi-Fi**, ZCashflow open on both.
-2. On the PC, make sure the firewall allows port **47811/tcp** (see [Linux](#-linux); Windows/macOS ask on first use).
+2. On the PC, make sure the firewall allows port **47811/tcp** (see [Linux](#-linux); Windows/macOS ask on first use – *Devices & sync* has troubleshooting steps for every platform).
 3. On the phone open **Devices & sync**. The PC appears under *On this network* within a few seconds (tap **Search** if not).
 4. Tap **Pair**. The PC immediately shows a window *"iPhone wants to connect"* with a **6-digit code**.
 5. Type the code on the phone – done. Both show **Live**, and every change appears on the other device within seconds.
@@ -571,7 +570,7 @@ You don't need every toolchain locally – GitHub builds everything:
   - *Actions → Build → Run workflow* builds selected platforms as artifacts.
   - Pushing a version tag builds **all** platforms and creates a **draft release** with consistently named files and `SHA256SUMS.txt`:
     ```sh
-    git tag v1.3.0 && git push origin v1.3.0
+    git tag v1.4.0 && git push origin v1.4.0
     ```
   - Android signing uses the repository secrets `ANDROID_KEYSTORE_B64` (base64 of the keystore) and `ANDROID_KEY_PASSWORD`.
 
@@ -613,10 +612,19 @@ No – by design. Banking APIs require a cloud service in between. You enter tra
 <summary><b>The two devices don't find each other</b></summary>
 
 - Same Wi-Fi? Guest networks often isolate devices – use your main network.
-- PC firewall: allow port **47811/tcp** (*Devices & sync* shows the exact command on Linux).
+- PC firewall: allow port **47811/tcp**. *Devices & sync → Devices don't find each other or don't sync?* shows the steps and copyable commands for every platform. On Windows, allow ZCashflow for *private* networks, set your Wi-Fi to *Private*, or run once in PowerShell as administrator:
+  `New-NetFirewallRule -DisplayName "ZCashflow" -Direction Inbound -Protocol TCP -LocalPort 47811 -Action Allow -Profile Private`
+- VPNs and router "AP / client isolation" block devices from seeing each other – turn them off.
+- Phones pause apps in the background – keep ZCashflow open on both devices while they sync.
 - iPhone: allow **Local Network** access (*Settings → Privacy & Security → Local Network → ZCashflow*).
 - Still nothing? Use **By address** with the IP shown on the other device.
 - *"update both devices"*: both devices need the same ZCashflow version – update the older one.
+</details>
+
+<details>
+<summary><b>The overview shows 0 or the wrong currency</b></summary>
+
+The overview sums up the accounts in your main currency. If you picked the wrong currency at the start, choose the right one under *Settings → General → Default currency* – ZCashflow offers to switch all accounts and entries to it. The amounts stay the same; only the currency changes.
 </details>
 
 <details>

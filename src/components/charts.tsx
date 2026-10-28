@@ -18,7 +18,7 @@ import type { ForecastDay, MonthTotals, Occurrence } from "@/lib/api";
 import { formatDay } from "@/lib/dates";
 import { monthLabel, shortDate } from "@/lib/format";
 import { activeLocale } from "@/lib/i18n";
-import { formatMoney, maskParts, minorDigits, moneyHidden } from "@/lib/money";
+import { formatMoney, joinParts, minorDigits } from "@/lib/money";
 import { Money } from "@/components/ui/extra";
 import { cn } from "@/lib/cn";
 
@@ -32,7 +32,7 @@ function compactMoney(minor: number, currency: string) {
     maximumFractionDigits: 1,
   });
   const value = minor / 10 ** minorDigits(currency);
-  return moneyHidden() ? maskParts(f.formatToParts(value)) : f.format(value);
+  return joinParts(f.formatToParts(value));
 }
 
 function TooltipBox({ children }: { children: React.ReactNode }) {
@@ -128,6 +128,7 @@ export function ForecastChart({
                         <li key={e.ruleId} className="flex justify-between gap-3">
                           <span className="truncate">{e.title}</span>
                           <Money
+                            flow
                             minor={e.kind === "income" ? e.amountMinor : -e.amountMinor}
                             currency={e.currency}
                             signed

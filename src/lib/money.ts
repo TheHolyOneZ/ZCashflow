@@ -1,4 +1,42 @@
+import { create } from "zustand";
 import { usePrefs } from "@/stores/prefs";
+
+export const useMoneyDisplay = create<{ single: boolean }>(() => ({ single: false }));
+
+export function currencyHidden() {
+  return useMoneyDisplay.getState().single && usePrefs.getState().currencySymbol === "single";
+}
+
+export function useCurrencyHidden() {
+  const single = useMoneyDisplay((s) => s.single);
+  const pref = usePrefs((s) => s.currencySymbol);
+  return single && pref === "single";
+}
+
+export function useExpensesInRed() {
+  return usePrefs((s) => s.expenseStyle === "red");
+}
+
+export function dropCurrency(parts: Intl.NumberFormatPart[]): Intl.NumberFormatPart[] {
+  const gone = new Set<number>();
+  const blank = (i: number) => parts[i]?.type === "literal" && !parts[i].value.trim();
+  parts.forEach((p, i) => {
+    if (p.type !== "currency") return;
+    gone.add(i);
+    if (blank(i + 1)) gone.add(i + 1);
+    else if (blank(i - 1)) gone.add(i - 1);
+  });
+  return parts.filter((_, i) => !gone.has(i));
+}
+
+export function withCurrencyChoice(parts: Intl.NumberFormatPart[]): string {
+  return (currencyHidden() ? dropCurrency(parts) : parts).map((p) => p.value).join("");
+}
+
+export function joinParts(parts: Intl.NumberFormatPart[]): string {
+  const shown = currencyHidden() ? dropCurrency(parts) : parts;
+  return moneyHidden() ? maskParts(shown) : shown.map((p) => p.value).join("");
+}
 
 const formatters = new Map<string, Intl.NumberFormat>();
 
@@ -45,7 +83,7 @@ export function formatMoney(
 ): string {
   const value = minor / 10 ** minorDigits(currency);
   const f = formatter(locale, currency, opts.signed ? "always" : "auto");
-  return moneyHidden() ? maskParts(f.formatToParts(value)) : f.format(value);
+  return joinParts(f.formatToParts(value));
 }
 
 export function parseMoney(input: string, currency = "EUR", allowZero = false): number | null {
