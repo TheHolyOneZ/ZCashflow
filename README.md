@@ -37,7 +37,7 @@ encrypted, over your own Wi-Fi.
 
 ## Contents
 
-- [What's new in 1.4.0](#-whats-new-in-140)
+- [What's new in 1.5.0](#-whats-new-in-150)
 - [Why ZCashflow?](#-why-zcashflow)
 - [Features](#-features)
 - [Screenshots](#-screenshots)
@@ -57,7 +57,15 @@ encrypted, over your own Wi-Fi.
 
 ---
 
-## 🆕 What's new in 1.4.0
+## 🆕 What's new in 1.5.0
+
+- **Safer pairing** – the pairing code now comes with a clear warning: only pair your own devices, because paired devices share all data and unpairing doesn't separate it again.
+- **Choose the role while pairing** – decide right next to the code whether the new device gets *Full access*, *Read only* or *Receipts only*.
+- **Really hidden** – with *Visible on the network* turned off, a device no longer answers network searches or pairing requests from other devices. Paired devices keep syncing, and while you show a pairing code it is findable for the pairing.
+
+No database or sync schema change – 1.4.0 devices still sync.
+
+### 1.4.0
 
 - **Every currency** – all ISO currencies (e.g. LKR, INR, PKR) for accounts and the default currency, with their names.
 - **Switch currency** – when you change the default currency and all accounts use one other currency, ZCashflow offers to switch accounts and all entries to the new one. Amounts stay the same.
@@ -68,14 +76,6 @@ encrypted, over your own Wi-Fi.
 - **Sync troubleshooting** for Windows, macOS, Linux, Android and iPhone on *Devices & sync*, with copyable firewall commands.
 
 No database or sync schema change – 1.3.0 devices still sync.
-
-### 1.3.0
-
-- **Totals in the transactions list** – income, expenses and net at the top for whatever the filters select (all, an account, a category, a period), and each day's income and expenses in its header.
-- **Time of day** – entries made today get the current time automatically; change or remove it in the dialog. Shown in the list and used to sort each day. Receipts are booked with the time printed on them, and CSV import/export carry a time column.
-- **Recurring payments with a time** – e.g. salary at 09:00: it's booked with that time, once the time has passed on the due day.
-
-The database gets optional time columns; the sync schema is unchanged, so 1.2.0 devices still sync – update all paired devices anyway.
 
 See [changelog.md](changelog.md) for the full change list.
 
@@ -451,7 +451,9 @@ ZCashflow syncs directly between your devices – no server involved. Connection
 
 From then on, devices reconnect automatically whenever they're on the same network – also after restarts or IP changes, and as soon as the app comes back to the foreground on the phone.
 
-**Roles:** per paired device you can choose *Full access*, *Read only* (sees everything, can't change anything) or *Receipts only* (may only send receipt photos – handy for a family member's phone).
+**Roles:** per paired device you can choose *Full access*, *Read only* (sees everything, can't change anything) or *Receipts only* (may only send receipt photos – handy for a family member's phone) – right next to the pairing code, or later in the list of paired devices.
+
+**Only pair your own devices.** Paired devices share all data, and unpairing doesn't separate it again. Other ZCashflow users on the same Wi-Fi can't connect without the 6-digit code shown on your screen; the code is valid for 3 minutes and pairing closes after 5 wrong attempts. Turn off *Visible on the network* to stop other devices from seeing your device's name at all – it is then only findable while you show a pairing code.
 
 <details>
 <summary><b>Pairing manually by address</b></summary>
@@ -570,7 +572,7 @@ You don't need every toolchain locally – GitHub builds everything:
   - *Actions → Build → Run workflow* builds selected platforms as artifacts.
   - Pushing a version tag builds **all** platforms and creates a **draft release** with consistently named files and `SHA256SUMS.txt`:
     ```sh
-    git tag v1.4.0 && git push origin v1.4.0
+    git tag v1.5.0 && git push origin v1.5.0
     ```
   - Android signing uses the repository secrets `ANDROID_KEYSTORE_B64` (base64 of the keystore) and `ANDROID_KEY_PASSWORD`.
 

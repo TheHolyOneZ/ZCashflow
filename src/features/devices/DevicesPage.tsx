@@ -14,6 +14,7 @@ import { useErrorMessage, useSyncStatus } from "@/lib/queries";
 import { useUi } from "@/stores/ui";
 import { writeClipboard } from "@/lib/clipboard";
 import { os } from "@/lib/platform";
+import { PairingRolePicker, PairWarning } from "./PairingSafety";
 
 function useAction() {
   const qc = useQueryClient();
@@ -96,7 +97,7 @@ export function DevicesPage() {
             onCheckedChange={(v) => run(() => planning.setSetting("discoverable", v ? "1" : "0"))}
           />
         </div>
-        <PairingPanel code={status.pairingCode} expiresIn={status.pairingExpiresIn} />
+        <PairingPanel code={status.pairingCode} expiresIn={status.pairingExpiresIn} role={status.pairingRole} />
       </Card>
 
       <Card className="overflow-hidden">
@@ -257,7 +258,7 @@ function DeviceIcon({ connected }: { connected?: boolean }) {
   );
 }
 
-function PairingPanel({ code, expiresIn }: { code: string | null; expiresIn: number | null }) {
+function PairingPanel({ code, expiresIn, role }: { code: string | null; expiresIn: number | null; role: PeerRole | null }) {
   const { t } = useTranslation();
   const run = useAction();
   return (
@@ -271,6 +272,8 @@ function PairingPanel({ code, expiresIn }: { code: string | null; expiresIn: num
           <span className="text-[12px] text-muted">
             {t("sync.codeValid", { seconds: expiresIn ?? 0 })}
           </span>
+          <PairingRolePicker role={role} />
+          <PairWarning />
           <Button size="sm" variant="ghost" onClick={() => run(() => sync.stopPairing())}>
             {t("common.cancel")}
           </Button>
@@ -393,6 +396,7 @@ function JoinForm({ initialAddr, targetName, onDone }: { initialAddr: string; ta
               : t("sync.codeHowTo", { name: targetName ?? t("sync.otherDevice") })}
         </span>
       </div>
+      <PairWarning />
       <Field label={t("sync.code")} htmlFor="join-code">
         <Input
           id="join-code"

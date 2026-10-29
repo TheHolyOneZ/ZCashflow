@@ -5,6 +5,7 @@ import { Dialog } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { sync } from "@/lib/api";
 import { useSyncStatus } from "@/lib/queries";
+import { PairingRolePicker, PairWarning } from "./PairingSafety";
 
 export function PairRequestDialog() {
   const { t } = useTranslation();
@@ -44,6 +45,8 @@ export function PairRequestDialog() {
         <div className="h-1 w-48 overflow-hidden rounded-full bg-surface-2">
           <div className="h-full bg-accent transition-[width] duration-1000 ease-linear" style={{ width: `${Math.min(100, (left / 180) * 100)}%` }} />
         </div>
+        <PairingRolePicker role={status?.pairingRole ?? null} />
+        <PairWarning />
         <Button
           variant="ghost"
           onClick={() => {

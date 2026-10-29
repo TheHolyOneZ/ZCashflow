@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.5.0
+
+### Added
+
+- The pairing code, the pairing request and the *By address* dialog warn to only pair your own devices: paired devices share all data – transactions, accounts and receipts – and unpairing doesn't separate it again.
+- The role of a new device (*Full access*, *Read only*, *Receipts only*) can be chosen right next to the pairing code. Before, it could only be changed after pairing.
+
+### Fixed
+
+- With *Visible on the network* turned off, a device still answered network searches with its name and still showed pairing requests from other devices. A hidden device now stays silent for searches and pairing requests. It becomes findable only while a pairing code is shown, and is hidden again as soon as pairing finishes, is cancelled or the code expires.
+
+### Notes
+
+- Paired devices keep syncing while hidden. If both devices are hidden and their network addresses change, show a pairing code on one of them for a moment, or connect by address, so they find each other again.
+- No database or sync schema change; devices on 1.4.0 still sync.
+
 ## 1.4.0
 
 ### Added

@@ -529,6 +529,11 @@ pub fn sync_start_pairing(app: tauri::AppHandle) -> AppResult<String> {
 }
 
 #[tauri::command]
+pub fn sync_set_pairing_role(app: tauri::AppHandle, role: String) -> AppResult<()> {
+    core(&app)?.set_pairing_role(&role)
+}
+
+#[tauri::command]
 pub fn sync_stop_pairing(app: tauri::AppHandle) -> AppResult<()> {
     core(&app)?.stop_pairing();
     Ok(())

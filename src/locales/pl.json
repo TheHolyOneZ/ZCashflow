@@ -599,7 +599,7 @@
     "enabled": "Synchronizacja włączona",
     "enabledHint": "Synchronizuj na żywo ze sparowanymi urządzeniami, gdy są w tej samej sieci.",
     "discoverable": "Widoczne w sieci",
-    "discoverableHint": "Inne urządzenia z ZCashflow widzą to urządzenie. Sparowane łączą się po adresie nawet, gdy jest ukryte.",
+    "discoverableHint": "Inne urządzenia z ZCashflow w tej sieci Wi-Fi mogą znaleźć to urządzenie. Ukryte nie odpowiada na wyszukiwania ani prośby o parowanie – sparowane urządzenia nadal się synchronizują, a podczas wyświetlania kodu parowania można je znaleźć.",
     "showCode": "Wpisz ten kod na drugim urządzeniu",
     "codeValid": "ważny {{seconds}} s",
     "pairIntro": "Sparuj nowe urządzenie: pokaż kod i wpisz go na drugim urządzeniu.",
@@ -653,7 +653,9 @@
     "pairRequestTitle": "{{name}} chce się połączyć",
     "pairRequestText": "Wpisz ten kod na „{{name}}”, aby sparować urządzenia.",
     "pairRequestDeny": "Odrzuć",
-    "receivedGeneric": "Odebrano nowe dane z drugiego urządzenia"
+    "receivedGeneric": "Odebrano nowe dane z drugiego urządzenia",
+    "pairWarning": "Paruj tylko własne urządzenia. Sparowane urządzenia dzielą wszystkie dane – transakcje, konta i paragony – a rozparowanie ich ponownie nie rozdziela.",
+    "pairingRole": "Nowe urządzenie może"
   },
   "date": {
     "pick": "Wybierz datę",

@@ -547,7 +547,7 @@
     "enabled": "Sync aktiv",
     "enabledHint": "Mit gekoppelten Geräten live abgleichen, sobald sie im selben Netzwerk sind.",
     "discoverable": "Im Netzwerk sichtbar",
-    "discoverableHint": "Andere ZCashflow-Geräte sehen dieses Gerät. Gekoppelte Geräte verbinden sich auch ohne Sichtbarkeit über die Adresse.",
+    "discoverableHint": "Andere ZCashflow-Geräte in diesem WLAN können dieses finden. Versteckt antwortet es nicht auf Suchen oder Kopplungsanfragen – gekoppelte Geräte synchronisieren weiter, und solange ein Kopplungscode angezeigt wird, ist es auffindbar.",
     "showCode": "Diesen Code auf dem anderen Gerät eingeben",
     "codeValid": "gültig noch {{seconds}} s",
     "pairIntro": "Neues Gerät koppeln: Code anzeigen und auf dem anderen Gerät eingeben.",
@@ -599,7 +599,9 @@
     "pairRequestTitle": "{{name}} möchte sich verbinden",
     "pairRequestText": "Gib diesen Code auf „{{name}}“ ein, um die Geräte zu koppeln.",
     "pairRequestDeny": "Ablehnen",
-    "receivedGeneric": "Neue Daten vom anderen Gerät übernommen"
+    "receivedGeneric": "Neue Daten vom anderen Gerät übernommen",
+    "pairWarning": "Kopple nur deine eigenen Geräte. Gekoppelte Geräte teilen alle Daten – Buchungen, Konten und Belege – und Entkoppeln trennt sie nicht wieder.",
+    "pairingRole": "Das neue Gerät darf"
   },
   "date": {
     "pick": "Datum wählen",

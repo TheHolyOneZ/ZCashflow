@@ -547,7 +547,7 @@
     "enabled": "Senkronizasyon açık",
     "enabledHint": "Eşleşmiş cihazlar aynı ağdayken canlı senkronize eder.",
     "discoverable": "Ağda görünür",
-    "discoverableHint": "Diğer ZCashflow cihazları bu cihazı görür. Gizliyken de eşleşmiş cihazlar adresle bağlanır.",
+    "discoverableHint": "Bu Wi-Fi'daki diğer ZCashflow cihazları bunu bulabilir. Gizliyken aramalara ve eşleme isteklerine yanıt vermez – eşlenmiş cihazlar eşitlemeye devam eder ve eşleme kodu gösterildiği sürece bulunabilir.",
     "showCode": "Bu kodu diğer cihaza gir",
     "codeValid": "{{seconds}} sn geçerli",
     "pairIntro": "Yeni cihaz eşleştir: bir kod göster ve diğer cihaza gir.",
@@ -599,7 +599,9 @@
     "pairRequestTitle": "{{name}} bağlanmak istiyor",
     "pairRequestText": "Cihazları eşleştirmek için bu kodu „{{name}}“ üzerine gir.",
     "pairRequestDeny": "Reddet",
-    "receivedGeneric": "Diğer cihazından yeni veriler alındı"
+    "receivedGeneric": "Diğer cihazından yeni veriler alındı",
+    "pairWarning": "Yalnızca kendi cihazlarını eşle. Eşlenen cihazlar tüm verileri paylaşır – işlemler, hesaplar ve fişler – ve eşleşmeyi kaldırmak bunları yeniden ayırmaz.",
+    "pairingRole": "Yeni cihaz şunu yapabilir"
   },
   "date": {
     "pick": "Tarih seç",

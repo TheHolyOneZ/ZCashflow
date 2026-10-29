@@ -78,6 +78,7 @@ struct Pairing {
     code: String,
     expires: Instant,
     failures: u32,
+    role: String,
 }
 
 pub struct SyncCore {
@@ -93,6 +94,7 @@ pub struct SyncCore {
     attempts: Mutex<HashMap<String, Instant>>,
     pair_request: Mutex<Option<(String, Instant)>>,
     scanning: std::sync::atomic::AtomicBool,
+    advertised: std::sync::atomic::AtomicBool,
 
     incoming_blobs: Mutex<HashMap<String, Vec<u8>>>,
 }
@@ -123,6 +125,7 @@ pub struct SyncStatus {
     pub pairing_code: Option<String>,
     pub pairing_expires_in: Option<u64>,
     pub pairing_request: Option<String>,
+    pub pairing_role: Option<String>,
     pub scanning: bool,
 }
 
@@ -185,6 +188,7 @@ impl SyncCore {
             attempts: Mutex::new(HashMap::new()),
             pair_request: Mutex::new(None),
             scanning: std::sync::atomic::AtomicBool::new(false),
+            advertised: std::sync::atomic::AtomicBool::new(false),
             incoming_blobs: Mutex::new(HashMap::new()),
         }))
     }
@@ -199,6 +203,10 @@ impl SyncCore {
 
     pub fn enabled(&self) -> bool {
         self.setting("sync_enabled").as_deref() != Some("0")
+    }
+
+    pub fn visible(&self) -> bool {
+        self.enabled() && (self.setting("discoverable").as_deref() != Some("0") || self.active_code().is_some())
     }
 
     pub fn name(&self) -> String {
@@ -230,6 +238,9 @@ impl SyncCore {
             loop {
                 std::thread::sleep(Duration::from_secs(if tick == 0 { 2 } else { 8 }));
                 me.reconnect_paired();
+                if me.visible() != me.advertised.load(std::sync::atomic::Ordering::SeqCst) {
+                    me.refresh_advertisement();
+                }
                 if !local_only && tick.is_multiple_of(4) && me.wants_scan() {
                     me.scan_network();
                 }
@@ -413,7 +424,9 @@ impl SyncCore {
         let instance = &me[..12];
         let fullname = format!("{instance}.{SERVICE}");
         let _ = daemon.unregister(&fullname);
-        if self.setting("discoverable").as_deref() == Some("0") || !self.enabled() {
+        let visible = self.visible();
+        self.advertised.store(visible, std::sync::atomic::Ordering::SeqCst);
+        if !visible {
             return;
         }
         let props = [("pk", me.as_str()), ("name", &self.name()), ("v", &SCHEMA_VERSION.to_string())];
@@ -426,14 +439,29 @@ impl SyncCore {
     pub fn start_pairing(&self) -> String {
         let n = u32::from_le_bytes(uuid::Uuid::new_v4().as_bytes()[..4].try_into().unwrap());
         let code = format!("{:06}", n % 1_000_000);
-        *self.pairing.lock().unwrap() = Some(Pairing { code: code.clone(), expires: Instant::now() + PAIR_WINDOW, failures: 0 });
+        *self.pairing.lock().unwrap() =
+            Some(Pairing { code: code.clone(), expires: Instant::now() + PAIR_WINDOW, failures: 0, role: "full".into() });
+        self.refresh_advertisement();
         self.host.emit("sync-changed");
         code
+    }
+
+    pub fn set_pairing_role(&self, role: &str) -> AppResult<()> {
+        if !matches!(role, "full" | "view" | "capture") {
+            return Err(AppError::Invalid(format!("unknown role {role:?}")));
+        }
+        match self.pairing.lock().unwrap().as_mut() {
+            Some(p) => p.role = role.to_owned(),
+            None => return Err(AppError::Invalid("pairing not open".into())),
+        }
+        self.host.emit("sync-changed");
+        Ok(())
     }
 
     pub fn stop_pairing(&self) {
         *self.pairing.lock().unwrap() = None;
         *self.pair_request.lock().unwrap() = None;
+        self.refresh_advertisement();
         self.host.emit("sync-changed");
     }
 
@@ -504,9 +532,12 @@ impl SyncCore {
             _ => return Err(AppError::Invalid("unexpected pairing message".into())),
         };
         tx.send(&serde_json::to_vec(&self.hello()).unwrap())?;
-        self.remember_peer(&hex::encode(remote), &name, Some(SocketAddr::new(addr.ip(), port)))?;
-        *self.pairing.lock().unwrap() = None;
+        let remote_hex = hex::encode(remote);
+        self.remember_peer(&remote_hex, &name, Some(SocketAddr::new(addr.ip(), port)))?;
+        let role = self.pairing.lock().unwrap().take().map(|p| p.role).unwrap_or_else(|| "full".into());
+        self.db.conn().execute("UPDATE paired_devices SET role = ?2 WHERE public_key = ?1", [&remote_hex, &role])?;
         *self.pair_request.lock().unwrap() = None;
+        self.refresh_advertisement();
         self.host.emit("sync-changed");
         Ok(())
     }
@@ -547,6 +578,7 @@ impl SyncCore {
         std::io::Read::read_exact(&mut stream, &mut kind)?;
         match &kind {
             b"P" => self.handle_pairing(stream, addr),
+            b"I" | b"R" if !self.visible() => Ok(()),
             b"I" => {
                 let mut line = serde_json::to_vec(&self.identity()).unwrap();
                 line.push(b'\n');
@@ -830,6 +862,7 @@ impl SyncCore {
             pairing_code: pairing.map(|p| p.code.clone()),
             pairing_expires_in: pairing.map(|p| p.expires.saturating_duration_since(Instant::now()).as_secs()),
             pairing_request: pairing.and(self.pair_request.lock().unwrap().as_ref().map(|(n, _)| n.clone())),
+            pairing_role: pairing.map(|p| p.role.clone()),
             scanning: self.scanning.load(std::sync::atomic::Ordering::SeqCst),
         })
     }
@@ -1000,6 +1033,29 @@ mod tests {
             b.reconnect_paired();
             a.status().unwrap().peers.iter().any(|p| p.connected) && b.status().unwrap().peers.iter().any(|p| p.connected)
         }), "either side can bring the connection back");
+    }
+
+    #[test]
+    fn hidden_devices_stay_quiet_until_a_code_is_shown_and_apply_the_chosen_role() {
+        let a = core();
+        let b = core();
+        let addr = format!("127.0.0.1:{}", a.port());
+        crate::db::set_meta(&a.db.conn(), "discoverable", "0").unwrap();
+        assert!(!a.visible());
+        assert!(probe(addr.parse().unwrap()).is_none(), "a hidden device does not tell strangers its name");
+        assert!(b.request_pairing(&addr).is_err(), "strangers can't pop up a pairing request");
+        assert!(a.status().unwrap().pairing_request.is_none());
+
+        let code = a.start_pairing();
+        assert!(a.visible(), "showing a code makes the device findable for the pairing");
+        assert_eq!(probe(addr.parse().unwrap()).map(|id| id.pk), Some(a.public_hex()));
+        assert!(a.set_pairing_role("admin").is_err());
+        a.set_pairing_role("capture").unwrap();
+        assert_eq!(a.status().unwrap().pairing_role.as_deref(), Some("capture"));
+        b.pair_with(&addr, &code).unwrap();
+        assert!(!a.visible(), "hidden again once paired");
+        assert_eq!(a.peer_role(&b.public_hex()).as_deref(), Some("capture"));
+        assert!(wait_for(|| a.status().unwrap().peers.iter().any(|p| p.connected)), "paired devices still sync while hidden");
     }
 
     #[test]

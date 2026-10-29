@@ -573,7 +573,7 @@
     "enabled": "Synchro activée",
     "enabledHint": "Synchronise en direct avec les appareils associés dès qu'ils sont sur le même réseau.",
     "discoverable": "Visible sur le réseau",
-    "discoverableHint": "Les autres appareils ZCashflow voient celui-ci. Les appareils associés se connectent quand même par adresse s'il est masqué.",
+    "discoverableHint": "Les autres appareils ZCashflow sur ce Wi-Fi peuvent trouver celui-ci. Masqué, il ne répond ni aux recherches ni aux demandes d'association – les appareils associés continuent de se synchroniser, et il reste trouvable tant qu'un code d'association est affiché.",
     "showCode": "Saisis ce code sur l'autre appareil",
     "codeValid": "valable {{seconds}} s",
     "pairIntro": "Associer un nouvel appareil : affiche un code et saisis-le sur l'autre appareil.",
@@ -626,7 +626,9 @@
     "pairRequestText": "Saisis ce code sur « {{name}} » pour associer les appareils.",
     "pairRequestDeny": "Refuser",
     "receivedGeneric": "Nouvelles données reçues de ton autre appareil",
-    "paired_many": "Associés · {{count}} appareils"
+    "paired_many": "Associés · {{count}} appareils",
+    "pairWarning": "N'associez que vos propres appareils. Les appareils associés partagent toutes les données – opérations, comptes et justificatifs – et les dissocier ne les sépare pas à nouveau.",
+    "pairingRole": "Le nouvel appareil peut"
   },
   "date": {
     "pick": "Choisir une date",

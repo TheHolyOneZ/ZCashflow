@@ -547,7 +547,7 @@
     "enabled": "Sync enabled",
     "enabledHint": "Sync live with paired devices whenever they're on the same network.",
     "discoverable": "Visible on the network",
-    "discoverableHint": "Other ZCashflow devices can see this one. Paired devices still connect by address when hidden.",
+    "discoverableHint": "Other ZCashflow devices on this Wi-Fi can find this one. When hidden, it doesn't answer searches or pairing requests – paired devices keep syncing, and it is findable while a pairing code is shown.",
     "showCode": "Enter this code on the other device",
     "codeValid": "valid for {{seconds}} s",
     "pairIntro": "Pair a new device: show a code and enter it on the other device.",
@@ -599,7 +599,9 @@
     "pairRequestTitle": "{{name}} wants to connect",
     "pairRequestText": "Enter this code on “{{name}}” to pair the devices.",
     "pairRequestDeny": "Decline",
-    "receivedGeneric": "New data from your other device received"
+    "receivedGeneric": "New data from your other device received",
+    "pairWarning": "Only pair your own devices. Paired devices share all data – transactions, accounts and receipts – and unpairing doesn't separate it again.",
+    "pairingRole": "The new device may"
   },
   "date": {
     "pick": "Pick a date",

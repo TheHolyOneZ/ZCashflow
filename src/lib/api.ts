@@ -674,6 +674,7 @@ export interface SyncStatus {
   pairingCode: string | null;
   pairingExpiresIn: number | null;
   pairingRequest: string | null;
+  pairingRole: PeerRole | null;
   scanning: boolean;
 }
 
@@ -687,6 +688,7 @@ export const sync = {
   status: () => invoke<SyncStatus>("sync_status"),
   startPairing: () => invoke<string>("sync_start_pairing"),
   stopPairing: () => invoke<void>("sync_stop_pairing"),
+  setPairingRole: (role: PeerRole) => invoke<void>("sync_set_pairing_role", { role }),
   pair: (addr: string, code: string) => invoke<string>("sync_pair", { addr, code }),
   requestPairing: (addr: string) => invoke<string>("sync_request_pairing", { addr }),
   now: () => invoke<void>("sync_now"),

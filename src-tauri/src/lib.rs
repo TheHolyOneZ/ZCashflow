@@ -150,6 +150,7 @@ pub fn run() {
             commands::sync_status,
             commands::sync_start_pairing,
             commands::sync_stop_pairing,
+            commands::sync_set_pairing_role,
             commands::sync_pair,
             commands::sync_request_pairing,
             commands::sync_now,

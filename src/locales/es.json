@@ -573,7 +573,7 @@
     "enabled": "Sincronización activa",
     "enabledHint": "Sincroniza en directo con los dispositivos vinculados cuando estén en la misma red.",
     "discoverable": "Visible en la red",
-    "discoverableHint": "Otros dispositivos con ZCashflow ven este. Los vinculados se conectan por dirección aunque esté oculto.",
+    "discoverableHint": "Otros dispositivos con ZCashflow en esta Wi-Fi pueden encontrar este. Si está oculto, no responde a búsquedas ni a solicitudes de vinculación – los dispositivos vinculados siguen sincronizando, y se puede encontrar mientras se muestra un código de vinculación.",
     "showCode": "Introduce este código en el otro dispositivo",
     "codeValid": "válido {{seconds}} s",
     "pairIntro": "Vincular un dispositivo nuevo: muestra un código e introdúcelo en el otro dispositivo.",
@@ -626,7 +626,9 @@
     "pairRequestText": "Introduce este código en «{{name}}» para vincular los dispositivos.",
     "pairRequestDeny": "Rechazar",
     "receivedGeneric": "Nuevos datos recibidos de tu otro dispositivo",
-    "paired_many": "Vinculados · {{count}} dispositivos"
+    "paired_many": "Vinculados · {{count}} dispositivos",
+    "pairWarning": "Vincula solo tus propios dispositivos. Los dispositivos vinculados comparten todos los datos – movimientos, cuentas y recibos – y desvincularlos no los vuelve a separar.",
+    "pairingRole": "El nuevo dispositivo puede"
   },
   "date": {
     "pick": "Elegir fecha",
