@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.6.0
+
+### Added
+
+- New *Statistics* page: expenses and income per category for a month or a year, with ◀ ▶ to switch periods, a donut chart and the categories ranked by amount with their share. Main categories fold out to their subcategories, shown with their share of the main category; amounts booked directly on a main category are listed separately. Tapping a category opens the matching transactions for that period. With several currencies, the currency can be chosen.
+- The category filter in the transactions list opens a panel with *Expenses* and *Income* tabs, the total of each tab and the amount of every category for the current period, largest first. Subcategories fold out, and several categories can be selected at once. Entries without a category can be filtered too.
+- Categories can be put in any order: drag a category by its handle onto the upper or lower edge of another one to place it before or after it, or use *Move up* / *Move down* in the right-click menu. Dropping onto the middle still makes it a subcategory. The order is used in every category list and picker and syncs to paired devices.
+- Two export options under *Settings → Data* and in the export dialog, per device. The defaults stay as before:
+  - *Expense amounts*: with a minus (as before) or as positive amounts; the *type* column tells income and expenses apart.
+  - *Category columns*: one column with the path (as before) or additional *main_category* and *subcategory* columns for filters and pivot tables. The *category* column stays, so the file can still be imported.
+
+### Changed
+
+- *Statistics* has no number shortcut, so <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>1</kbd> … <kbd>9</kbd> keep jumping to the same sections as before.
+
+### Notes
+
+- The database gets a new optional column for the category order. The sync schema stays at version 6, so devices on 1.5.0 still sync; they show categories in their previous order and keep the order set on an updated device.
+
 ## 1.5.0
 
 ### Added

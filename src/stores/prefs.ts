@@ -23,6 +23,8 @@ export type StartPage = "/" | "/transactions" | "/planner" | "/receipts";
 export type CurrencySymbol = "show" | "single";
 export type ExpenseStyle = "minus" | "red";
 export type TxPeriod = "all" | "month";
+export type ExportExpenses = "minus" | "plain";
+export type ExportCategories = "path" | "split";
 
 export const DASHBOARD_WIDGETS = [
   "hero",
@@ -59,6 +61,8 @@ export interface Prefs {
   currencySymbol: CurrencySymbol;
   expenseStyle: ExpenseStyle;
   txPeriod: TxPeriod;
+  exportExpenses: ExportExpenses;
+  exportCategories: ExportCategories;
 }
 
 export const DEFAULT_PREFS: Prefs = {
@@ -81,6 +85,8 @@ export const DEFAULT_PREFS: Prefs = {
   currencySymbol: "show",
   expenseStyle: "minus",
   txPeriod: "all",
+  exportExpenses: "minus",
+  exportCategories: "path",
 };
 
 const KEY = "zc.prefs";

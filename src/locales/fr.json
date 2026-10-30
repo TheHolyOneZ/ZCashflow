@@ -5,6 +5,7 @@
   "nav": {
     "dashboard": "Aperçu",
     "transactions": "Opérations",
+    "statistics": "Statistiques",
     "recurring": "Récurrent",
     "debts": "Dettes",
     "goals": "Objectifs d'épargne",
@@ -101,7 +102,21 @@
     "monthView": "Vue mensuelle",
     "carriedOver": "Report",
     "balanceToday": "Solde aujourd'hui",
-    "balanceOn": "Solde au {{date}}"
+    "balanceOn": "Solde au {{date}}",
+    "categoriesSelected_one": "{{count}} catégorie",
+    "categoriesSelected_other": "{{count}} catégories",
+    "categoriesSelected_many": "{{count}} catégories"
+  },
+  "stats": {
+    "subtitle": "Où est passé ton argent et d'où il vient – par catégorie.",
+    "previous": "Période précédente",
+    "next": "Période suivante",
+    "span": "Période",
+    "month": "Mois",
+    "year": "Année",
+    "emptyExpenses": "Aucune dépense sur cette période.",
+    "emptyIncome": "Aucun revenu sur cette période.",
+    "direct": "Enregistré directement dans la catégorie principale"
   },
   "account": {
     "cash": "Espèces",
@@ -459,9 +474,11 @@
     "parent": "Catégorie parente",
     "moved": "Catégorie déplacée",
     "dropTopLevel": "Dépose ici pour en faire une catégorie principale",
-    "dragHint": "Fais glisser une catégorie par sa poignée sur une autre pour en faire une sous-catégorie – sur autant de niveaux que tu veux.",
+    "dragHint": "Fais glisser une catégorie par sa poignée sur une autre pour en faire une sous-catégorie, ou sur son bord supérieur ou inférieur pour changer l'ordre.",
     "addSub": "Ajouter une sous-catégorie",
     "moveTop": "En faire une catégorie principale",
+    "moveUp": "Monter",
+    "moveDown": "Descendre",
     "dragHandle": "Déplacer",
     "collapse": "Replier",
     "expand": "Déplier"
@@ -1015,7 +1032,17 @@
       "unknown_type": "type inconnu « {{value}} »",
       "missing_target": "virement sans compte de destination",
       "same_target": "virement vers le même compte « {{value}} »"
-    }
+    },
+    "expenseAmounts": "Montants des dépenses",
+    "expenseMinus": "Avec signe moins",
+    "expensePlain": "Positifs",
+    "expenseMinusHint": "les dépenses sont négatives, les sommes des tableaux croisés donnent le solde",
+    "expensePlainHint": "tous les montants positifs, la colonne type distingue revenus et dépenses",
+    "categoryColumns": "Colonnes de catégorie",
+    "categoryPath": "Une colonne",
+    "categorySplit": "Principale + sous",
+    "categoryPathHint": "p. ex. Bureau > Thé",
+    "categorySplitHint": "ajoute les colonnes main_category et subcategory pour les filtres et tableaux croisés"
   },
   "forecastView": {
     "allAccounts": "Tous les comptes",

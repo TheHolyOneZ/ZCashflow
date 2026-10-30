@@ -62,6 +62,7 @@ pub struct TransactionFilter {
     pub kind: Option<String>,
     pub account_id: Option<String>,
     pub category_id: Option<String>,
+    pub category_ids: Option<Vec<String>>,
     pub query: Option<String>,
     pub limit: Option<u32>,
     pub offset: Option<u32>,
@@ -146,6 +147,24 @@ fn filter_sql(f: &TransactionFilter) -> (String, Vec<Value>) {
             " AND t.category_id IN (WITH RECURSIVE tree(id) AS (SELECT ?{n} UNION SELECT c.id FROM categories c JOIN tree ON c.parent_id = tree.id WHERE c.deleted = 0) SELECT id FROM tree)",
             n = args.len()
         ));
+    }
+    if let Some(ids) = f.category_ids.as_ref().filter(|ids| !ids.is_empty()) {
+        let mut seeds = Vec::new();
+        for id in ids.iter().filter(|id| !id.is_empty()) {
+            args.push(id.clone().into());
+            seeds.push(format!("SELECT ?{}", args.len()));
+        }
+        let mut parts = Vec::new();
+        if !seeds.is_empty() {
+            parts.push(format!(
+                "t.category_id IN (WITH RECURSIVE tree(id) AS ({} UNION SELECT c.id FROM categories c JOIN tree ON c.parent_id = tree.id WHERE c.deleted = 0) SELECT id FROM tree)",
+                seeds.join(" UNION ")
+            ));
+        }
+        if ids.iter().any(String::is_empty) {
+            parts.push("(t.category_id IS NULL AND t.kind <> 'transfer')".into());
+        }
+        sql.push_str(&format!(" AND ({})", parts.join(" OR ")));
     }
     if let Some(q) = f.query.as_deref().and_then(fts_query) {
         args.push(q.into());
@@ -241,8 +260,32 @@ pub fn totals(conn: &Connection, f: &TransactionFilter, today: NaiveDate) -> App
     Ok(out)
 }
 
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CategorySum {
+    pub category_id: Option<String>,
+    pub kind: String,
+    pub currency: String,
+    pub count: u32,
+    pub total_minor: i64,
+}
+
+pub fn category_totals(conn: &Connection, f: &TransactionFilter) -> AppResult<Vec<CategorySum>> {
+    let (filter, args) = filter_sql(f);
+    let mut stmt = conn.prepare(&format!(
+        "SELECT t.category_id, t.kind, t.currency, count(*), sum(t.amount_minor)
+         FROM transactions t WHERE t.deleted = 0 AND t.kind IN ('income', 'expense'){filter}
+         GROUP BY t.category_id, t.kind, t.currency
+         ORDER BY sum(t.amount_minor) DESC"
+    ))?;
+    let rows = stmt.query_map(params_from_iter(args), |r| {
+        Ok(CategorySum { category_id: r.get(0)?, kind: r.get(1)?, currency: r.get(2)?, count: r.get(3)?, total_minor: r.get(4)? })
+    })?;
+    Ok(rows.collect::<Result<_, _>>()?)
+}
+
 fn add_balances(conn: &Connection, f: &TransactionFilter, today: NaiveDate, out: &mut Vec<CurrencyTotal>) -> AppResult<()> {
-    if f.kind.is_some() || f.category_id.is_some() || f.query.as_deref().is_some_and(|q| !q.trim().is_empty()) {
+    if f.kind.is_some() || f.category_id.is_some() || f.category_ids.as_ref().is_some_and(|ids| !ids.is_empty()) || f.query.as_deref().is_some_and(|q| !q.trim().is_empty()) {
         return Ok(());
     }
     let date = |s: &Option<String>| s.as_deref().and_then(|d| NaiveDate::parse_from_str(d, "%Y-%m-%d").ok());
@@ -727,6 +770,57 @@ mod tests {
         assert_eq!(suggest_category(&conn, "Netflix").unwrap(), Some(id("category.subscriptions")));
         assert_eq!(suggest_category(&conn, "Bargeld").unwrap(), None);
         assert_eq!(suggest_category(&conn, "Barbara").unwrap(), None);
+    }
+
+    #[test]
+    fn filters_several_categories_and_sums_them_per_category() {
+        let db = Db::open_in_memory().unwrap();
+        let acc = cash_account(&db);
+        let parent = crate::domain::categories::upsert(
+            &db,
+            crate::domain::categories::CategoryInput { id: None, parent_id: None, name: "Büro".into(), kind: "expense".into(), icon: None, color: None },
+        )
+        .unwrap()
+        .id;
+        let child = crate::domain::categories::upsert(
+            &db,
+            crate::domain::categories::CategoryInput { id: None, parent_id: Some(parent.clone()), name: "Tee".into(), kind: "expense".into(), icon: None, color: None },
+        )
+        .unwrap()
+        .id;
+        let other = crate::domain::categories::upsert(
+            &db,
+            crate::domain::categories::CategoryInput { id: None, parent_id: None, name: "Auto".into(), kind: "expense".into(), icon: None, color: None },
+        )
+        .unwrap()
+        .id;
+        let with = |title: &str, cents: i64, category: Option<&str>| {
+            let mut t = expense(&acc, title, cents, "2026-10-08");
+            t.category_id = category.map(str::to_owned);
+            t
+        };
+        create(&db, with("Tee", 300, Some(&child))).unwrap();
+        create(&db, with("Drucker", 900, Some(&parent))).unwrap();
+        create(&db, with("Benzin", 5_000, Some(&other))).unwrap();
+        create(&db, with("Unklar", 100, None)).unwrap();
+
+        let titles = |ids: &[&str]| -> Vec<String> {
+            let f = TransactionFilter { category_ids: Some(ids.iter().map(|s| (*s).to_owned()).collect()), ..Default::default() };
+            let mut t: Vec<String> = list(&db.conn(), &f).unwrap().into_iter().map(|t| t.title).collect();
+            t.sort();
+            t
+        };
+        assert_eq!(titles(&[&parent]), ["Drucker", "Tee"], "a main category includes its subcategories");
+        assert_eq!(titles(&[&child, &other]), ["Benzin", "Tee"]);
+        assert_eq!(titles(&[""]), ["Unklar"], "an empty id selects entries without a category");
+        assert_eq!(titles(&[]).len(), 4, "an empty selection filters nothing");
+
+        let sums = category_totals(&db.conn(), &TransactionFilter::default()).unwrap();
+        let of = |id: Option<&str>| sums.iter().find(|s| s.category_id.as_deref() == id).map(|s| (s.count, s.total_minor));
+        assert_eq!(of(Some(&child)), Some((1, 300)));
+        assert_eq!(of(Some(&parent)), Some((1, 900)), "own bookings only; the app adds subcategories itself");
+        assert_eq!(of(None), Some((1, 100)));
+        assert_eq!(sums[0].category_id.as_deref(), Some(other.as_str()), "largest first");
     }
 
     #[test]

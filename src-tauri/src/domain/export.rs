@@ -23,10 +23,18 @@ pub struct ExportOptions {
     #[serde(default)]
     pub labels: HashMap<String, String>,
     pub filter: Option<TransactionFilter>,
+    #[serde(default = "yes")]
+    pub expense_minus: bool,
+    #[serde(default)]
+    pub split_categories: bool,
 }
 
 fn default_delimiter() -> String {
     ",".into()
+}
+
+fn yes() -> bool {
+    true
 }
 
 pub struct Format {
@@ -134,12 +142,29 @@ impl Names {
         parts.join(" > ")
     }
 
+    pub fn category_levels(&self, id: Option<&String>) -> (String, String) {
+        let path = self.opt_category(id);
+        match path.split_once(" > ") {
+            Some((main, rest)) => (main.to_owned(), rest.to_owned()),
+            None => (path, String::new()),
+        }
+    }
+
     fn opt_category(&self, id: Option<&String>) -> String {
         id.map(|i| self.category_path(i)).unwrap_or_default()
     }
 }
 
-fn transactions_rows(conn: &Connection, f: &Format, names: &Names, filter: &TransactionFilter) -> AppResult<Vec<Vec<String>>> {
+fn transaction_header(opts: &ExportOptions) -> Vec<&'static str> {
+    let mut header = TRANSACTION_HEADER.to_vec();
+    if opts.split_categories {
+        let at = header.iter().position(|h| *h == "category").map_or(header.len(), |i| i + 1);
+        header.splice(at..at, ["main_category", "subcategory"]);
+    }
+    header
+}
+
+fn transactions_rows(conn: &Connection, f: &Format, names: &Names, filter: &TransactionFilter, opts: &ExportOptions) -> AppResult<Vec<Vec<String>>> {
     let mut all = Vec::new();
     let mut page = filter.clone();
     page.limit = Some(5000);
@@ -157,8 +182,8 @@ fn transactions_rows(conn: &Connection, f: &Format, names: &Names, filter: &Tran
     Ok(all
         .into_iter()
         .map(|t| {
-            let signed = if t.kind == "expense" { -t.amount_minor } else { t.amount_minor };
-            vec![
+            let signed = if t.kind == "expense" && opts.expense_minus { -t.amount_minor } else { t.amount_minor };
+            let mut row = vec![
                 t.occurred_on.clone(),
                 t.occurred_time.clone().unwrap_or_default(),
                 t.kind.clone(),
@@ -172,15 +197,21 @@ fn transactions_rows(conn: &Connection, f: &Format, names: &Names, filter: &Tran
                 t.note.clone().unwrap_or_default(),
                 t.tags.join(" "),
                 t.r#ref.clone(),
-            ]
+            ];
+            if opts.split_categories {
+                let (main, sub) = names.category_levels(t.category_id.as_ref());
+                row.splice(8..8, [main, sub]);
+            }
+            row
         })
         .collect())
 }
 
-fn dataset(conn: &Connection, name: &str, f: &Format, names: &Names, filter: &TransactionFilter, today: NaiveDate) -> AppResult<Vec<u8>> {
+fn dataset(conn: &Connection, name: &str, f: &Format, names: &Names, opts: &ExportOptions, today: NaiveDate) -> AppResult<Vec<u8>> {
+    let filter = opts.filter.clone().unwrap_or_default();
     let yes_no = |b: bool| if b { "yes".to_owned() } else { "no".to_owned() };
     Ok(match name {
-        "transactions" => f.table(TRANSACTION_HEADER, transactions_rows(conn, f, names, filter)?),
+        "transactions" => f.table(&transaction_header(opts), transactions_rows(conn, f, names, &filter, opts)?),
         "accounts" => f.table(
             &["name", "type", "currency", "balance", "opening_balance", "corrected_on", "archived", "color"],
             accounts::list_as_of(conn, today)?
@@ -326,10 +357,9 @@ pub fn export(conn: &Connection, opts: &ExportOptions, today: NaiveDate) -> AppR
     }
     let f = Format::new(&opts.delimiter, opts.decimal_comma);
     let names = Names::load(conn, opts.labels.clone())?;
-    let filter = opts.filter.clone().unwrap_or_default();
     let mut files = Vec::new();
     for name in &selected {
-        files.push((format!("{name}.csv"), dataset(conn, name, &f, &names, &filter, today)?));
+        files.push((format!("{name}.csv"), dataset(conn, name, &f, &names, opts, today)?));
     }
     if files.len() == 1 {
         return Ok(Exported { bytes: files.remove(0).1, files: 1 });
@@ -453,6 +483,8 @@ mod tests {
             decimal_comma: true,
             labels,
             filter: None,
+            expense_minus: true,
+            split_categories: false,
         };
         let out = export(&db.conn(), &opts, NaiveDate::from_ymd_opt(2026, 10, 8).unwrap()).unwrap();
         assert_eq!(out.files, DATASETS.len());
@@ -463,5 +495,25 @@ mod tests {
         assert!(text.starts_with("\u{feff}date;time;type;amount;"));
         assert!(text.contains("Essen & Trinken > "), "subcategories are exported with their path");
         assert!(text.lines().count() > 50);
+        let expense_line = text.lines().find(|l| l.contains(";expense;")).unwrap();
+        assert!(expense_line.split(';').nth(3).unwrap().starts_with('-'), "expenses keep their minus sign by default");
+
+        let plain = export(
+            &db.conn(),
+            &ExportOptions { datasets: vec!["transactions".into()], expense_minus: false, split_categories: true, ..opts.clone() },
+            NaiveDate::from_ymd_opt(2026, 10, 8).unwrap(),
+        )
+        .unwrap();
+        let text = String::from_utf8(plain.bytes).unwrap();
+        let mut lines = text.lines();
+        let header: Vec<&str> = lines.next().unwrap().trim_start_matches('\u{feff}').split(';').collect();
+        assert_eq!(&header[7..10], ["category", "main_category", "subcategory"]);
+        let rows: Vec<Vec<&str>> = lines.map(|l| l.split(';').collect()).collect();
+        assert!(rows.iter().all(|r| r.len() == header.len()));
+        assert!(rows.iter().filter(|r| r[2] == "expense").all(|r| !r[3].starts_with('-')), "expenses as positive amounts");
+        let nested = rows.iter().find(|r| r[7].contains(" > ")).expect("a subcategory row");
+        assert_eq!(format!("{} > {}", nested[8], nested[9]), nested[7]);
+        let top = rows.iter().find(|r| !r[7].is_empty() && !r[7].contains(" > ")).expect("a main category row");
+        assert_eq!((top[8], top[9]), (top[7], ""));
     }
 }

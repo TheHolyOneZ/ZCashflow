@@ -5,6 +5,7 @@
   "nav": {
     "dashboard": "Overview",
     "transactions": "Transactions",
+    "statistics": "Statistics",
     "recurring": "Recurring",
     "debts": "Debts",
     "goals": "Savings goals",
@@ -100,7 +101,20 @@
     "monthView": "Month view",
     "carriedOver": "Carried over",
     "balanceToday": "Balance today",
-    "balanceOn": "Balance on {{date}}"
+    "balanceOn": "Balance on {{date}}",
+    "categoriesSelected_one": "{{count}} category",
+    "categoriesSelected_other": "{{count}} categories"
+  },
+  "stats": {
+    "subtitle": "Where your money went and where it came from – by category.",
+    "previous": "Previous period",
+    "next": "Next period",
+    "span": "Period",
+    "month": "Month",
+    "year": "Year",
+    "emptyExpenses": "No expenses in this period.",
+    "emptyIncome": "No income in this period.",
+    "direct": "Booked directly on the main category"
   },
   "account": {
     "cash": "Cash",
@@ -440,9 +454,11 @@
     "parent": "Parent",
     "moved": "Category moved",
     "dropTopLevel": "Drop here to make it a main category",
-    "dragHint": "Drag a category by its handle onto another one to make it a subcategory – as many levels deep as you like.",
+    "dragHint": "Drag a category by its handle onto another one to make it a subcategory, or onto its upper or lower edge to change the order.",
     "addSub": "Add subcategory",
     "moveTop": "Make main category",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
     "dragHandle": "Move",
     "collapse": "Collapse",
     "expand": "Expand"
@@ -978,7 +994,17 @@
       "unknown_type": "unknown type “{{value}}”",
       "missing_target": "transfer without target account",
       "same_target": "transfer to the same account “{{value}}”"
-    }
+    },
+    "expenseAmounts": "Expense amounts",
+    "expenseMinus": "With minus",
+    "expensePlain": "Positive",
+    "expenseMinusHint": "expenses are negative, so sums in pivot tables give the balance",
+    "expensePlainHint": "all amounts positive, the type column tells income and expenses apart",
+    "categoryColumns": "Category columns",
+    "categoryPath": "One column",
+    "categorySplit": "Main + sub",
+    "categoryPathHint": "e.g. Office > Tea",
+    "categorySplitHint": "adds main_category and subcategory columns for filters and pivot tables"
   },
   "forecastView": {
     "allAccounts": "All accounts",

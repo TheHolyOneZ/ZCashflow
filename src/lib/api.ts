@@ -107,9 +107,18 @@ export interface TransactionFilter {
   kind?: TxKind;
   accountId?: string;
   categoryId?: string;
+  categoryIds?: string[];
   query?: string;
   limit?: number;
   offset?: number;
+}
+
+export interface CategorySum {
+  categoryId: string | null;
+  kind: "income" | "expense";
+  currency: string;
+  count: number;
+  totalMinor: number;
 }
 
 export interface CurrencyTotal {
@@ -174,6 +183,8 @@ export const api = {
   listCategories: () => invoke<Category[]>("list_categories"),
   upsertCategory: (input: CategoryInput) => invoke<Category>("upsert_category", { input }),
   moveCategory: (id: string, parentId: string | null) => invoke<Category>("move_category", { id, parentId }),
+  placeCategory: (id: string, parentId: string | null, order: string[]) =>
+    invoke<Category>("place_category", { id, parentId, order }),
 
   listCounterparties: () => invoke<Counterparty[]>("list_counterparties"),
 
@@ -182,6 +193,7 @@ export const api = {
   recentTitles: (kind?: TxKind, limit?: number) => invoke<string[]>("recent_titles", { kind, limit }),
   transactionTotals: (filter?: TransactionFilter) =>
     invoke<TransactionTotals>("transaction_totals", { filter }),
+  categoryTotals: (filter?: TransactionFilter) => invoke<CategorySum[]>("category_totals", { filter }),
   createTransaction: (input: TransactionInput) =>
     invoke<Transaction>("create_transaction", { input }),
   updateTransaction: (id: string, input: TransactionInput) =>
@@ -527,6 +539,8 @@ export interface ExportOptions {
   decimalComma: boolean;
   labels: Record<string, string>;
   filter?: TransactionFilter;
+  expenseMinus?: boolean;
+  splitCategories?: boolean;
 }
 
 export interface ImportOptions {

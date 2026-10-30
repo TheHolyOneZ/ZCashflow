@@ -5,6 +5,7 @@
   "nav": {
     "dashboard": "Genel bakış",
     "transactions": "İşlemler",
+    "statistics": "İstatistikler",
     "recurring": "Düzenli",
     "debts": "Borçlar",
     "goals": "Birikim hedefleri",
@@ -100,7 +101,20 @@
     "monthView": "Aylık görünüm",
     "carriedOver": "Devreden",
     "balanceToday": "Bugünkü bakiye",
-    "balanceOn": "{{date}} bakiyesi"
+    "balanceOn": "{{date}} bakiyesi",
+    "categoriesSelected_one": "{{count}} kategori",
+    "categoriesSelected_other": "{{count}} kategori"
+  },
+  "stats": {
+    "subtitle": "Paran nereye gitti ve nereden geldi – kategoriye göre.",
+    "previous": "Önceki dönem",
+    "next": "Sonraki dönem",
+    "span": "Dönem",
+    "month": "Ay",
+    "year": "Yıl",
+    "emptyExpenses": "Bu dönemde gider yok.",
+    "emptyIncome": "Bu dönemde gelir yok.",
+    "direct": "Doğrudan ana kategoriye kaydedilen"
   },
   "account": {
     "cash": "Nakit",
@@ -440,9 +454,11 @@
     "parent": "Üst kategori",
     "moved": "Kategori taşındı",
     "dropTopLevel": "Ana kategori yapmak için buraya bırak",
-    "dragHint": "Bir kategoriyi tutamağından başka bir kategorinin üzerine sürükleyerek alt kategori yap – istediğin kadar seviye.",
+    "dragHint": "Bir kategoriyi tutamağından başka bir kategorinin üzerine sürükleyerek alt kategori yap ya da sırayı değiştirmek için üst veya alt kenarına bırak.",
     "addSub": "Alt kategori ekle",
     "moveTop": "Ana kategori yap",
+    "moveUp": "Yukarı taşı",
+    "moveDown": "Aşağı taşı",
     "dragHandle": "Taşı",
     "collapse": "Daralt",
     "expand": "Genişlet"
@@ -978,7 +994,17 @@
       "unknown_type": "bilinmeyen tür “{{value}}”",
       "missing_target": "hedef hesabı olmayan transfer",
       "same_target": "aynı hesaba transfer “{{value}}”"
-    }
+    },
+    "expenseAmounts": "Gider tutarları",
+    "expenseMinus": "Eksi işaretli",
+    "expensePlain": "Pozitif",
+    "expenseMinusHint": "giderler negatif, pivot tablolardaki toplamlar bakiyeyi verir",
+    "expensePlainHint": "tüm tutarlar pozitif, type sütunu gelir ve gideri ayırır",
+    "categoryColumns": "Kategori sütunları",
+    "categoryPath": "Tek sütun",
+    "categorySplit": "Ana + alt",
+    "categoryPathHint": "örn. Ofis > Çay",
+    "categorySplitHint": "filtreler ve pivot tablolar için main_category ve subcategory sütunlarını ekler"
   },
   "forecastView": {
     "allAccounts": "Tüm hesaplar",

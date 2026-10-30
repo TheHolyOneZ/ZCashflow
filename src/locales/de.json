@@ -5,6 +5,7 @@
   "nav": {
     "dashboard": "Übersicht",
     "transactions": "Buchungen",
+    "statistics": "Statistik",
     "recurring": "Wiederkehrend",
     "debts": "Schulden",
     "goals": "Sparziele",
@@ -100,7 +101,20 @@
     "monthView": "Monatsansicht",
     "carriedOver": "Übertrag",
     "balanceToday": "Kontostand heute",
-    "balanceOn": "Kontostand am {{date}}"
+    "balanceOn": "Kontostand am {{date}}",
+    "categoriesSelected_one": "{{count}} Kategorie",
+    "categoriesSelected_other": "{{count}} Kategorien"
+  },
+  "stats": {
+    "subtitle": "Wofür dein Geld ausgegeben wurde und woher es kam – nach Kategorien.",
+    "previous": "Vorheriger Zeitraum",
+    "next": "Nächster Zeitraum",
+    "span": "Zeitraum",
+    "month": "Monat",
+    "year": "Jahr",
+    "emptyExpenses": "Keine Ausgaben in diesem Zeitraum.",
+    "emptyIncome": "Keine Einnahmen in diesem Zeitraum.",
+    "direct": "Direkt auf der Hauptkategorie gebucht"
   },
   "account": {
     "cash": "Bargeld",
@@ -440,9 +454,11 @@
     "parent": "Übergeordnet",
     "moved": "Kategorie verschoben",
     "dropTopLevel": "Hier ablegen, um sie zur Hauptkategorie zu machen",
-    "dragHint": "Zieh eine Kategorie am Griff auf eine andere, um sie zur Unterkategorie zu machen – beliebig viele Ebenen tief.",
+    "dragHint": "Zieh eine Kategorie am Griff auf eine andere, um sie zur Unterkategorie zu machen, oder an deren oberen bzw. unteren Rand, um die Reihenfolge zu ändern.",
     "addSub": "Unterkategorie hinzufügen",
     "moveTop": "Zur Hauptkategorie machen",
+    "moveUp": "Nach oben",
+    "moveDown": "Nach unten",
     "dragHandle": "Verschieben",
     "collapse": "Einklappen",
     "expand": "Ausklappen"
@@ -978,7 +994,17 @@
       "unknown_type": "unbekannter Typ „{{value}}“",
       "missing_target": "Umbuchung ohne Zielkonto",
       "same_target": "Umbuchung auf dasselbe Konto „{{value}}“"
-    }
+    },
+    "expenseAmounts": "Beträge von Ausgaben",
+    "expenseMinus": "Mit Minus",
+    "expensePlain": "Positiv",
+    "expenseMinusHint": "Ausgaben sind negativ, Summen in Pivot-Tabellen ergeben direkt den Saldo",
+    "expensePlainHint": "alle Beträge positiv, die Spalte type unterscheidet Einnahmen und Ausgaben",
+    "categoryColumns": "Kategorie-Spalten",
+    "categoryPath": "Eine Spalte",
+    "categorySplit": "Haupt + Unter",
+    "categoryPathHint": "z. B. Büro > Tee",
+    "categorySplitHint": "zusätzliche Spalten main_category und subcategory für Filter und Pivot-Tabellen"
   },
   "forecastView": {
     "allAccounts": "Alle Konten",

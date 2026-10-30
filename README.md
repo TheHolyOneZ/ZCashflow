@@ -37,7 +37,7 @@ encrypted, over your own Wi-Fi.
 
 ## Contents
 
-- [What's new in 1.5.0](#-whats-new-in-150)
+- [What's new in 1.6.0](#-whats-new-in-160)
 - [Why ZCashflow?](#-why-zcashflow)
 - [Features](#-features)
 - [Screenshots](#-screenshots)
@@ -57,7 +57,16 @@ encrypted, over your own Wi-Fi.
 
 ---
 
-## 🆕 What's new in 1.5.0
+## 🆕 What's new in 1.6.0
+
+- **Statistics** – a new page shows where your money went and where it came from: expenses and income per category for a month or a year, with a donut chart and categories ranked by amount. Tap a main category to fold out its subcategories, or open the matching transactions.
+- **Faster category filter** – the category filter in the transactions list has *Expenses* / *Income* tabs, shows the amount of every category for the current period, folds out subcategories and lets you pick several categories at once.
+- **Your own category order** – drag a category onto the upper or lower edge of another one to place it there, or use *Move up* / *Move down* in the right-click menu. The order is used everywhere you pick a category and syncs to your other devices.
+- **Export for spreadsheets** – two new options under *Settings → Data* and in the export dialog: expenses as positive amounts instead of with a minus, and separate *main_category* / *subcategory* columns for filters and pivot tables. The defaults stay as before.
+
+The database gets one new optional column for the category order; the sync schema stays the same, so 1.5.0 devices still sync – they just keep their own order.
+
+### 1.5.0
 
 - **Safer pairing** – the pairing code now comes with a clear warning: only pair your own devices, because paired devices share all data and unpairing doesn't separate it again.
 - **Choose the role while pairing** – decide right next to the code whether the new device gets *Full access*, *Read only* or *Receipts only*.
@@ -101,6 +110,7 @@ See [changelog.md](changelog.md) for the full change list.
 <td width="50%" valign="top">
 
 ### 📊 Overview & forecast
+- **Statistics** per category for a month or a year – donut chart, ranked list, subcategories to fold out
 - Total balance with a **30-day balance forecast** chart – all accounts, a selection, or one curve per account
 - **Safe to spend per day** until your next income – calculated from spendable accounts only
 - *Keeping an eye on*: overdue debts, exceeded budgets, low balance ahead, payments waiting for confirmation
@@ -128,9 +138,9 @@ See [changelog.md](changelog.md) for the full change list.
 - Income, expenses and transfers between accounts, with an optional **time of day**
 - **Quick entry** understands `Kebab 8.50`, `+2500 salary yesterday`, `Fuel 60€ 03.10.`
 - Categories are **learned** from your history and recognized by keyword from the very first entry (`REWE`, `Aral`, `Netflix` …)
-- **Subcategories at any depth**, rearranged by drag & drop
+- **Subcategories at any depth**, nested and put in your own order by drag & drop
 - **CSV import** from your bank's export or the ZCashflow template, with duplicate detection
-- Full-text search incl. receipt text, filters by account, category, date range
+- Full-text search incl. receipt text, filters by account, date range and one or several categories – with the amount of each category right in the filter
 - **Income, expenses and net** for the current filter, and per day in the list
 - Tags, notes, references (`TX-2026-000123`), duplicate, right-click menus everywhere
 
@@ -486,7 +496,7 @@ If automatic discovery doesn't find the other device (e.g. guest networks with c
 | Android / iOS | App sandbox (removed when the app is uninstalled) |
 
 - `zcashflow.db` – the SQLite database; `attachments/` – receipt photos.
-- **Backup:** *Settings → Data → Save backup* writes a complete copy of the database. **Export:** *Settings → Data → Export data* saves all data or a selection as CSV (several selections as one ZIP). **Import:** *Import CSV* reads the ZCashflow template or a bank export and shows a preview first.
+- **Backup:** *Settings → Data → Save backup* writes a complete copy of the database. **Export:** *Settings → Data → Export data* saves all data or a selection as CSV (several selections as one ZIP) – expenses with a minus or as positive amounts, categories in one column or split into main and subcategory. **Import:** *Import CSV* reads the ZCashflow template or a bank export and shows a preview first.
 - **Reset:** *Settings → Reset* resets the appearance or deletes everything (optionally saving a backup first).
 - Syncing devices is *not* a backup – deleting on one device deletes everywhere. Keep a backup.
 
@@ -572,7 +582,7 @@ You don't need every toolchain locally – GitHub builds everything:
   - *Actions → Build → Run workflow* builds selected platforms as artifacts.
   - Pushing a version tag builds **all** platforms and creates a **draft release** with consistently named files and `SHA256SUMS.txt`:
     ```sh
-    git tag v1.5.0 && git push origin v1.5.0
+    git tag v1.6.0 && git push origin v1.6.0
     ```
   - Android signing uses the repository secrets `ANDROID_KEYSTORE_B64` (base64 of the keystore) and `ANDROID_KEY_PASSWORD`.
 

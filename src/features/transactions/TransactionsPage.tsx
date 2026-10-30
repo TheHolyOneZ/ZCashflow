@@ -13,13 +13,12 @@ import { SearchInput, Tip } from "@/components/ui/inputs";
 import { Card, EmptyState, Kbd, PageHeader } from "@/components/ui/misc";
 import { Segmented } from "@/components/ui/segmented";
 import type { TransactionFilter, TransactionTotals, TxKind } from "@/lib/api";
-import { categoryTree } from "@/lib/categories";
 import { displayName } from "@/lib/i18n";
-import { useAccounts, useCategories, useTransactionTotals, useTransactions } from "@/lib/queries";
+import { useAccounts, useTransactionTotals, useTransactions } from "@/lib/queries";
 import { Money } from "@/components/ui/extra";
 import { useUi } from "@/stores/ui";
 import { TransactionList } from "./TransactionList";
-import { CategoryIcon } from "@/components/category-icon";
+import { CategoryFilter } from "./CategoryFilter";
 import { modKey } from "@/lib/platform";
 import { formatDay, isoDate, monthRange } from "@/lib/dates";
 import { activeLocale } from "@/lib/i18n";
@@ -29,27 +28,36 @@ type KindFilter = TxKind | "all";
 
 export function TransactionsPage() {
   const { t } = useTranslation();
-  const search = useSearch({ strict: false }) as { q?: string };
+  const search = useSearch({ strict: false }) as { q?: string; category?: string; from?: string; to?: string };
   const navigate = useNavigate();
   const openNew = useUi((s) => s.openNewTx);
   const accounts = useAccounts().data ?? [];
-  const categories = useCategories().data ?? [];
 
   const [query, setQuery] = useState(search.q ?? "");
   const [kind, setKind] = useState<KindFilter>("all");
   const [accountId, setAccountId] = useState("");
-  const [categoryId, setCategoryId] = useState("");
+  const [categoryIds, setCategoryIds] = useState<string[]>(search.category !== undefined ? [search.category] : []);
   const [initial] = useState(() =>
-    usePrefs.getState().txPeriod === "month" && !search.q ? monthRange() : { from: "", to: "" },
+    search.from || search.to
+      ? { from: search.from ?? "", to: search.to ?? "" }
+      : usePrefs.getState().txPeriod === "month" && !search.q
+        ? monthRange()
+        : { from: "", to: "" },
   );
   const [from, setFrom] = useState(initial.from);
   const [to, setTo] = useState(initial.to);
   const [showMore, setShowMore] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const exportFile = useExportFile();
-  const advanced = !!(accountId || categoryId || ((from || to) && !fullMonth(from, to)));
+  const advanced = !!(accountId || categoryIds.length || ((from || to) && !fullMonth(from, to)));
 
   useEffect(() => setQuery(search.q ?? ""), [search.q]);
+  useEffect(() => {
+    if (search.category === undefined && !search.from && !search.to) return;
+    setCategoryIds(search.category !== undefined ? [search.category] : []);
+    setFrom(search.from ?? "");
+    setTo(search.to ?? "");
+  }, [search.category, search.from, search.to]);
 
   const deferredQuery = useDeferredValue(query);
   const filter = useMemo<TransactionFilter>(
@@ -57,11 +65,11 @@ export function TransactionsPage() {
       query: deferredQuery.trim() || undefined,
       kind: kind === "all" ? undefined : kind,
       accountId: accountId || undefined,
-      categoryId: categoryId || undefined,
+      categoryIds: categoryIds.length ? categoryIds : undefined,
       from: from || undefined,
       to: to || undefined,
     }),
-    [deferredQuery, kind, accountId, categoryId, from, to],
+    [deferredQuery, kind, accountId, categoryIds, from, to],
   );
   const { data: items = [], isLoading } = useTransactions(filter);
   const totals = useTransactionTotals(filter).data;
@@ -71,7 +79,7 @@ export function TransactionsPage() {
     setQuery("");
     setKind("all");
     setAccountId("");
-    setCategoryId("");
+    setCategoryIds([]);
     setFrom("");
     setTo("");
     navigate({ to: "/transactions", search: {} });
@@ -150,21 +158,7 @@ export function TransactionsPage() {
                 })),
               ]}
             />
-            <Select
-              aria-label={t("tx.category")}
-              value={categoryId}
-              onValueChange={setCategoryId}
-              className="w-full sm:w-48"
-              items={[
-                { value: "", label: `${t("tx.category")}: ${t("common.all")}` },
-                ...categoryTree(categories).map(({ category: c, depth }) => ({
-                  value: c.id,
-                  label: displayName(c),
-                  depth,
-                  icon: <CategoryIcon category={c} className="size-6 rounded-md [&_svg]:size-3.5" />,
-                })),
-              ]}
-            />
+            <CategoryFilter value={categoryIds} onChange={setCategoryIds} base={filter} kind={kind === "all" ? undefined : kind} className="sm:w-48" />
             <div className="col-span-2 flex items-center gap-1.5">
               <DateInput clearable
                 aria-label={t("tx.filterFrom")}

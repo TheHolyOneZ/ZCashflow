@@ -822,6 +822,8 @@ mod tests {
             decimal_comma: true,
             labels: HashMap::new(),
             filter: None,
+            expense_minus: false,
+            split_categories: true,
         };
         let bytes = crate::domain::export::export(&db.conn(), &opts, today).unwrap().bytes;
         let text = String::from_utf8(bytes).unwrap();

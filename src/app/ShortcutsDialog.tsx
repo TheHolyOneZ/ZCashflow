@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { Dialog } from "@/components/ui/dialog";
 import { isDesktop, isTauri, shortcutLabel } from "@/lib/platform";
-import { navItems } from "./nav";
+import { shortcutItems } from "./nav";
 
 function Keys({ combo }: { combo: string }) {
   return (
@@ -38,7 +38,7 @@ export function ShortcutsDialog({ open, onOpenChange }: { open: boolean; onOpenC
     },
     {
       title: t("shortcuts.navigate"),
-      items: navItems.slice(0, 9).map((n, i) => [`Mod+${i + 1}`, t(n.labelKey)] as [string, string]),
+      items: shortcutItems.map((n, i) => [`Mod+${i + 1}`, t(n.labelKey)] as [string, string]),
     },
   ];
   return (

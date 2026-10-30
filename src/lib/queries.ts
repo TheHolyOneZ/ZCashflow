@@ -38,6 +38,14 @@ export const useTransactionTotals = (filter?: TransactionFilter) =>
     placeholderData: (prev) => prev,
   });
 
+export const useCategoryTotals = (filter?: TransactionFilter, enabled = true) =>
+  useQuery({
+    queryKey: [...keys.transactions(filter), "byCategory"],
+    queryFn: () => api.categoryTotals(filter),
+    placeholderData: (prev) => prev,
+    enabled,
+  });
+
 export const useSummary = (from: string, to: string, currency: string | undefined) =>
   useQuery({
     queryKey: keys.summary(from, to, currency ?? ""),

@@ -5,6 +5,7 @@
   "nav": {
     "dashboard": "Panoramica",
     "transactions": "Movimenti",
+    "statistics": "Statistiche",
     "recurring": "Ricorrenti",
     "debts": "Debiti",
     "goals": "Obiettivi di risparmio",
@@ -101,7 +102,21 @@
     "monthView": "Vista mensile",
     "carriedOver": "Riporto",
     "balanceToday": "Saldo oggi",
-    "balanceOn": "Saldo al {{date}}"
+    "balanceOn": "Saldo al {{date}}",
+    "categoriesSelected_one": "{{count}} categoria",
+    "categoriesSelected_other": "{{count}} categorie",
+    "categoriesSelected_many": "{{count}} categorie"
+  },
+  "stats": {
+    "subtitle": "Dove sono andati i tuoi soldi e da dove sono arrivati – per categoria.",
+    "previous": "Periodo precedente",
+    "next": "Periodo successivo",
+    "span": "Periodo",
+    "month": "Mese",
+    "year": "Anno",
+    "emptyExpenses": "Nessuna spesa in questo periodo.",
+    "emptyIncome": "Nessuna entrata in questo periodo.",
+    "direct": "Registrato direttamente sulla categoria principale"
   },
   "account": {
     "cash": "Contanti",
@@ -459,9 +474,11 @@
     "parent": "Categoria superiore",
     "moved": "Categoria spostata",
     "dropTopLevel": "Rilascia qui per renderla categoria principale",
-    "dragHint": "Trascina una categoria dalla maniglia su un'altra per renderla sottocategoria – con tutti i livelli che vuoi.",
+    "dragHint": "Trascina una categoria dalla maniglia su un'altra per renderla sottocategoria, oppure sul suo bordo superiore o inferiore per cambiare l'ordine.",
     "addSub": "Aggiungi sottocategoria",
     "moveTop": "Rendi categoria principale",
+    "moveUp": "Sposta su",
+    "moveDown": "Sposta giù",
     "dragHandle": "Sposta",
     "collapse": "Comprimi",
     "expand": "Espandi"
@@ -1015,7 +1032,17 @@
       "unknown_type": "tipo sconosciuto «{{value}}»",
       "missing_target": "trasferimento senza conto di destinazione",
       "same_target": "trasferimento sullo stesso conto «{{value}}»"
-    }
+    },
+    "expenseAmounts": "Importi delle spese",
+    "expenseMinus": "Con segno meno",
+    "expensePlain": "Positivi",
+    "expenseMinusHint": "le spese sono negative, le somme nelle tabelle pivot danno il saldo",
+    "expensePlainHint": "tutti gli importi positivi, la colonna type distingue entrate e spese",
+    "categoryColumns": "Colonne categoria",
+    "categoryPath": "Una colonna",
+    "categorySplit": "Principale + sotto",
+    "categoryPathHint": "es. Ufficio > Tè",
+    "categorySplitHint": "aggiunge le colonne main_category e subcategory per filtri e tabelle pivot"
   },
   "forecastView": {
     "allAccounts": "Tutti i conti",

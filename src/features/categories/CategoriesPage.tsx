@@ -1,4 +1,4 @@
-import { ChevronRight, CornerLeftUp, FolderPlus, GripVertical, Pencil, Plus, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronRight, CornerLeftUp, FolderPlus, GripVertical, Pencil, Plus, Trash2 } from "lucide-react";
 import { RowMenu } from "@/components/ui/context-menu";
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type PointerEvent as ReactPointerEvent } from "react";
 import { useTranslation } from "react-i18next";
@@ -17,17 +17,28 @@ import { displayName } from "@/lib/i18n";
 import { useAppInfo, useAppMutation, useCategories, useSummary } from "@/lib/queries";
 
 type Column = "expense" | "income";
+type DropPos = "before" | "after" | "into";
 
 interface DragState {
   id: string;
   x: number;
   y: number;
   over: string | null;
+  pos: DropPos;
 }
 
 const fitsColumn = (c: Category, column: Column) => c.kind === column || c.kind === "both";
+const kindsMatch = (a: Category, b: Category) => a.kind === "both" || b.kind === "both" || a.kind === b.kind;
 
-function useCategoryDrag(categories: Category[], onDrop: (c: Category, target: string) => void) {
+function placement(categories: Category[], c: Category, target: string, pos: DropPos) {
+  const parentId = target.startsWith("root:") ? null : pos === "into" ? target : (categories.find((x) => x.id === target)?.parentId ?? null);
+  const order = categories.filter((x) => (x.parentId ?? null) === parentId && x.id !== c.id).map((x) => x.id);
+  const at = target.startsWith("root:") || pos === "into" ? order.length : order.indexOf(target) + (pos === "after" ? 1 : 0);
+  order.splice(at, 0, c.id);
+  return { parentId, order };
+}
+
+function useCategoryDrag(categories: Category[], onDrop: (c: Category, target: string, pos: DropPos) => void) {
   const [drag, setDrag] = useState<DragState | null>(null);
   const cleanup = useRef<(() => void) | null>(null);
   useEffect(() => () => cleanup.current?.(), []);
@@ -42,19 +53,29 @@ function useCategoryDrag(categories: Category[], onDrop: (c: Category, target: s
       const scroller = (e.currentTarget as HTMLElement).closest("main");
       let active = false;
       let target: string | null = null;
-      const valid = (raw: string) => {
+      let pos: DropPos = "into";
+      const valid = (raw: string, where: DropPos) => {
         if (raw.startsWith("root:")) return raw === `root:${column}` || (c.kind === "both" && raw.startsWith("root:"));
         if (blocked.has(raw)) return false;
         const t = categories.find((x) => x.id === raw);
-        return !!t && (t.kind === "both" || c.kind === "both" || t.kind === c.kind);
+        if (!t || !kindsMatch(t, c)) return false;
+        if (where === "into") return true;
+        const parent = t.parentId ? categories.find((x) => x.id === t.parentId) : undefined;
+        return !parent || (!blocked.has(parent.id) && kindsMatch(parent, c));
       };
       const move = (ev: PointerEvent) => {
         if (!active && Math.hypot(ev.clientX - origin.x, ev.clientY - origin.y) < 5) return;
         active = true;
         const el = document.elementFromPoint(ev.clientX, ev.clientY)?.closest<HTMLElement>("[data-drop]");
         const raw = el?.dataset.drop ?? null;
-        target = raw && valid(raw) ? raw : null;
-        setDrag({ id: c.id, x: ev.clientX, y: ev.clientY, over: target });
+        pos = "into";
+        if (el && raw && !raw.startsWith("root:")) {
+          const r = el.getBoundingClientRect();
+          const y = (ev.clientY - r.top) / r.height;
+          pos = y < 0.3 ? "before" : y > 0.7 ? "after" : "into";
+        }
+        target = raw && valid(raw, pos) ? raw : null;
+        setDrag({ id: c.id, x: ev.clientX, y: ev.clientY, over: target, pos });
         if (scroller) {
           const r = scroller.getBoundingClientRect();
           if (ev.clientY < r.top + 56) scroller.scrollBy(0, -14);
@@ -64,7 +85,7 @@ function useCategoryDrag(categories: Category[], onDrop: (c: Category, target: s
       const stop = (drop: boolean) => {
         cleanup.current?.();
         setDrag(null);
-        if (drop && active && target) onDrop(c, target);
+        if (drop && active && target) onDrop(c, target, pos);
       };
       const up = () => stop(true);
       const cancel = () => stop(false);
@@ -94,18 +115,21 @@ export function CategoriesPage() {
   const summary = useSummary(range.from, range.to, currency).data;
   const [edit, setEdit] = useState<{ category?: Category; kind?: CategoryKind; parentId?: string } | null>(null);
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
-  const move = useAppMutation(({ id, parentId }: { id: string; parentId: string | null }) => api.moveCategory(id, parentId), {
-    success: t("categories.moved"),
-  });
+  const place = useAppMutation(
+    ({ id, parentId, order }: { id: string; parentId: string | null; order: string[] }) => api.placeCategory(id, parentId, order),
+    { success: t("categories.moved") },
+  );
 
   const onDrop = useCallback(
-    (c: Category, target: string) => {
-      const parentId = target.startsWith("root:") ? null : target;
-      if ((c.parentId ?? null) === parentId) return;
+    (c: Category, target: string, pos: DropPos) => {
+      const next = placement(categories, c, target, pos);
+      const before = categories.filter((x) => (x.parentId ?? null) === next.parentId).map((x) => x.id);
+      if ((c.parentId ?? null) === next.parentId && before.join() === next.order.join()) return;
+      const parentId = next.parentId;
       if (parentId) setCollapsed((s) => (s.has(parentId) ? new Set([...s].filter((x) => x !== parentId)) : s));
-      move.mutate({ id: c.id, parentId });
+      place.mutate({ id: c.id, ...next });
     },
-    [move],
+    [categories, place],
   );
   const { drag, start } = useCategoryDrag(categories, onDrop);
   const dragged = drag ? categories.find((c) => c.id === drag.id) : undefined;
@@ -146,7 +170,14 @@ export function CategoriesPage() {
           />
         </div>
         <ul className="pb-2">
-          {visible.map(({ category: c, depth }) => (
+          {visible.map(({ category: c, depth }) => {
+            const siblings = list.filter((x) => (x.parentId ?? null) === (c.parentId ?? null));
+            const i = siblings.findIndex((x) => x.id === c.id);
+            const shift = (by: -1 | 1) => {
+              const other = siblings[i + by];
+              return other ? () => place.mutate({ id: c.id, ...placement(categories, c, other.id, by < 0 ? "before" : "after") }) : undefined;
+            };
+            return (
             <li key={c.id}>
               <Row
                 category={c}
@@ -164,14 +195,17 @@ export function CategoriesPage() {
                 spent={kind === "expense" ? spent.get(c.id) : undefined}
                 currency={currency}
                 dragging={drag?.id === c.id}
-                dropTarget={drag?.over === c.id}
+                dropPos={drag?.over === c.id ? drag.pos : null}
                 onDragStart={(e) => start(e, c, kind)}
                 onClick={() => setEdit({ category: c })}
                 onAddChild={() => setEdit({ kind: c.kind, parentId: c.id })}
-                onMoveToTop={c.parentId ? () => move.mutate({ id: c.id, parentId: null }) : undefined}
+                onMoveToTop={c.parentId ? () => place.mutate({ id: c.id, ...placement(categories, c, rootDrop, "into") }) : undefined}
+                onMoveUp={shift(-1)}
+                onMoveDown={shift(1)}
               />
             </li>
-          ))}
+            );
+          })}
         </ul>
         {drag && dragged && fitsColumn(dragged, kind) && (
           <div
@@ -237,11 +271,13 @@ function Row({
   spent,
   currency,
   dragging,
-  dropTarget,
+  dropPos,
   onDragStart,
   onClick,
   onAddChild,
   onMoveToTop,
+  onMoveUp,
+  onMoveDown,
 }: {
   category: Category;
   depth: number;
@@ -251,11 +287,13 @@ function Row({
   spent?: number;
   currency?: string;
   dragging: boolean;
-  dropTarget: boolean;
+  dropPos: DropPos | null;
   onDragStart: (e: ReactPointerEvent) => void;
   onClick: () => void;
   onAddChild: () => void;
   onMoveToTop?: () => void;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
 }) {
   const { t } = useTranslation();
   const del = useAppMutation(planning.deleteCategory, { success: t("common.deleted") });
@@ -264,6 +302,8 @@ function Row({
       items={[
         { label: t("common.edit"), icon: Pencil, onSelect: onClick },
         { label: t("categories.addSub"), icon: FolderPlus, onSelect: onAddChild },
+        ...(onMoveUp ? [{ label: t("categories.moveUp"), icon: ArrowUp, onSelect: onMoveUp }] : []),
+        ...(onMoveDown ? [{ label: t("categories.moveDown"), icon: ArrowDown, onSelect: onMoveDown }] : []),
         ...(onMoveToTop ? [{ label: t("categories.moveTop"), icon: CornerLeftUp, onSelect: onMoveToTop }] : []),
         "separator",
         { label: t("common.delete"), icon: Trash2, danger: true, confirm: true, onSelect: () => del.mutate(category.id) },
@@ -272,12 +312,18 @@ function Row({
       <div
         data-drop={category.id}
         className={cn(
-          "group flex items-center gap-1 pr-4 transition-colors hover:bg-surface-2",
+          "group relative flex items-center gap-1 pr-4 transition-colors hover:bg-surface-2",
           dragging && "opacity-40",
-          dropTarget && "bg-accent-soft ring-2 ring-accent ring-inset",
+          dropPos === "into" && "bg-accent-soft ring-2 ring-accent ring-inset",
         )}
         style={{ paddingLeft: `${0.25 + depth * 1.5}rem` }}
       >
+        {(dropPos === "before" || dropPos === "after") && (
+          <span
+            className={cn("pointer-events-none absolute right-3 h-0.5 rounded-full bg-accent", dropPos === "before" ? "-top-px" : "-bottom-px")}
+            style={{ left: `${0.25 + depth * 1.5}rem` }}
+          />
+        )}
         <span
           role="button"
           tabIndex={-1}

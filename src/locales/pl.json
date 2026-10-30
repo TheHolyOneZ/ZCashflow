@@ -5,6 +5,7 @@
   "nav": {
     "dashboard": "Przegląd",
     "transactions": "Transakcje",
+    "statistics": "Statystyki",
     "recurring": "Cykliczne",
     "debts": "Długi",
     "goals": "Cele oszczędnościowe",
@@ -102,7 +103,22 @@
     "monthView": "Widok miesiąca",
     "carriedOver": "Przeniesione saldo",
     "balanceToday": "Saldo dziś",
-    "balanceOn": "Saldo na {{date}}"
+    "balanceOn": "Saldo na {{date}}",
+    "categoriesSelected_one": "{{count}} kategoria",
+    "categoriesSelected_few": "{{count}} kategorie",
+    "categoriesSelected_many": "{{count}} kategorii",
+    "categoriesSelected_other": "{{count}} kategorii"
+  },
+  "stats": {
+    "subtitle": "Na co poszły Twoje pieniądze i skąd przyszły – według kategorii.",
+    "previous": "Poprzedni okres",
+    "next": "Następny okres",
+    "span": "Okres",
+    "month": "Miesiąc",
+    "year": "Rok",
+    "emptyExpenses": "Brak wydatków w tym okresie.",
+    "emptyIncome": "Brak przychodów w tym okresie.",
+    "direct": "Zaksięgowane bezpośrednio w kategorii głównej"
   },
   "account": {
     "cash": "Gotówka",
@@ -478,9 +494,11 @@
     "parent": "Kategoria nadrzędna",
     "moved": "Kategoria przeniesiona",
     "dropTopLevel": "Upuść tutaj, aby stała się kategorią główną",
-    "dragHint": "Przeciągnij kategorię za uchwyt na inną, aby stała się podkategorią – na dowolną liczbę poziomów.",
+    "dragHint": "Przeciągnij kategorię za uchwyt na inną, aby stała się podkategorią, albo na jej górną lub dolną krawędź, aby zmienić kolejność.",
     "addSub": "Dodaj podkategorię",
     "moveTop": "Ustaw jako kategorię główną",
+    "moveUp": "Przenieś wyżej",
+    "moveDown": "Przenieś niżej",
     "dragHandle": "Przenieś",
     "collapse": "Zwiń",
     "expand": "Rozwiń"
@@ -1052,7 +1070,17 @@
       "unknown_type": "nieznany typ „{{value}}”",
       "missing_target": "przelew bez konta docelowego",
       "same_target": "przelew na to samo konto „{{value}}”"
-    }
+    },
+    "expenseAmounts": "Kwoty wydatków",
+    "expenseMinus": "Z minusem",
+    "expensePlain": "Dodatnie",
+    "expenseMinusHint": "wydatki są ujemne, sumy w tabelach przestawnych dają saldo",
+    "expensePlainHint": "wszystkie kwoty dodatnie, kolumna type odróżnia przychody od wydatków",
+    "categoryColumns": "Kolumny kategorii",
+    "categoryPath": "Jedna kolumna",
+    "categorySplit": "Główna + pod",
+    "categoryPathHint": "np. Biuro > Herbata",
+    "categorySplitHint": "dodaje kolumny main_category i subcategory do filtrów i tabel przestawnych"
   },
   "forecastView": {
     "allAccounts": "Wszystkie konta",

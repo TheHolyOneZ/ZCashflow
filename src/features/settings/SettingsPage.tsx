@@ -34,7 +34,7 @@ import { DashboardSettings } from "./DashboardSettings";
 import { ResetData } from "./ResetData";
 import { ExportDialog } from "@/features/data/ExportDialog";
 import { ImportDialog } from "@/features/data/ImportDialog";
-import { pickSavePath } from "@/features/data/export";
+import { ExportColumnFields, pickSavePath } from "@/features/data/export";
 import { api, planning } from "@/lib/api";
 import { isoDate } from "@/lib/dates";
 import { activeLocale, languages } from "@/lib/i18n";
@@ -302,7 +302,10 @@ export function SettingsPage() {
 
           <Section id="data" icon={Database} title={t("settings.data")} hint={t("settings.dataHint")}>
             <div className="flex flex-col gap-3">
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-col">
+                <ExportColumnFields Wrap={Field2} />
+              </div>
+              <div className="flex flex-wrap gap-2 border-t border-border pt-3.5">
                 <Button onClick={() => setExportOpen(true)}>
                   <Download className="size-4" />
                   {t("settings.exportCsv")}

@@ -30,7 +30,7 @@ pub struct CategoryInput {
 pub fn list(conn: &Connection) -> AppResult<Vec<Category>> {
     let mut stmt = conn.prepare(
         "SELECT id, parent_id, name, system_key, kind, icon, color
-         FROM categories WHERE deleted = 0 ORDER BY kind DESC, created_at",
+         FROM categories WHERE deleted = 0 ORDER BY sort_order IS NULL, sort_order, kind DESC, created_at",
     )?;
     let rows = stmt.query_map([], |r| {
         Ok(Category {
@@ -129,6 +129,36 @@ pub fn move_to(db: &Db, id: &str, parent_id: Option<&str>) -> AppResult<Category
         .ok_or_else(|| AppError::NotFound(format!("category {id}")))
 }
 
+pub fn place(db: &Db, id: &str, parent_id: Option<&str>, order: &[String]) -> AppResult<Category> {
+    if !order.iter().any(|o| o == id) {
+        return Err(AppError::Invalid("the moved category must be part of the new order".into()));
+    }
+    let mut conn = db.conn();
+    check_parent(&conn, Some(id), parent_id)?;
+    let tx = conn.transaction()?;
+    let hlc = db.hlc.tick();
+    let n = tx.execute(
+        "UPDATE categories SET parent_id = ?2, updated_hlc = ?3 WHERE id = ?1 AND deleted = 0 AND parent_id IS NOT ?2",
+        params![id, parent_id, hlc],
+    )?;
+    let exists: i64 = tx.query_row("SELECT count(*) FROM categories WHERE id = ?1 AND deleted = 0", [id], |r| r.get(0))?;
+    if n == 0 && exists == 0 {
+        return Err(AppError::NotFound(format!("category {id}")));
+    }
+    for (i, sibling) in order.iter().enumerate() {
+        tx.execute(
+            "UPDATE categories SET sort_order = ?2, updated_hlc = ?3
+             WHERE id = ?1 AND deleted = 0 AND parent_id IS ?4 AND sort_order IS NOT ?2",
+            params![sibling, i as i64, hlc, parent_id],
+        )?;
+    }
+    tx.commit()?;
+    list(&conn)?
+        .into_iter()
+        .find(|c| c.id == id)
+        .ok_or_else(|| AppError::NotFound(format!("category {id}")))
+}
+
 pub fn delete(db: &Db, id: &str) -> AppResult<()> {
     let conn = db.conn();
     let hlc = db.hlc.tick();
@@ -176,6 +206,30 @@ mod tests {
         let moved = move_to(&db, &c, None).unwrap();
         assert_eq!(moved.parent_id, None);
         assert_eq!(subtree(&db.conn(), &a).unwrap().len(), 2);
+    }
+
+    #[test]
+    fn places_categories_in_the_chosen_order() {
+        let db = Db::open_in_memory().unwrap();
+        let a = cat(&db, "Büro", None);
+        let x = cat(&db, "Tee", Some(&a));
+        let y = cat(&db, "Strom", Some(&a));
+        let z = cat(&db, "Papier", None);
+        let names = |db: &Db| -> Vec<String> {
+            list(&db.conn()).unwrap().into_iter().filter(|c| c.parent_id.as_deref() == Some(a.as_str())).map(|c| c.name).collect()
+        };
+        assert_eq!(names(&db), ["Tee", "Strom"]);
+        place(&db, &y, Some(&a), &[y.clone(), x.clone()]).unwrap();
+        assert_eq!(names(&db), ["Strom", "Tee"]);
+        let moved = place(&db, &z, Some(&a), &[y.clone(), z.clone(), x.clone()]).unwrap();
+        assert_eq!(moved.parent_id.as_deref(), Some(a.as_str()));
+        assert_eq!(names(&db), ["Strom", "Papier", "Tee"]);
+        let before = db.conn().query_row("SELECT updated_hlc FROM categories WHERE id = ?1", [&y], |r| r.get::<_, String>(0)).unwrap();
+        place(&db, &z, Some(&a), &[y.clone(), z.clone(), x.clone()]).unwrap();
+        let after = db.conn().query_row("SELECT updated_hlc FROM categories WHERE id = ?1", [&y], |r| r.get::<_, String>(0)).unwrap();
+        assert_eq!(before, after, "unchanged rows are not sent to other devices again");
+        assert!(place(&db, &a, Some(&x), std::slice::from_ref(&a)).is_err(), "no cycles");
+        assert!(place(&db, &x, None, std::slice::from_ref(&y)).is_err(), "the moved category must be in the order");
     }
 
     #[test]

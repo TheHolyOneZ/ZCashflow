@@ -21,7 +21,7 @@ import { PairRequestDialog } from "@/features/devices/PairRequestDialog";
 import { planning, sync } from "@/lib/api";
 import i18n from "i18next";
 import { useReceiptImport } from "@/features/receipts/receipt-ui";
-import { navGroups, navItems, type NavItem } from "./nav";
+import { navGroups, navItems, shortcutItems, type NavItem } from "./nav";
 import { useInsightNotifications } from "@/features/insights/insights";
 import { useDailyReminder } from "@/features/today/reminder";
 import { invalidateData, useAccounts, useInsights, useSyncStatus } from "@/lib/queries";
@@ -66,7 +66,7 @@ function useGlobalShortcuts(openHelp: () => void) {
         return;
       }
       if (mod && /^[1-9]$/.test(e.key)) {
-        const item = navItems[Number(e.key) - 1];
+        const item = shortcutItems[Number(e.key) - 1];
         if (item) {
           e.preventDefault();
           navigate({ to: item.to });
@@ -273,7 +273,7 @@ export function AppShell() {
                     label={t(n.labelKey)}
                     badge={badges[n.to]}
                     collapsed={collapsed}
-                    shortcut={navItems.indexOf(n) < 9 ? shortcutLabel(`Mod+${navItems.indexOf(n) + 1}`) : undefined}
+                    shortcut={shortcutItems.includes(n) ? shortcutLabel(`Mod+${shortcutItems.indexOf(n) + 1}`) : undefined}
                   />
                 ))}
             </div>

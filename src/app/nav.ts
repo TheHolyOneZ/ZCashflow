@@ -7,6 +7,7 @@ import {
   Landmark,
   MonitorSmartphone,
   LayoutDashboard,
+  PieChart,
   PiggyBank,
   ScanLine,
   Settings,
@@ -22,11 +23,13 @@ export interface NavItem {
   group: "main" | "plan" | "manage";
 
   primary?: boolean;
+  noShortcut?: boolean;
 }
 
 export const navItems: NavItem[] = [
   { to: "/", labelKey: "nav.dashboard", icon: LayoutDashboard, group: "main", primary: true },
   { to: "/transactions", labelKey: "nav.transactions", icon: ArrowLeftRight, group: "main", primary: true },
+  { to: "/statistics", labelKey: "nav.statistics", icon: PieChart, group: "main", noShortcut: true },
   { to: "/receipts", labelKey: "nav.receipts", icon: ScanLine, group: "main", primary: true },
   { to: "/planner", labelKey: "nav.planner", icon: CalendarRange, group: "main" },
   { to: "/recurring", labelKey: "nav.recurring", icon: CalendarClock, group: "plan" },
@@ -39,5 +42,7 @@ export const navItems: NavItem[] = [
   { to: "/settings", labelKey: "nav.settings", icon: Settings, group: "manage" },
   { to: "/about", labelKey: "nav.about", icon: Info, group: "manage" },
 ];
+
+export const shortcutItems = navItems.filter((n) => !n.noShortcut).slice(0, 9);
 
 export const navGroups = ["main", "plan", "manage"] as const;

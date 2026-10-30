@@ -73,6 +73,11 @@ pub fn move_category(db: State<SharedDb>, id: String, parent_id: Option<String>)
 }
 
 #[tauri::command]
+pub fn place_category(db: State<SharedDb>, id: String, parent_id: Option<String>, order: Vec<String>) -> AppResult<Category> {
+    categories::place(&db, &id, parent_id.as_deref().filter(|p| !p.is_empty()), &order)
+}
+
+#[tauri::command]
 pub fn list_counterparties(db: State<SharedDb>) -> AppResult<Vec<Counterparty>> {
     counterparties::list(&db.conn())
 }
@@ -90,6 +95,11 @@ pub fn recent_titles(db: State<SharedDb>, kind: Option<String>, limit: Option<u3
 #[tauri::command]
 pub fn transaction_totals(db: State<SharedDb>, filter: Option<TransactionFilter>) -> AppResult<transactions::Totals> {
     transactions::totals(&db.conn(), &filter.unwrap_or_default(), today())
+}
+
+#[tauri::command]
+pub fn category_totals(db: State<SharedDb>, filter: Option<TransactionFilter>) -> AppResult<Vec<transactions::CategorySum>> {
+    transactions::category_totals(&db.conn(), &filter.unwrap_or_default())
 }
 
 #[tauri::command]
@@ -344,6 +354,8 @@ pub fn export_csv(app: tauri::AppHandle, db: State<SharedDb>, path: String) -> A
         decimal_comma: false,
         labels: Default::default(),
         filter: None,
+        expense_minus: true,
+        split_categories: false,
     };
     let out = export::export(&db.conn(), &opts, today())?;
     write_target(&app, &path, &out.bytes)?;

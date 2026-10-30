@@ -9,7 +9,7 @@ import { DateInput } from "@/components/ui/date-input";
 import { DATASETS, type Dataset } from "@/lib/api";
 import { isoDate } from "@/lib/dates";
 import { CheckRow } from "./CheckRow";
-import { defaultCsvFormat, useExportFile, type CsvFormat } from "./export";
+import { defaultCsvFormat, ExportColumnFields, useExportFile, type CsvFormat } from "./export";
 
 type Period = "all" | "year" | "last12" | "custom";
 
@@ -112,6 +112,7 @@ function ExportForm({ onDone }: { onDone: () => void }) {
           ]}
         />
       </Field>
+      {selected.has("transactions") && <ExportColumnFields Wrap={Field} />}
       {selected.size > 1 && <p className="text-[12px] text-muted">{t("dataTransfer.zipNote")}</p>}
       <div className="flex justify-end gap-2 pt-1">
         <Button onClick={onDone}>{t("common.cancel")}</Button>
