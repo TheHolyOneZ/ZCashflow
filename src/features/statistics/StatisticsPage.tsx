@@ -16,6 +16,7 @@ import { isoDate, monthRange } from "@/lib/dates";
 import { percent } from "@/lib/format";
 import { activeLocale, displayName } from "@/lib/i18n";
 import { useAppInfo, useCategories, useCategoryTotals } from "@/lib/queries";
+import { useSwipe } from "@/lib/swipe";
 
 type Span = "month" | "year";
 type Tab = "expense" | "income";
@@ -53,6 +54,7 @@ export function StatisticsPage() {
       ? new Intl.DateTimeFormat(activeLocale(), { month: "long", year: "numeric" }).format(at)
       : String(at.getFullYear());
   const step = (by: number) => setAt((d) => (span === "month" ? addMonths(d, by) : addYears(d, by)));
+  const swipe = useSwipe(step);
   const open = (id: string) => navigate({ to: "/transactions", search: { category: id, from: range.from, to: range.to } });
 
   const rows: { node: BreakdownNode; depth: number; color: string; share: number }[] = [];
@@ -68,7 +70,7 @@ export function StatisticsPage() {
   walk(nodes, 0, total, colorOf);
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3" {...swipe}>
       <PageHeader
         title={t("nav.statistics")}
         subtitle={t("stats.subtitle")}

@@ -1,5 +1,5 @@
-import { useMemo } from "react";
-import { Copy, CopyPlus, Hash, Paperclip, Pencil, Trash2 } from "lucide-react";
+import { useMemo, useRef, type MouseEvent } from "react";
+import { Check, Copy, CopyPlus, Hash, ListChecks, Paperclip, Pencil, Trash2 } from "lucide-react";
 import { RowMenu, type MenuEntry } from "@/components/ui/context-menu";
 import { writeClipboard } from "@/lib/clipboard";
 import { minorToInput } from "@/lib/money";
@@ -12,6 +12,14 @@ import { Money } from "@/components/ui/extra";
 import { activeLocale, displayName } from "@/lib/i18n";
 import { useAccounts, useCategories, useDeleteTransaction } from "@/lib/queries";
 import { useUi } from "@/stores/ui";
+import { cn } from "@/lib/cn";
+
+export interface Selection {
+  selected: Set<string>;
+  onChange: (next: Set<string>) => void;
+}
+
+type Pick = (id: string, e?: { shiftKey?: boolean }) => void;
 
 function groupByDay(txs: Transaction[]) {
   const groups: { day: string; items: Transaction[] }[] = [];
@@ -23,8 +31,33 @@ function groupByDay(txs: Transaction[]) {
   return groups;
 }
 
-export function TransactionList({ items, grouped = true, days }: { items: Transaction[]; grouped?: boolean; days?: DayTotal[] }) {
+export function TransactionList({
+  items,
+  grouped = true,
+  days,
+  selection,
+}: {
+  items: Transaction[];
+  grouped?: boolean;
+  days?: DayTotal[];
+  selection?: Selection;
+}) {
   const { t } = useTranslation();
+  const anchor = useRef<string | null>(null);
+  const pick: Pick | undefined = selection
+    ? (id, e) => {
+        const next = new Set(selection.selected);
+        const ids = items.map((i) => i.id);
+        const a = anchor.current ? ids.indexOf(anchor.current) : -1;
+        const b = ids.indexOf(id);
+        if (e?.shiftKey && a >= 0 && b >= 0) {
+          for (const x of ids.slice(Math.min(a, b), Math.max(a, b) + 1)) next.add(x);
+        } else if (next.has(id)) next.delete(id);
+        else next.add(id);
+        anchor.current = id;
+        selection.onChange(next);
+      }
+    : undefined;
   const categories = useCategories().data ?? [];
   const accounts = useAccounts().data ?? [];
   const byId = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
@@ -39,7 +72,7 @@ export function TransactionList({ items, grouped = true, days }: { items: Transa
     return (
       <ul className="divide-y divide-border">
         {items.map((tx) => (
-          <Row key={tx.id} tx={tx} category={byId.get(tx.categoryId ?? "")} accounts={accountsById} showDate />
+          <Row key={tx.id} tx={tx} category={byId.get(tx.categoryId ?? "")} accounts={accountsById} showDate pick={pick} selection={selection} />
         ))}
       </ul>
     );
@@ -76,7 +109,7 @@ export function TransactionList({ items, grouped = true, days }: { items: Transa
           </h3>
           <ul className="divide-y divide-border">
             {items.map((tx) => (
-              <Row key={tx.id} tx={tx} category={byId.get(tx.categoryId ?? "")} accounts={accountsById} />
+              <Row key={tx.id} tx={tx} category={byId.get(tx.categoryId ?? "")} accounts={accountsById} pick={pick} selection={selection} />
             ))}
           </ul>
         </section>
@@ -90,12 +123,18 @@ function Row({
   category,
   accounts,
   showDate,
+  pick,
+  selection,
 }: {
   tx: Transaction;
   category?: Category;
   accounts: Map<string, Account>;
   showDate?: boolean;
+  pick?: Pick;
+  selection?: Selection;
 }) {
+  const selecting = !!selection && selection.selected.size > 0;
+  const selected = !!selection?.selected.has(tx.id);
   const { t } = useTranslation();
   const openEdit = useUi((s) => s.openEditTx);
   const account = accounts.get(tx.accountId);
@@ -105,6 +144,7 @@ function Row({
   const del = useDeleteTransaction();
   const copy = (text: string) => writeClipboard(text).then(() => toast(t("menu.copied")));
   const txMenu: MenuEntry[] = [
+    ...(pick ? [{ label: selected ? t("bulk.deselect") : t("bulk.select"), icon: ListChecks, onSelect: () => pick(tx.id) }] : []),
     { label: t("common.edit"), icon: Pencil, onSelect: () => openEdit(tx) },
     {
       label: t("menu.duplicate"),
@@ -144,9 +184,28 @@ function Row({
     <li>
       <button
         type="button"
-        onClick={() => openEdit(tx)}
-        className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-surface-2 focus-visible:bg-surface-2 focus-visible:outline-none"
+        aria-pressed={selecting ? selected : undefined}
+        onClick={(e: MouseEvent) => {
+          if (pick && (selecting || e.ctrlKey || e.metaKey || e.shiftKey)) {
+            e.preventDefault();
+            pick(tx.id, e);
+          } else openEdit(tx);
+        }}
+        className={cn(
+          "flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-surface-2 focus-visible:bg-surface-2 focus-visible:outline-none",
+          selected && "bg-accent-soft hover:bg-accent-soft",
+        )}
       >
+        {selecting && (
+          <span
+            className={cn(
+              "flex size-5 shrink-0 items-center justify-center rounded-md border transition-colors",
+              selected ? "border-accent bg-accent text-accent-fg" : "border-border bg-surface",
+            )}
+          >
+            {selected && <Check className="size-3.5" strokeWidth={3} />}
+          </span>
+        )}
         <CategoryIcon category={category} kind={tx.kind} />
         <div className="min-w-0 flex-1">
           <div className="truncate font-medium">

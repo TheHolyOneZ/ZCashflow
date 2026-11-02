@@ -103,7 +103,9 @@
     "balanceToday": "Bugünkü bakiye",
     "balanceOn": "{{date}} bakiyesi",
     "categoriesSelected_one": "{{count}} kategori",
-    "categoriesSelected_other": "{{count}} kategori"
+    "categoriesSelected_other": "{{count}} kategori",
+    "createMore": "Daha fazla oluştur",
+    "carriedOverHint": "Devreden bakiye zaten hesap bakiyesinin bir parçası – gelir olarak kaydetmen gerekmez."
   },
   "stats": {
     "subtitle": "Paran nereye gitti ve nereden geldi – kategoriye göre.",
@@ -1036,7 +1038,12 @@
     "txPeriod": "İşlemler şununla açılır",
     "txPeriodHint": "Tarih filtresiyle her zaman başka bir dönem seçebilirsin.",
     "periodAll": "Tüm zamanlar",
-    "periodMonth": "Bu ay"
+    "periodMonth": "Bu ay",
+    "txEnter": "İşlem formunda Enter",
+    "txEnterSave": "Kaydeder",
+    "txEnterNext": "Sonraki alan",
+    "txEnterSaveHint": "Enter işlemi hemen kaydeder.",
+    "txEnterNextHint": "Enter tutardan açıklamaya ve kategoriye, ardından Kaydet'e geçer. {{shortcut}} her zaman kaydeder."
   },
   "currencySwitch": {
     "title": "Hesapların da {{currency}} olarak değiştirilsin mi?",
@@ -1060,5 +1067,56 @@
     "linuxText": "Çoğu masaüstü dağıtımı gelen bağlantıları engeller. {{port}} numaralı bağlantı noktasına terminalde bir kez izin ver:",
     "mobileTitle": "Android ve iPhone",
     "mobileText": "iPhone'da ZCashflow için \"Yerel Ağ\" iznini aç (Ayarlar → Gizlilik ve Güvenlik → Yerel Ağ). İkisinde de Wi-Fi açık olmalı – mobil veriyle diğer cihaza ulaşılamaz. Eşitleme sırasında uygulamayı açık tut."
+  },
+  "bulk": {
+    "select": "Seç",
+    "deselect": "Seçimi kaldır",
+    "clear": "Seçimi temizle",
+    "all": "Tümünü seç",
+    "none": "Hiçbirini seçme",
+    "transfersKeep": "transferler atlanır",
+    "timeKeep": "boş bırakılırsa saatler korunur",
+    "accountHint": "yalnızca hesabın para birimindeki işlemler",
+    "selected_one": "{{count}} seçildi",
+    "selected_other": "{{count}} seçildi",
+    "editTitle_one": "{{count}} işlemi değiştir",
+    "editTitle_other": "{{count}} işlemi değiştir",
+    "deleteTitle_one": "{{count}} işlem silinsin mi?",
+    "deleteTitle_other": "{{count}} işlem silinsin mi?",
+    "deleteText_one": "İşlem eşleştirilmiş cihazlarda da silinir.",
+    "deleteText_other": "{{count}} işlem eşleştirilmiş cihazlarda da silinir.",
+    "apply_one": "{{count}} işleme uygula",
+    "apply_other": "{{count}} işleme uygula",
+    "updated_one": "{{count}} işlem güncellendi",
+    "updated_other": "{{count}} işlem güncellendi",
+    "updatedSkipped_one": "{{count}} işlem güncellendi, {{skipped}} atlandı",
+    "updatedSkipped_other": "{{count}} işlem güncellendi, {{skipped}} atlandı",
+    "deleted_one": "{{count}} işlem silindi",
+    "deleted_other": "{{count}} işlem silindi"
+  },
+  "categoryFile": {
+    "exportTitle": "Kategorileri dışa aktar (JSON)",
+    "importTitle": "Kategorileri içe aktar (JSON)",
+    "importHint": "Bir JSON dosyasından alt kategoriler, simgeler ve renklerle birlikte kategoriler ekler. Mevcut kategoriler adlarından tanınır ve yalnızca güncellenir.",
+    "exported": "Kategoriler dışa aktarıldı",
+    "imported": "Kategoriler içe aktarıldı: {{created}} yeni, {{updated}} değişti",
+    "created": "Yeni",
+    "updated": "Değişti",
+    "unchanged": "Değişmedi",
+    "warnings": "Notlar ({{count}})",
+    "noName": "atlandı, ad yok",
+    "bad": {
+      "icon": "bilinmeyen simge \"{{value}}\", varsayılan simge kullanılır",
+      "color": "geçersiz renk \"{{value}}\", yok sayıldı"
+    },
+    "format": "Dosya biçimi",
+    "formatHint": "\"out\" gider kategorilerini, \"in\" gelir kategorilerini ve \"both\" her ikisi için olanları içerir. Her girdinin bir adı, isteğe bağlı bir simgesi (symbol) ve rengi (#rrggbb) ve istediğin kadar alt kategorisi olur. Kategoriler adlarından tanınır, bu yüzden bir dosya yeniden içe aktarılabilir. Dosyadaki sıra uygulamadaki sıra olur.",
+    "icons": "Kullanılabilir simgeler",
+    "import": "İçe aktar",
+    "error": {
+      "json": "Dosya geçerli bir JSON değil.",
+      "shape": "Dosya beklenen yapıda değil.",
+      "empty": "Dosyada kategori yok."
+    }
   }
 }

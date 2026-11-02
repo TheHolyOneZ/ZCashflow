@@ -11,6 +11,7 @@ import {
   CircleDashed,
   Coffee,
   Coins,
+  Droplet,
   Dumbbell,
   Fuel,
   Gamepad2,
@@ -41,6 +42,7 @@ import {
   Utensils,
   Wifi,
   Wrench,
+  Zap,
   type LucideIcon,
 } from "lucide-react";
 import type { Category, TxKind } from "@/lib/api";
@@ -52,6 +54,8 @@ export const icons: Record<string, LucideIcon> = {
   coffee: Coffee,
   house: House,
   plug: Plug,
+  zap: Zap,
+  droplet: Droplet,
   wifi: Wifi,
   smartphone: Smartphone,
   bus: Bus,

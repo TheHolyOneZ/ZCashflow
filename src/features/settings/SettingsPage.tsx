@@ -25,8 +25,9 @@ import { SwitchRow } from "@/components/ui/extra";
 import { Dialog } from "@/components/ui/dialog";
 import { Segmented } from "@/components/ui/segmented";
 import { minorDigits } from "@/lib/money";
-import { usePrefs, type CurrencySymbol, type ExpenseStyle, type TxPeriod } from "@/stores/prefs";
+import { usePrefs, type CurrencySymbol, type ExpenseStyle, type TxEnter, type TxPeriod } from "@/stores/prefs";
 import { cn } from "@/lib/cn";
+import { shortcutLabel } from "@/lib/platform";
 import { OcrSettings } from "./OcrSettings";
 import { DemoControls } from "./DemoControls";
 import { AppearanceSettings } from "./AppearanceSettings";
@@ -94,6 +95,7 @@ export function SettingsPage() {
   const currencySymbol = usePrefs((s) => s.currencySymbol);
   const expenseStyle = usePrefs((s) => s.expenseStyle);
   const txPeriod = usePrefs((s) => s.txPeriod);
+  const txEnter = usePrefs((s) => s.txEnter);
   const setPref = usePrefs((s) => s.set);
   const settings = useSettings().data ?? {};
   const [active, setActive] = useState("general");
@@ -258,6 +260,18 @@ export function SettingsPage() {
                 options={[
                   { value: "all", label: t("amounts.periodAll") },
                   { value: "month", label: t("amounts.periodMonth") },
+                ]}
+              />
+            </Field2>
+            <Field2 label={t("amounts.txEnter")} hint={t(txEnter === "save" ? "amounts.txEnterSaveHint" : "amounts.txEnterNextHint", { shortcut: shortcutLabel("Mod+Enter") })}>
+              <Segmented<TxEnter>
+                aria-label={t("amounts.txEnter")}
+                value={txEnter}
+                onChange={(v) => setPref("txEnter", v)}
+                className="w-full"
+                options={[
+                  { value: "save", label: t("amounts.txEnterSave") },
+                  { value: "next", label: t("amounts.txEnterNext") },
                 ]}
               />
             </Field2>

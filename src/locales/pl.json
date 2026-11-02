@@ -107,7 +107,9 @@
     "categoriesSelected_one": "{{count}} kategoria",
     "categoriesSelected_few": "{{count}} kategorie",
     "categoriesSelected_many": "{{count}} kategorii",
-    "categoriesSelected_other": "{{count}} kategorii"
+    "categoriesSelected_other": "{{count}} kategorii",
+    "createMore": "Utwórz kolejne",
+    "carriedOverHint": "Przeniesione saldo jest już częścią salda konta – nie trzeba go księgować jako przychodu."
   },
   "stats": {
     "subtitle": "Na co poszły Twoje pieniądze i skąd przyszły – według kategorii.",
@@ -1114,7 +1116,12 @@
     "txPeriod": "Transakcje otwierają się z",
     "txPeriodHint": "Filtrem dat zawsze możesz wybrać inny okres.",
     "periodAll": "Cały okres",
-    "periodMonth": "Bieżący miesiąc"
+    "periodMonth": "Bieżący miesiąc",
+    "txEnter": "Enter w formularzu transakcji",
+    "txEnterSave": "Zapisuje",
+    "txEnterNext": "Następne pole",
+    "txEnterSaveHint": "Enter od razu zapisuje transakcję.",
+    "txEnterNextHint": "Enter przechodzi z kwoty do opisu i kategorii, a potem do Zapisz. {{shortcut}} zawsze zapisuje."
   },
   "currencySwitch": {
     "title": "Przestawić też konta na {{currency}}?",
@@ -1138,5 +1145,72 @@
     "linuxText": "Większość dystrybucji desktopowych blokuje połączenia przychodzące. Odblokuj port {{port}} raz w terminalu:",
     "mobileTitle": "Android i iPhone",
     "mobileText": "Na iPhonie zezwól ZCashflow na „Sieć lokalna” (Ustawienia → Prywatność i ochrona → Sieć lokalna). Na obu Wi-Fi musi być włączone – przez dane komórkowe drugie urządzenie jest nieosiągalne. Nie zamykaj aplikacji podczas synchronizacji."
+  },
+  "bulk": {
+    "select": "Zaznacz",
+    "deselect": "Odznacz",
+    "clear": "Wyczyść zaznaczenie",
+    "all": "Zaznacz wszystko",
+    "none": "Odznacz wszystko",
+    "transfersKeep": "przelewy są pomijane",
+    "timeKeep": "puste zachowuje godziny",
+    "accountHint": "tylko transakcje w walucie konta",
+    "selected_one": "Zaznaczono {{count}}",
+    "selected_few": "Zaznaczono {{count}}",
+    "selected_many": "Zaznaczono {{count}}",
+    "selected_other": "Zaznaczono {{count}}",
+    "editTitle_one": "Zmień {{count}} transakcję",
+    "editTitle_few": "Zmień {{count}} transakcje",
+    "editTitle_many": "Zmień {{count}} transakcji",
+    "editTitle_other": "Zmień {{count}} transakcji",
+    "deleteTitle_one": "Usunąć {{count}} transakcję?",
+    "deleteTitle_few": "Usunąć {{count}} transakcje?",
+    "deleteTitle_many": "Usunąć {{count}} transakcji?",
+    "deleteTitle_other": "Usunąć {{count}} transakcji?",
+    "deleteText_one": "Transakcja zostanie usunięta, także na sparowanych urządzeniach.",
+    "deleteText_few": "{{count}} transakcje zostaną usunięte, także na sparowanych urządzeniach.",
+    "deleteText_many": "{{count}} transakcji zostanie usuniętych, także na sparowanych urządzeniach.",
+    "deleteText_other": "{{count}} transakcji zostanie usuniętych, także na sparowanych urządzeniach.",
+    "apply_one": "Zastosuj do {{count}} transakcji",
+    "apply_few": "Zastosuj do {{count}} transakcji",
+    "apply_many": "Zastosuj do {{count}} transakcji",
+    "apply_other": "Zastosuj do {{count}} transakcji",
+    "updated_one": "Zmieniono {{count}} transakcję",
+    "updated_few": "Zmieniono {{count}} transakcje",
+    "updated_many": "Zmieniono {{count}} transakcji",
+    "updated_other": "Zmieniono {{count}} transakcji",
+    "updatedSkipped_one": "Zmieniono {{count}} transakcję, pominięto {{skipped}}",
+    "updatedSkipped_few": "Zmieniono {{count}} transakcje, pominięto {{skipped}}",
+    "updatedSkipped_many": "Zmieniono {{count}} transakcji, pominięto {{skipped}}",
+    "updatedSkipped_other": "Zmieniono {{count}} transakcji, pominięto {{skipped}}",
+    "deleted_one": "Usunięto {{count}} transakcję",
+    "deleted_few": "Usunięto {{count}} transakcje",
+    "deleted_many": "Usunięto {{count}} transakcji",
+    "deleted_other": "Usunięto {{count}} transakcji"
+  },
+  "categoryFile": {
+    "exportTitle": "Eksportuj kategorie (JSON)",
+    "importTitle": "Importuj kategorie (JSON)",
+    "importHint": "Dodaje kategorie z podkategoriami, ikonami i kolorami z pliku JSON. Istniejące kategorie są rozpoznawane po nazwie i tylko aktualizowane.",
+    "exported": "Kategorie wyeksportowane",
+    "imported": "Kategorie zaimportowane: nowe {{created}}, zmienione {{updated}}",
+    "created": "Nowe",
+    "updated": "Zmienione",
+    "unchanged": "Bez zmian",
+    "warnings": "Uwagi ({{count}})",
+    "noName": "pominięto, brak nazwy",
+    "bad": {
+      "icon": "nieznana ikona \"{{value}}\", użyto domyślnej",
+      "color": "nieprawidłowy kolor \"{{value}}\", pominięto"
+    },
+    "format": "Format pliku",
+    "formatHint": "\"out\" zawiera kategorie wydatków, \"in\" kategorie przychodów, a \"both\" kategorie dla obu. Każdy wpis ma nazwę, opcjonalnie symbol (nazwę ikony) i kolor (#rrggbb) oraz dowolną liczbę podkategorii. Kategorie są rozpoznawane po nazwie, więc plik można zaimportować ponownie. Kolejność w pliku staje się kolejnością w aplikacji.",
+    "icons": "Dostępne ikony",
+    "import": "Importuj",
+    "error": {
+      "json": "Plik nie jest poprawnym JSON.",
+      "shape": "Plik nie ma oczekiwanej struktury.",
+      "empty": "Plik nie zawiera kategorii."
+    }
   }
 }

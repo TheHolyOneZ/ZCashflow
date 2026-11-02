@@ -2,6 +2,7 @@ pub mod attachments;
 pub mod accounts;
 pub mod budgets;
 pub mod categories;
+pub mod category_io;
 pub mod counterparties;
 pub mod currency;
 pub mod debts;

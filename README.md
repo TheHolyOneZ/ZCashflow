@@ -37,7 +37,7 @@ encrypted, over your own Wi-Fi.
 
 ## Contents
 
-- [What's new in 1.6.0](#-whats-new-in-160)
+- [What's new in 1.7.0](#-whats-new-in-170)
 - [Why ZCashflow?](#-why-zcashflow)
 - [Features](#-features)
 - [Screenshots](#-screenshots)
@@ -57,7 +57,18 @@ encrypted, over your own Wi-Fi.
 
 ---
 
-## 🆕 What's new in 1.6.0
+## 🆕 What's new in 1.7.0
+
+- **Change several entries at once** – right-click (long-press on the phone) a transaction and choose *Select*, or <kbd>Ctrl</kbd>/<kbd>⌘</kbd>-click and <kbd>Shift</kbd>-click. Then change the category, date or account of all selected entries, or delete them.
+- **Create more** – tick *Create more* in the new-transaction dialog to save and start the next entry right away.
+- **Enter moves to the next field** – optional, under *Settings → Amounts & transactions*: Enter goes from amount to description and category, then to *Save*. <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>Enter</kbd> always saves. The default stays as before.
+- **Swipe between months** – on phones and touch screens, swipe left or right in the transactions list or on *Statistics* to change the month.
+- **Categories as JSON** – export all categories with subcategories, icons and colors to a JSON file, or import a whole category tree from one on the *Categories* page. Existing categories are matched by name, and a preview shows what will change.
+- **Closing on Windows** – the close button leaves full screen and quits the app in one click.
+
+No database or sync schema change – 1.6.0 devices still sync.
+
+### 1.6.0
 
 - **Statistics** – a new page shows where your money went and where it came from: expenses and income per category for a month or a year, with a donut chart and categories ranked by amount. Tap a main category to fold out its subcategories, or open the matching transactions.
 - **Faster category filter** – the category filter in the transactions list has *Expenses* / *Income* tabs, shows the amount of every category for the current period, folds out subcategories and lets you pick several categories at once.
@@ -138,11 +149,12 @@ See [changelog.md](changelog.md) for the full change list.
 - Income, expenses and transfers between accounts, with an optional **time of day**
 - **Quick entry** understands `Kebab 8.50`, `+2500 salary yesterday`, `Fuel 60€ 03.10.`
 - Categories are **learned** from your history and recognized by keyword from the very first entry (`REWE`, `Aral`, `Netflix` …)
-- **Subcategories at any depth**, nested and put in your own order by drag & drop
+- **Subcategories at any depth**, nested and put in your own order by drag & drop – or imported and exported as a JSON file
 - **CSV import** from your bank's export or the ZCashflow template, with duplicate detection
 - Full-text search incl. receipt text, filters by account, date range and one or several categories – with the amount of each category right in the filter
 - **Income, expenses and net** for the current filter, and per day in the list
 - Tags, notes, references (`TX-2026-000123`), duplicate, right-click menus everywhere
+- **Change several entries at once** – category, date or account, or delete them together
 
 </td>
 <td valign="top">
@@ -508,6 +520,7 @@ If automatic discovery doesn't find the other device (e.g. guest networks with c
 |---|---|
 | <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>K</kbd> | Search & quick entry (`Coffee 3.50`) |
 | <kbd>N</kbd> | New transaction |
+| <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>Enter</kbd> | Save the transaction form |
 | <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>1</kbd> … <kbd>9</kbd> | Jump to section |
 | <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>B</kbd> | Toggle sidebar |
 | <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>,</kbd> | Settings |
@@ -582,7 +595,7 @@ You don't need every toolchain locally – GitHub builds everything:
   - *Actions → Build → Run workflow* builds selected platforms as artifacts.
   - Pushing a version tag builds **all** platforms and creates a **draft release** with consistently named files and `SHA256SUMS.txt`:
     ```sh
-    git tag v1.6.0 && git push origin v1.6.0
+    git tag v1.7.0 && git push origin v1.7.0
     ```
   - Android signing uses the repository secrets `ANDROID_KEYSTORE_B64` (base64 of the keystore) and `ANDROID_KEY_PASSWORD`.
 

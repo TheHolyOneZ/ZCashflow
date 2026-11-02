@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { ChevronDown, Paperclip, Plus, Repeat, Trash2 } from "lucide-react";
 import { planning, receipts } from "@/lib/api";
@@ -29,6 +29,8 @@ import {
   useSaveTransaction,
 } from "@/lib/queries";
 import { useUi } from "@/stores/ui";
+import { usePrefs } from "@/stores/prefs";
+import { CheckRow } from "@/features/data/CheckRow";
 import { cn } from "@/lib/cn";
 
 interface FormState {
@@ -87,6 +89,8 @@ export function TransactionDialog() {
   const state = useUi((s) => s.txDialog);
   const close = useUi((s) => s.closeTx);
   const editing = state.open && "editing" in state ? state.editing : null;
+  const [again, setAgain] = useState<{ round: number; draft: Partial<TransactionInput> } | null>(null);
+  useEffect(() => setAgain(null), [state]);
 
   return (
     <Dialog
@@ -95,7 +99,14 @@ export function TransactionDialog() {
       title={editing ? t("tx.editTitle") : t("tx.new")}
       description={editing ? `${t("tx.ref")}: ${editing.ref}` : undefined}
     >
-      {state.open && <TransactionForm key={editing?.id ?? "new"} source={state} onDone={close} />}
+      {state.open && (
+        <TransactionForm
+          key={editing?.id ?? `new-${again?.round ?? 0}`}
+          source={!editing && again ? { draft: again.draft } : state}
+          onDone={close}
+          onAgain={(draft) => setAgain((a) => ({ round: (a?.round ?? 0) + 1, draft }))}
+        />
+      )}
     </Dialog>
   );
 }
@@ -103,11 +114,17 @@ export function TransactionDialog() {
 function TransactionForm({
   source,
   onDone,
+  onAgain,
 }: {
   source: { editing: Transaction } | { draft: Partial<TransactionInput> };
   onDone: () => void;
+  onAgain: (draft: Partial<TransactionInput>) => void;
 }) {
   const { t } = useTranslation();
+  const enterMode = usePrefs((s) => s.txEnter);
+  const createMore = usePrefs((s) => s.txCreateMore);
+  const setPref = usePrefs((s) => s.set);
+  const saveRef = useRef<HTMLButtonElement>(null);
   const toast = useUi((s) => s.toast);
   const accounts = useAccounts().data ?? [];
   const save = useSaveTransaction();
@@ -180,8 +197,37 @@ function TransactionForm({
       return;
     }
     toast(t("tx.saved"));
+    if (!editing && createMore) {
+      onAgain({
+        kind: form.kind,
+        occurredOn: form.occurredOn,
+        accountId: form.accountId,
+        toAccountId: form.kind === "transfer" ? form.toAccountId || null : null,
+      });
+      return;
+    }
     onDone();
   }
+
+  function onKeyDown(e: KeyboardEvent<HTMLFormElement>) {
+    if (e.key !== "Enter" || e.defaultPrevented || e.nativeEvent.isComposing) return;
+    if (e.ctrlKey || e.metaKey) {
+      e.preventDefault();
+      e.currentTarget.requestSubmit();
+      return;
+    }
+    if (enterMode !== "next") return;
+    const target = e.target as HTMLElement;
+    const order = ["tx-amount", "tx-title", form.kind === "transfer" ? "tx-to-account" : "tx-category"];
+    const i = order.indexOf(target.id);
+    if (i === -1 || target.tagName !== "INPUT") return;
+    e.preventDefault();
+    document.getElementById(order[i + 1])?.focus();
+  }
+
+  const toSave = () => {
+    if (enterMode === "next") setTimeout(() => saveRef.current?.focus(), 80);
+  };
 
   async function remove() {
     if (!editing) return;
@@ -205,7 +251,7 @@ function TransactionForm({
   };
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-4">
+    <form onSubmit={submit} onKeyDown={onKeyDown} className="flex flex-col gap-4">
       <Segmented
         aria-label={t("tx.new")}
         value={form.kind}
@@ -225,6 +271,7 @@ function TransactionForm({
               id="tx-amount"
               autoFocus
               inputMode="decimal"
+              enterKeyHint={enterMode === "next" ? "next" : undefined}
               autoComplete="off"
               placeholder="0,00"
               value={form.amount}
@@ -325,11 +372,27 @@ function TransactionForm({
 
         {form.kind === "transfer" ? (
           <Field label={t("tx.toAccount")} htmlFor="tx-to-account">
-            <AccountSelect id="tx-to-account" value={form.toAccountId} onChange={(v) => set("toAccountId", v)} exclude={form.accountId} />
+            <AccountSelect
+              id="tx-to-account"
+              value={form.toAccountId}
+              onChange={(v) => {
+                set("toAccountId", v);
+                toSave();
+              }}
+              exclude={form.accountId}
+            />
           </Field>
         ) : (
           <Field label={t("tx.category")} htmlFor="tx-category">
-            <CategorySelect id="tx-category" value={form.categoryId} onChange={(v) => set("categoryId", v)} kind={form.kind} />
+            <CategorySelect
+              id="tx-category"
+              value={form.categoryId}
+              onChange={(v) => {
+                set("categoryId", v);
+                toSave();
+              }}
+              kind={form.kind}
+            />
           </Field>
         )}
       </div>
@@ -386,9 +449,17 @@ function TransactionForm({
             {confirmDelete ? t("tx.deleteConfirm", { title: editing.title || t("tx.untitled") }) : t("common.delete")}
           </Button>
         )}
+        {!editing && (
+          <CheckRow
+            checked={createMore}
+            onChange={() => setPref("txCreateMore", !createMore)}
+            label={t("tx.createMore")}
+            className="w-auto shrink-0 px-1.5 text-muted"
+          />
+        )}
         <div className="ml-auto flex gap-2">
           <Button onClick={onDone}>{t("common.cancel")}</Button>
-          <Button type="submit" variant="primary" disabled={save.isPending || !form.accountId}>
+          <Button ref={saveRef} type="submit" variant="primary" disabled={save.isPending || !form.accountId}>
             {t("common.save")}
           </Button>
         </div>

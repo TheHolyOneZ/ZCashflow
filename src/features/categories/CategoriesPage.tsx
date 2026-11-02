@@ -1,4 +1,6 @@
-import { ArrowDown, ArrowUp, ChevronRight, CornerLeftUp, FolderPlus, GripVertical, Pencil, Plus, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronRight, CornerLeftUp, Download, FolderPlus, GripVertical, Pencil, Plus, Trash2, Upload } from "lucide-react";
+import { Tip } from "@/components/ui/inputs";
+import { CategoryImportDialog, useExportCategories } from "./CategoryTransfer";
 import { RowMenu } from "@/components/ui/context-menu";
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type PointerEvent as ReactPointerEvent } from "react";
 import { useTranslation } from "react-i18next";
@@ -115,6 +117,8 @@ export function CategoriesPage() {
   const summary = useSummary(range.from, range.to, currency).data;
   const [edit, setEdit] = useState<{ category?: Category; kind?: CategoryKind; parentId?: string } | null>(null);
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+  const [importOpen, setImportOpen] = useState(false);
+  const exportCategories = useExportCategories();
   const place = useAppMutation(
     ({ id, parentId, order }: { id: string; parentId: string | null; order: string[] }) => api.placeCategory(id, parentId, order),
     { success: t("categories.moved") },
@@ -225,7 +229,25 @@ export function CategoriesPage() {
 
   return (
     <div className={cn("flex flex-col gap-3", drag && "cursor-grabbing select-none")}>
-      <PageHeader title={t("nav.categories")} subtitle={t("categories.subtitle")} />
+      <PageHeader
+        title={t("nav.categories")}
+        subtitle={t("categories.subtitle")}
+        actions={
+          <>
+            <Tip label={t("categoryFile.exportTitle")}>
+              <Button variant="ghost" size="icon" aria-label={t("categoryFile.exportTitle")} onClick={exportCategories}>
+                <Download className="size-4" />
+              </Button>
+            </Tip>
+            <Tip label={t("categoryFile.importTitle")}>
+              <Button variant="ghost" size="icon" aria-label={t("categoryFile.importTitle")} onClick={() => setImportOpen(true)}>
+                <Upload className="size-4" />
+              </Button>
+            </Tip>
+          </>
+        }
+      />
+      <CategoryImportDialog open={importOpen} onOpenChange={setImportOpen} />
       <p className="-mt-2 flex items-center gap-1.5 text-[12px] text-muted">
         <GripVertical className="size-3.5 shrink-0" />
         {t("categories.dragHint")}

@@ -440,9 +440,16 @@ pub fn create(db: &Db, input: TransactionInput) -> AppResult<Transaction> {
 pub fn update(db: &Db, id: &str, input: TransactionInput) -> AppResult<Transaction> {
     let mut conn = db.conn();
     let tx = conn.transaction()?;
-    let v = validate(&tx, &input)?;
+    write_update(db, &tx, id, &input)?;
+    let updated = get(&tx, id)?;
+    tx.commit()?;
+    Ok(updated)
+}
+
+fn write_update(db: &Db, tx: &Connection, id: &str, input: &TransactionInput) -> AppResult<()> {
+    let v = validate(tx, input)?;
     let counterparty_id = match &input.counterparty {
-        Some(name) => counterparties::find_or_create(db, &tx, name)?,
+        Some(name) => counterparties::find_or_create(db, tx, name)?,
         None => None,
     };
     let n = tx.execute(
@@ -460,9 +467,87 @@ pub fn update(db: &Db, id: &str, input: TransactionInput) -> AppResult<Transacti
     if n == 0 {
         return Err(AppError::NotFound(format!("transaction {id}")));
     }
-    let updated = get(&tx, id)?;
+    Ok(())
+}
+
+#[derive(Debug, Clone, Default, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BulkChange {
+    pub occurred_on: Option<String>,
+    #[serde(default)]
+    pub set_time: bool,
+    pub occurred_time: Option<String>,
+    pub account_id: Option<String>,
+    #[serde(default)]
+    pub set_category: bool,
+    pub category_id: Option<String>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct BulkResult {
+    pub updated: u32,
+    pub skipped: u32,
+}
+
+pub fn bulk_update(db: &Db, ids: &[String], change: &BulkChange) -> AppResult<BulkResult> {
+    let mut conn = db.conn();
+    let tx = conn.transaction()?;
+    let target = match &change.account_id {
+        Some(id) => Some(accounts::get(&tx, id)?),
+        None => None,
+    };
+    let mut out = BulkResult::default();
+    for id in ids {
+        let Ok(t) = get(&tx, id) else {
+            out.skipped += 1;
+            continue;
+        };
+        if change.set_category && t.kind == "transfer" {
+            out.skipped += 1;
+            continue;
+        }
+        if let Some(a) = &target {
+            if a.currency != t.currency || t.to_account_id.as_deref() == Some(a.id.as_str()) {
+                out.skipped += 1;
+                continue;
+            }
+        }
+        let input = TransactionInput {
+            kind: t.kind.clone(),
+            amount_minor: t.amount_minor,
+            currency: Some(t.currency.clone()),
+            occurred_on: change.occurred_on.clone().unwrap_or(t.occurred_on),
+            occurred_time: if change.set_time { change.occurred_time.clone() } else { t.occurred_time },
+            account_id: target.as_ref().map_or(t.account_id, |a| a.id.clone()),
+            to_account_id: t.to_account_id,
+            category_id: if change.set_category { change.category_id.clone().filter(|c| !c.is_empty()) } else { t.category_id },
+            counterparty: t.counterparty_name,
+            title: t.title,
+            note: t.note,
+            tags: t.tags,
+            debt_id: t.debt_id,
+            goal_id: t.goal_id,
+        };
+        write_update(db, &tx, id, &input)?;
+        out.updated += 1;
+    }
     tx.commit()?;
-    Ok(updated)
+    Ok(out)
+}
+
+pub fn delete_many(db: &Db, ids: &[String]) -> AppResult<u32> {
+    let mut conn = db.conn();
+    let tx = conn.transaction()?;
+    let mut n = 0;
+    for id in ids {
+        n += tx.execute(
+            "UPDATE transactions SET deleted = 1, updated_hlc = ?2 WHERE id = ?1 AND deleted = 0",
+            params![id, db.hlc.tick()],
+        )? as u32;
+    }
+    tx.commit()?;
+    Ok(n)
 }
 
 pub fn delete(db: &Db, id: &str) -> AppResult<()> {
@@ -821,6 +906,45 @@ mod tests {
         assert_eq!(of(Some(&parent)), Some((1, 900)), "own bookings only; the app adds subcategories itself");
         assert_eq!(of(None), Some((1, 100)));
         assert_eq!(sums[0].category_id.as_deref(), Some(other.as_str()), "largest first");
+    }
+
+    #[test]
+    fn changes_and_deletes_several_entries_at_once() {
+        let db = Db::open_in_memory().unwrap();
+        let acc = cash_account(&db);
+        let other = accounts::upsert(
+            &db,
+            accounts::AccountInput { id: None, name: "Bank".into(), kind: "checking".into(), currency: "EUR".into(), opening_minor: 0, color: None, archived: false },
+        )
+        .unwrap()
+        .id;
+        let a = create(&db, expense(&acc, "Tee", 300, "2026-10-08")).unwrap();
+        let mut b_in = expense(&acc, "Kuchen", 500, "2026-10-09");
+        b_in.occurred_time = Some("08:30".into());
+        let b = create(&db, b_in).unwrap();
+        let mut move_in = expense(&acc, "Umbuchung", 1_000, "2026-10-09");
+        move_in.kind = "transfer".into();
+        move_in.to_account_id = Some(other.clone());
+        let transfer = create(&db, move_in).unwrap();
+        let cat = crate::domain::categories::list(&db.conn()).unwrap().into_iter().find(|c| c.kind == "expense").unwrap().id;
+        let ids = vec![a.id.clone(), b.id.clone(), transfer.id.clone()];
+
+        let r = bulk_update(&db, &ids, &BulkChange { set_category: true, category_id: Some(cat.clone()), ..Default::default() }).unwrap();
+        assert_eq!(r, BulkResult { updated: 2, skipped: 1 }, "transfers have no category");
+        let r = bulk_update(&db, &ids, &BulkChange { occurred_on: Some("2026-10-20".into()), ..Default::default() }).unwrap();
+        assert_eq!(r.updated, 3);
+        let after = |id: &str| get(&db.conn(), id).unwrap();
+        assert_eq!(after(&b.id).occurred_on, "2026-10-20");
+        assert_eq!(after(&b.id).occurred_time.as_deref(), Some("08:30"), "times stay unless asked");
+        assert_eq!(after(&a.id).category_id.as_deref(), Some(cat.as_str()));
+        assert_eq!(after(&b.id).title, "Kuchen");
+
+        let r = bulk_update(&db, &ids, &BulkChange { account_id: Some(other.clone()), ..Default::default() }).unwrap();
+        assert_eq!(r, BulkResult { updated: 2, skipped: 1 }, "a transfer cannot go to its own target");
+        assert_eq!(after(&a.id).account_id, other);
+
+        assert_eq!(delete_many(&db, &[a.id.clone(), b.id.clone(), "missing".into()]).unwrap(), 2);
+        assert_eq!(list(&db.conn(), &TransactionFilter::default()).unwrap().len(), 1);
     }
 
     #[test]

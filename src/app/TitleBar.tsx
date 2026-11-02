@@ -4,6 +4,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { CalendarCheck2, Eye, EyeOff, LayoutGrid, Minus, Moon, PanelLeft, Search, Square, Sun, X } from "lucide-react";
 import { Tip } from "@/components/ui/inputs";
 import { Kbd } from "@/components/ui/misc";
+import { api } from "@/lib/api";
 import { cn } from "@/lib/cn";
 import logo from "@/assets/logo.png";
 import { isDesktop, isTauri, os, shortcutLabel } from "@/lib/platform";
@@ -28,6 +29,15 @@ function useWindow() {
     return () => unlisten?.();
   }, []);
   return { win: api?.getCurrentWindow() ?? null, maximized };
+}
+
+async function closeApp(win: ReturnType<Win["getCurrentWindow"]>) {
+  try {
+    if (await win.isFullscreen()) await win.setFullscreen(false);
+  } catch {
+    return win.close();
+  }
+  await api.quitApp().catch(() => win.close());
 }
 
 export async function toggleFullscreen() {
@@ -155,7 +165,7 @@ export function TitleBar() {
         </span>
       </div>
 
-      {custom && win && <WindowControls maximized={maximized} onMin={() => win.minimize()} onMax={() => win.toggleMaximize()} onClose={() => win.close()} />}
+      {custom && win && <WindowControls maximized={maximized} onMin={() => win.minimize()} onMax={() => win.toggleMaximize()} onClose={() => closeApp(win)} />}
     </header>
   );
 }

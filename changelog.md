@@ -1,5 +1,26 @@
 # Changelog
 
+## 1.7.0
+
+### Added
+
+- Several transactions can be changed at once. Choose *Select* in the right-click menu of a transaction (long-press on phones and tablets), or <kbd>Ctrl</kbd>/<kbd>⌘</kbd>-click it; <kbd>Shift</kbd>-click selects a range. A bar at the bottom changes the category, date (optionally with a time) or account of all selected entries, or deletes them. Transfers keep their accounts and have no category, and an account is only changed for entries in its currency; skipped entries are counted in the message. <kbd>Esc</kbd> clears the selection.
+- *Create more* in the new-transaction dialog: after saving, the dialog stays open with an empty form, keeping type, date and account. The choice is remembered per device.
+- New setting *Settings → Amounts & transactions → Enter in the transaction form*, per device: *Saves* (default, as before) or *Next field*, which goes from amount to description and category and then to *Save*.
+- <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>Enter</kbd> saves the transaction form from any field.
+- On touch screens, swiping left or right in the transactions list (when a month is shown) and on *Statistics* switches to the next or previous period.
+- Categories can be exported to and imported from a JSON file on the *Categories* page – with any depth of subcategories, icons and colors. `out` holds expense categories, `in` income categories and `both` categories for both; every entry has a `name`, an optional `symbol` and `color`, and `subcategories`. Existing categories are matched by name within the same parent, so a file can be imported again without duplicates; new categories are added after the existing ones, and the order in the file is kept. A preview shows new, changed and unchanged categories and points out unknown icons or colors before anything is saved. Common icon names such as `water_drop` or `cable` are mapped to the app's icons, and the dialog lists all available icon names.
+- Two new category icons: droplet and zap.
+- The carried-over balance in the transactions list explains that it is already part of the account balance, so it doesn't need to be booked as income.
+
+### Fixed
+
+- On Windows the close button sometimes needed a second click, e.g. in full screen. It now leaves full screen and quits the app directly.
+
+### Notes
+
+- No database or sync schema change; devices on 1.6.0 still sync.
+
 ## 1.6.0
 
 ### Added

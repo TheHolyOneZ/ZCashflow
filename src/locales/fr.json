@@ -105,7 +105,9 @@
     "balanceOn": "Solde au {{date}}",
     "categoriesSelected_one": "{{count}} catégorie",
     "categoriesSelected_other": "{{count}} catégories",
-    "categoriesSelected_many": "{{count}} catégories"
+    "categoriesSelected_many": "{{count}} catégories",
+    "createMore": "En créer d'autres",
+    "carriedOverHint": "Le solde reporté fait déjà partie du solde du compte – inutile de l'enregistrer comme revenu."
   },
   "stats": {
     "subtitle": "Où est passé ton argent et d'où il vient – par catégorie.",
@@ -1075,7 +1077,12 @@
     "txPeriod": "Les opérations s'ouvrent sur",
     "txPeriodHint": "Le filtre de dates permet toujours de choisir une autre période.",
     "periodAll": "Toute la période",
-    "periodMonth": "Mois en cours"
+    "periodMonth": "Mois en cours",
+    "txEnter": "Entrée dans le formulaire d'opération",
+    "txEnterSave": "Enregistre",
+    "txEnterNext": "Champ suivant",
+    "txEnterSaveHint": "Entrée enregistre l'opération tout de suite.",
+    "txEnterNextHint": "Entrée passe du montant à la description et à la catégorie, puis à Enregistrer. {{shortcut}} enregistre toujours."
   },
   "currencySwitch": {
     "title": "Passer aussi vos comptes en {{currency}} ?",
@@ -1099,5 +1106,64 @@
     "linuxText": "La plupart des distributions de bureau bloquent les connexions entrantes. Autorisez le port {{port}} une fois dans un terminal :",
     "mobileTitle": "Android et iPhone",
     "mobileText": "Sur iPhone, autorisez « Réseau local » pour ZCashflow (Réglages → Confidentialité et sécurité → Réseau local). Sur les deux, le Wi-Fi doit être activé – les données mobiles ne permettent pas d'atteindre l'autre appareil. Gardez l'app ouverte pendant la synchronisation."
+  },
+  "bulk": {
+    "select": "Sélectionner",
+    "deselect": "Désélectionner",
+    "clear": "Annuler la sélection",
+    "all": "Tout sélectionner",
+    "none": "Ne rien sélectionner",
+    "transfersKeep": "les virements sont ignorés",
+    "timeKeep": "vide garde les heures",
+    "accountHint": "seulement les opérations dans la devise du compte",
+    "selected_one": "{{count}} sélectionnée",
+    "selected_many": "{{count}} sélectionnées",
+    "selected_other": "{{count}} sélectionnées",
+    "editTitle_one": "Modifier {{count}} opération",
+    "editTitle_many": "Modifier {{count}} opérations",
+    "editTitle_other": "Modifier {{count}} opérations",
+    "deleteTitle_one": "Supprimer {{count}} opération ?",
+    "deleteTitle_many": "Supprimer {{count}} opérations ?",
+    "deleteTitle_other": "Supprimer {{count}} opérations ?",
+    "deleteText_one": "L'opération est supprimée, aussi sur les appareils associés.",
+    "deleteText_many": "Les {{count}} opérations sont supprimées, aussi sur les appareils associés.",
+    "deleteText_other": "Les {{count}} opérations sont supprimées, aussi sur les appareils associés.",
+    "apply_one": "Appliquer à {{count}} opération",
+    "apply_many": "Appliquer à {{count}} opérations",
+    "apply_other": "Appliquer à {{count}} opérations",
+    "updated_one": "{{count}} opération modifiée",
+    "updated_many": "{{count}} opérations modifiées",
+    "updated_other": "{{count}} opérations modifiées",
+    "updatedSkipped_one": "{{count}} opération modifiée, {{skipped}} ignorées",
+    "updatedSkipped_many": "{{count}} opérations modifiées, {{skipped}} ignorées",
+    "updatedSkipped_other": "{{count}} opérations modifiées, {{skipped}} ignorées",
+    "deleted_one": "{{count}} opération supprimée",
+    "deleted_many": "{{count}} opérations supprimées",
+    "deleted_other": "{{count}} opérations supprimées"
+  },
+  "categoryFile": {
+    "exportTitle": "Exporter les catégories (JSON)",
+    "importTitle": "Importer des catégories (JSON)",
+    "importHint": "Ajoute des catégories avec sous-catégories, icônes et couleurs depuis un fichier JSON. Les catégories existantes sont reconnues par leur nom et seulement mises à jour.",
+    "exported": "Catégories exportées",
+    "imported": "Catégories importées : {{created}} nouvelles, {{updated}} modifiées",
+    "created": "Nouvelles",
+    "updated": "Modifiées",
+    "unchanged": "Inchangées",
+    "warnings": "Remarques ({{count}})",
+    "noName": "ignorée, sans nom",
+    "bad": {
+      "icon": "icône inconnue \"{{value}}\", l'icône par défaut est utilisée",
+      "color": "couleur invalide \"{{value}}\", ignorée"
+    },
+    "format": "Format du fichier",
+    "formatHint": "\"out\" contient les catégories de dépenses, \"in\" celles de revenus et \"both\" celles pour les deux. Chaque entrée a un nom, éventuellement un symbole (nom d'icône) et une couleur (#rrggbb), et autant de sous-catégories que souhaité. Les catégories sont reconnues par leur nom, un fichier peut donc être réimporté. L'ordre du fichier devient l'ordre dans l'app.",
+    "icons": "Icônes disponibles",
+    "import": "Importer",
+    "error": {
+      "json": "Le fichier n'est pas un JSON valide.",
+      "shape": "Le fichier n'a pas la structure attendue.",
+      "empty": "Le fichier ne contient aucune catégorie."
+    }
   }
 }

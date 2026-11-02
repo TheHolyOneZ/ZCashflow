@@ -103,7 +103,9 @@
     "balanceToday": "Balance today",
     "balanceOn": "Balance on {{date}}",
     "categoriesSelected_one": "{{count}} category",
-    "categoriesSelected_other": "{{count}} categories"
+    "categoriesSelected_other": "{{count}} categories",
+    "createMore": "Create more",
+    "carriedOverHint": "The carried-over balance is already part of your account balance – it doesn't need to be booked as income."
   },
   "stats": {
     "subtitle": "Where your money went and where it came from – by category.",
@@ -1036,7 +1038,12 @@
     "txPeriod": "Transactions open with",
     "txPeriodHint": "You can still pick any period with the date filter.",
     "periodAll": "All time",
-    "periodMonth": "Current month"
+    "periodMonth": "Current month",
+    "txEnter": "Enter in the transaction form",
+    "txEnterSave": "Saves",
+    "txEnterNext": "Next field",
+    "txEnterSaveHint": "Enter saves the entry right away.",
+    "txEnterNextHint": "Enter goes from amount to description and category, then to Save. {{shortcut}} always saves."
   },
   "currencySwitch": {
     "title": "Switch your accounts to {{currency}} too?",
@@ -1060,5 +1067,56 @@
     "linuxText": "Most desktop distributions block incoming connections. Allow port {{port}} once in a terminal:",
     "mobileTitle": "Android & iPhone",
     "mobileText": "On iPhone, allow Local Network for ZCashflow (Settings → Privacy & Security → Local Network). On both, Wi-Fi has to be on – mobile data alone doesn't reach the other device. Keep the app open while it syncs."
+  },
+  "bulk": {
+    "select": "Select",
+    "deselect": "Deselect",
+    "clear": "Clear selection",
+    "all": "Select all",
+    "none": "Select none",
+    "transfersKeep": "transfers are skipped",
+    "timeKeep": "empty keeps the times",
+    "accountHint": "only entries in the account's currency",
+    "selected_one": "{{count}} selected",
+    "selected_other": "{{count}} selected",
+    "editTitle_one": "Change {{count}} entry",
+    "editTitle_other": "Change {{count}} entries",
+    "deleteTitle_one": "Delete {{count}} entry?",
+    "deleteTitle_other": "Delete {{count}} entries?",
+    "deleteText_one": "The entry is deleted, also on paired devices.",
+    "deleteText_other": "The {{count}} entries are deleted, also on paired devices.",
+    "apply_one": "Apply to {{count}} entry",
+    "apply_other": "Apply to {{count}} entries",
+    "updated_one": "{{count}} entry updated",
+    "updated_other": "{{count}} entries updated",
+    "updatedSkipped_one": "{{count}} entry updated, {{skipped}} skipped",
+    "updatedSkipped_other": "{{count}} entries updated, {{skipped}} skipped",
+    "deleted_one": "{{count}} entry deleted",
+    "deleted_other": "{{count}} entries deleted"
+  },
+  "categoryFile": {
+    "exportTitle": "Export categories (JSON)",
+    "importTitle": "Import categories (JSON)",
+    "importHint": "Adds categories with subcategories, icons and colors from a JSON file. Categories that already exist are matched by name and only updated.",
+    "exported": "Categories exported",
+    "imported": "Categories imported: {{created}} new, {{updated}} changed",
+    "created": "New",
+    "updated": "Changed",
+    "unchanged": "Unchanged",
+    "warnings": "Notes ({{count}})",
+    "noName": "skipped, no name",
+    "bad": {
+      "icon": "unknown icon \"{{value}}\", the default icon is used",
+      "color": "invalid color \"{{value}}\", ignored"
+    },
+    "format": "File format",
+    "formatHint": "\"out\" holds expense categories, \"in\" income categories and \"both\" categories for both. Every entry has a name, optionally a symbol (icon name) and a color (#rrggbb), and any number of subcategories. Categories are matched by name, so a file can be imported again. The order in the file becomes the order in the app.",
+    "icons": "Available icons",
+    "import": "Import",
+    "error": {
+      "json": "The file is not valid JSON.",
+      "shape": "The file doesn't have the expected structure.",
+      "empty": "The file contains no categories."
+    }
   }
 }

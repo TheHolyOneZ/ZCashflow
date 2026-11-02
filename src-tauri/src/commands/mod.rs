@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use serde::Serialize;
 use tauri::State;
 
@@ -5,6 +7,7 @@ use crate::db::{get_meta, set_meta, Db, SharedDb};
 use crate::domain::{
     accounts::{self, Account, AccountInput},
     categories::{self, Category, CategoryInput},
+    category_io,
     counterparties::{self, Counterparty},
     quick::{self, QuickEntry},
     summary::{self, PeriodSummary},
@@ -100,6 +103,21 @@ pub fn transaction_totals(db: State<SharedDb>, filter: Option<TransactionFilter>
 #[tauri::command]
 pub fn category_totals(db: State<SharedDb>, filter: Option<TransactionFilter>) -> AppResult<Vec<transactions::CategorySum>> {
     transactions::category_totals(&db.conn(), &filter.unwrap_or_default())
+}
+
+#[tauri::command]
+pub fn bulk_update_transactions(db: State<SharedDb>, ids: Vec<String>, change: transactions::BulkChange) -> AppResult<transactions::BulkResult> {
+    transactions::bulk_update(&db, &ids, &change)
+}
+
+#[tauri::command]
+pub fn delete_transactions(db: State<SharedDb>, ids: Vec<String>) -> AppResult<u32> {
+    transactions::delete_many(&db, &ids)
+}
+
+#[tauri::command]
+pub fn quit_app(app: tauri::AppHandle) {
+    app.exit(0);
 }
 
 #[tauri::command]
@@ -360,6 +378,23 @@ pub fn export_csv(app: tauri::AppHandle, db: State<SharedDb>, path: String) -> A
     let out = export::export(&db.conn(), &opts, today())?;
     write_target(&app, &path, &out.bytes)?;
     Ok(out.files)
+}
+
+#[tauri::command]
+pub fn export_categories(app: tauri::AppHandle, db: State<SharedDb>, path: String, labels: HashMap<String, String>) -> AppResult<()> {
+    let file = category_io::export(&db.conn(), &labels)?;
+    let json = serde_json::to_string_pretty(&file).map_err(|e| AppError::Invalid(e.to_string()))?;
+    write_target(&app, &path, json.as_bytes())
+}
+
+#[tauri::command]
+pub fn import_categories(
+    db: State<SharedDb>,
+    file: category_io::CategoryFile,
+    labels: HashMap<String, String>,
+    dry_run: bool,
+) -> AppResult<category_io::ImportSummary> {
+    category_io::import(&db, &file, &labels, dry_run)
 }
 
 #[tauri::command]

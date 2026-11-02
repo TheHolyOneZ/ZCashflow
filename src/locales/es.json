@@ -105,7 +105,9 @@
     "balanceOn": "Saldo el {{date}}",
     "categoriesSelected_one": "{{count}} categoría",
     "categoriesSelected_other": "{{count}} categorías",
-    "categoriesSelected_many": "{{count}} categorías"
+    "categoriesSelected_many": "{{count}} categorías",
+    "createMore": "Crear más",
+    "carriedOverHint": "El saldo arrastrado ya forma parte del saldo de la cuenta – no hace falta registrarlo como ingreso."
   },
   "stats": {
     "subtitle": "En qué se fue tu dinero y de dónde vino – por categoría.",
@@ -1075,7 +1077,12 @@
     "txPeriod": "Los movimientos se abren con",
     "txPeriodHint": "Con el filtro de fechas puedes elegir cualquier otro período.",
     "periodAll": "Todo el período",
-    "periodMonth": "Mes actual"
+    "periodMonth": "Mes actual",
+    "txEnter": "Enter en el formulario de movimiento",
+    "txEnterSave": "Guarda",
+    "txEnterNext": "Siguiente campo",
+    "txEnterSaveHint": "Enter guarda el movimiento al instante.",
+    "txEnterNextHint": "Enter pasa del importe a la descripción y la categoría, luego a Guardar. {{shortcut}} siempre guarda."
   },
   "currencySwitch": {
     "title": "¿Cambiar también tus cuentas a {{currency}}?",
@@ -1099,5 +1106,64 @@
     "linuxText": "La mayoría de las distribuciones de escritorio bloquean las conexiones entrantes. Permite el puerto {{port}} una vez en una terminal:",
     "mobileTitle": "Android y iPhone",
     "mobileText": "En el iPhone, permite «Red local» para ZCashflow (Ajustes → Privacidad y seguridad → Red local). En ambos, la Wi-Fi tiene que estar activada – con datos móviles no se llega al otro dispositivo. Mantén la app abierta mientras sincroniza."
+  },
+  "bulk": {
+    "select": "Seleccionar",
+    "deselect": "Deseleccionar",
+    "clear": "Quitar selección",
+    "all": "Seleccionar todo",
+    "none": "Seleccionar nada",
+    "transfersKeep": "las transferencias se omiten",
+    "timeKeep": "vacío conserva las horas",
+    "accountHint": "solo movimientos en la moneda de la cuenta",
+    "selected_one": "{{count}} seleccionado",
+    "selected_many": "{{count}} seleccionados",
+    "selected_other": "{{count}} seleccionados",
+    "editTitle_one": "Cambiar {{count}} movimiento",
+    "editTitle_many": "Cambiar {{count}} movimientos",
+    "editTitle_other": "Cambiar {{count}} movimientos",
+    "deleteTitle_one": "¿Eliminar {{count}} movimiento?",
+    "deleteTitle_many": "¿Eliminar {{count}} movimientos?",
+    "deleteTitle_other": "¿Eliminar {{count}} movimientos?",
+    "deleteText_one": "El movimiento se elimina, también en los dispositivos vinculados.",
+    "deleteText_many": "Los {{count}} movimientos se eliminan, también en los dispositivos vinculados.",
+    "deleteText_other": "Los {{count}} movimientos se eliminan, también en los dispositivos vinculados.",
+    "apply_one": "Aplicar a {{count}} movimiento",
+    "apply_many": "Aplicar a {{count}} movimientos",
+    "apply_other": "Aplicar a {{count}} movimientos",
+    "updated_one": "{{count}} movimiento actualizado",
+    "updated_many": "{{count}} movimientos actualizados",
+    "updated_other": "{{count}} movimientos actualizados",
+    "updatedSkipped_one": "{{count}} movimiento actualizado, {{skipped}} omitidos",
+    "updatedSkipped_many": "{{count}} movimientos actualizados, {{skipped}} omitidos",
+    "updatedSkipped_other": "{{count}} movimientos actualizados, {{skipped}} omitidos",
+    "deleted_one": "{{count}} movimiento eliminado",
+    "deleted_many": "{{count}} movimientos eliminados",
+    "deleted_other": "{{count}} movimientos eliminados"
+  },
+  "categoryFile": {
+    "exportTitle": "Exportar categorías (JSON)",
+    "importTitle": "Importar categorías (JSON)",
+    "importHint": "Añade categorías con subcategorías, iconos y colores desde un archivo JSON. Las categorías existentes se reconocen por el nombre y solo se actualizan.",
+    "exported": "Categorías exportadas",
+    "imported": "Categorías importadas: {{created}} nuevas, {{updated}} cambiadas",
+    "created": "Nuevas",
+    "updated": "Cambiadas",
+    "unchanged": "Sin cambios",
+    "warnings": "Avisos ({{count}})",
+    "noName": "omitida, sin nombre",
+    "bad": {
+      "icon": "icono desconocido \"{{value}}\", se usa el icono por defecto",
+      "color": "color no válido \"{{value}}\", ignorado"
+    },
+    "format": "Formato del archivo",
+    "formatHint": "\"out\" contiene las categorías de gastos, \"in\" las de ingresos y \"both\" las de ambos. Cada entrada tiene un nombre, opcionalmente un símbolo (nombre de icono) y un color (#rrggbb), y cualquier número de subcategorías. Las categorías se reconocen por el nombre, así que un archivo puede importarse de nuevo. El orden del archivo pasa a ser el orden en la app.",
+    "icons": "Iconos disponibles",
+    "import": "Importar",
+    "error": {
+      "json": "El archivo no es un JSON válido.",
+      "shape": "El archivo no tiene la estructura esperada.",
+      "empty": "El archivo no contiene categorías."
+    }
   }
 }

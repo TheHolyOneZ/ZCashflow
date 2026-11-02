@@ -113,6 +113,39 @@ export interface TransactionFilter {
   offset?: number;
 }
 
+export interface BulkChange {
+  occurredOn?: string;
+  setTime?: boolean;
+  occurredTime?: string | null;
+  accountId?: string;
+  setCategory?: boolean;
+  categoryId?: string | null;
+}
+
+export interface BulkResult {
+  updated: number;
+  skipped: number;
+}
+
+export interface CategoryNode {
+  name: string;
+  symbol?: string;
+  color?: string;
+  subcategories: CategoryNode[];
+}
+
+export interface CategoryFile {
+  out: CategoryNode[];
+  in: CategoryNode[];
+  both: CategoryNode[];
+}
+
+export interface CategoryImportSummary {
+  created: number;
+  updated: number;
+  unchanged: number;
+}
+
 export interface CategorySum {
   categoryId: string | null;
   kind: "income" | "expense";
@@ -183,6 +216,9 @@ export const api = {
   listCategories: () => invoke<Category[]>("list_categories"),
   upsertCategory: (input: CategoryInput) => invoke<Category>("upsert_category", { input }),
   moveCategory: (id: string, parentId: string | null) => invoke<Category>("move_category", { id, parentId }),
+  exportCategories: (path: string, labels: Record<string, string>) => invoke<void>("export_categories", { path, labels }),
+  importCategories: (file: CategoryFile, labels: Record<string, string>, dryRun: boolean) =>
+    invoke<CategoryImportSummary>("import_categories", { file, labels, dryRun }),
   placeCategory: (id: string, parentId: string | null, order: string[]) =>
     invoke<Category>("place_category", { id, parentId, order }),
 
@@ -199,6 +235,9 @@ export const api = {
   updateTransaction: (id: string, input: TransactionInput) =>
     invoke<Transaction>("update_transaction", { id, input }),
   deleteTransaction: (id: string) => invoke<void>("delete_transaction", { id }),
+  bulkUpdateTransactions: (ids: string[], change: BulkChange) => invoke<BulkResult>("bulk_update_transactions", { ids, change }),
+  deleteTransactions: (ids: string[]) => invoke<number>("delete_transactions", { ids }),
+  quitApp: () => invoke<void>("quit_app"),
 
   parseQuickEntry: (text: string) => invoke<QuickEntry>("parse_quick_entry", { text }),
   periodSummary: (from: string, to: string, currency: string) =>

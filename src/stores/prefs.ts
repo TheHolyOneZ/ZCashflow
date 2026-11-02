@@ -25,6 +25,7 @@ export type ExpenseStyle = "minus" | "red";
 export type TxPeriod = "all" | "month";
 export type ExportExpenses = "minus" | "plain";
 export type ExportCategories = "path" | "split";
+export type TxEnter = "save" | "next";
 
 export const DASHBOARD_WIDGETS = [
   "hero",
@@ -63,6 +64,8 @@ export interface Prefs {
   txPeriod: TxPeriod;
   exportExpenses: ExportExpenses;
   exportCategories: ExportCategories;
+  txEnter: TxEnter;
+  txCreateMore: boolean;
 }
 
 export const DEFAULT_PREFS: Prefs = {
@@ -87,6 +90,8 @@ export const DEFAULT_PREFS: Prefs = {
   txPeriod: "all",
   exportExpenses: "minus",
   exportCategories: "path",
+  txEnter: "save",
+  txCreateMore: false,
 };
 
 const KEY = "zc.prefs";

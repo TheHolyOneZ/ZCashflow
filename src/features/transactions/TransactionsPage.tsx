@@ -19,6 +19,8 @@ import { Money } from "@/components/ui/extra";
 import { useUi } from "@/stores/ui";
 import { TransactionList } from "./TransactionList";
 import { CategoryFilter } from "./CategoryFilter";
+import { BulkBar } from "./BulkActions";
+import { useSwipe } from "@/lib/swipe";
 import { modKey } from "@/lib/platform";
 import { formatDay, isoDate, monthRange } from "@/lib/dates";
 import { activeLocale } from "@/lib/i18n";
@@ -74,6 +76,22 @@ export function TransactionsPage() {
   const { data: items = [], isLoading } = useTransactions(filter);
   const totals = useTransactionTotals(filter).data;
   const filtered = Object.values(filter).some((v) => v !== undefined);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const month = fullMonth(from, to);
+  const swipe = useSwipe((dir) => {
+    if (!month) return;
+    const r = monthRange(addMonths(month, dir));
+    setFrom(r.from);
+    setTo(r.to);
+  }, !!month && selected.size === 0);
+
+  useEffect(() => setSelected(new Set()), [filter]);
+  useEffect(() => {
+    if (!selected.size) return;
+    const key = (e: KeyboardEvent) => e.key === "Escape" && !document.querySelector("[role=dialog]") && setSelected(new Set());
+    window.addEventListener("keydown", key);
+    return () => window.removeEventListener("keydown", key);
+  }, [selected.size]);
 
   function clear() {
     setQuery("");
@@ -116,7 +134,7 @@ export function TransactionsPage() {
         }
       />
 
-      <Card className="overflow-hidden">
+      <Card className="overflow-hidden" {...swipe}>
         <div className="flex flex-col gap-2 border-b border-border p-3">
           <div className="flex flex-wrap items-center gap-2">
             <SearchInput aria-label={t("common.search")} placeholder={t("tx.searchPlaceholder")} value={query} onChange={setQuery} className="min-w-[11rem] flex-1 sm:min-w-64" />
@@ -216,10 +234,11 @@ export function TransactionsPage() {
             />
           )
         ) : (
-          <TransactionList items={items} days={totals?.days} />
+          <TransactionList items={items} days={totals?.days} selection={{ selected, onChange: setSelected }} />
         )}
       </Card>
       <ImportDialog open={importOpen} onOpenChange={setImportOpen} />
+      {selected.size > 0 && <BulkBar selected={selected} items={items} onChange={setSelected} />}
     </div>
   );
 }
@@ -293,14 +312,19 @@ function TotalsBar({ totals, to }: { totals: TransactionTotals; to: string }) {
               )}
             >
               {c.openingMinor !== null && (
-                <span>
-                  {t("tx.carriedOver")}: <Money minor={c.openingMinor} currency={c.currency} tone="auto" className="font-medium" />
-                </span>
+                <Tip label={t("tx.carriedOverHint")}>
+                  <span tabIndex={0} className="cursor-help underline decoration-dotted underline-offset-2 focus-visible:outline-none">
+                    {t("tx.carriedOver")}: <Money minor={c.openingMinor} currency={c.currency} tone="auto" className="font-medium" />
+                  </span>
+                </Tip>
               )}
               <span>
                 {endLabel}: <Money minor={c.closingMinor} currency={c.currency} tone="auto" className="font-medium text-fg" />
               </span>
             </p>
+          )}
+          {c.count === 0 && c.openingMinor !== null && c.openingMinor !== 0 && (
+            <p className="text-center text-[11.5px] text-muted/80">{t("tx.carriedOverHint")}</p>
           )}
         </div>
       ))}

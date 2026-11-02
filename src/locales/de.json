@@ -103,7 +103,9 @@
     "balanceToday": "Kontostand heute",
     "balanceOn": "Kontostand am {{date}}",
     "categoriesSelected_one": "{{count}} Kategorie",
-    "categoriesSelected_other": "{{count}} Kategorien"
+    "categoriesSelected_other": "{{count}} Kategorien",
+    "createMore": "Weitere erstellen",
+    "carriedOverHint": "Der Übertrag ist bereits im Kontostand enthalten – er muss nicht als Einnahme gebucht werden."
   },
   "stats": {
     "subtitle": "Wofür dein Geld ausgegeben wurde und woher es kam – nach Kategorien.",
@@ -1036,7 +1038,12 @@
     "txPeriod": "Buchungen starten mit",
     "txPeriodHint": "Über den Datumsfilter kannst du jederzeit einen anderen Zeitraum wählen.",
     "periodAll": "Gesamter Zeitraum",
-    "periodMonth": "Aktueller Monat"
+    "periodMonth": "Aktueller Monat",
+    "txEnter": "Enter im Buchungsformular",
+    "txEnterSave": "Speichert",
+    "txEnterNext": "Nächstes Feld",
+    "txEnterSaveHint": "Enter speichert die Buchung sofort.",
+    "txEnterNextHint": "Enter springt von Betrag zu Beschreibung und Kategorie, dann zu Speichern. {{shortcut}} speichert immer."
   },
   "currencySwitch": {
     "title": "Konten auch auf {{currency}} umstellen?",
@@ -1060,5 +1067,56 @@
     "linuxText": "Die meisten Desktop-Distributionen blockieren eingehende Verbindungen. Gib Port {{port}} einmal im Terminal frei:",
     "mobileTitle": "Android & iPhone",
     "mobileText": "Auf dem iPhone „Lokales Netzwerk“ für ZCashflow erlauben (Einstellungen → Datenschutz & Sicherheit → Lokales Netzwerk). Auf beiden muss WLAN an sein – über mobile Daten erreicht das Handy das andere Gerät nicht. Lass die App offen, während sie synchronisiert."
+  },
+  "bulk": {
+    "select": "Auswählen",
+    "deselect": "Abwählen",
+    "clear": "Auswahl aufheben",
+    "all": "Alle auswählen",
+    "none": "Keine auswählen",
+    "transfersKeep": "Umbuchungen werden übersprungen",
+    "timeKeep": "leer lässt die Uhrzeiten",
+    "accountHint": "nur Buchungen in der Währung des Kontos",
+    "selected_one": "{{count}} ausgewählt",
+    "selected_other": "{{count}} ausgewählt",
+    "editTitle_one": "{{count}} Buchung ändern",
+    "editTitle_other": "{{count}} Buchungen ändern",
+    "deleteTitle_one": "{{count}} Buchung löschen?",
+    "deleteTitle_other": "{{count}} Buchungen löschen?",
+    "deleteText_one": "Die Buchung wird gelöscht, auch auf gekoppelten Geräten.",
+    "deleteText_other": "Die {{count}} Buchungen werden gelöscht, auch auf gekoppelten Geräten.",
+    "apply_one": "Auf {{count}} Buchung anwenden",
+    "apply_other": "Auf {{count}} Buchungen anwenden",
+    "updated_one": "{{count}} Buchung geändert",
+    "updated_other": "{{count}} Buchungen geändert",
+    "updatedSkipped_one": "{{count}} Buchung geändert, {{skipped}} übersprungen",
+    "updatedSkipped_other": "{{count}} Buchungen geändert, {{skipped}} übersprungen",
+    "deleted_one": "{{count}} Buchung gelöscht",
+    "deleted_other": "{{count}} Buchungen gelöscht"
+  },
+  "categoryFile": {
+    "exportTitle": "Kategorien exportieren (JSON)",
+    "importTitle": "Kategorien importieren (JSON)",
+    "importHint": "Fügt Kategorien mit Unterkategorien, Symbolen und Farben aus einer JSON-Datei hinzu. Vorhandene Kategorien werden am Namen erkannt und nur aktualisiert.",
+    "exported": "Kategorien exportiert",
+    "imported": "Kategorien importiert: {{created}} neu, {{updated}} geändert",
+    "created": "Neu",
+    "updated": "Geändert",
+    "unchanged": "Unverändert",
+    "warnings": "Hinweise ({{count}})",
+    "noName": "übersprungen, kein Name",
+    "bad": {
+      "icon": "unbekanntes Symbol \"{{value}}\", das Standardsymbol wird verwendet",
+      "color": "ungültige Farbe \"{{value}}\", ignoriert"
+    },
+    "format": "Dateiformat",
+    "formatHint": "\"out\" enthält Ausgaben-Kategorien, \"in\" Einnahmen-Kategorien und \"both\" Kategorien für beides. Jeder Eintrag hat einen Namen, optional ein Symbol (symbol) und eine Farbe (#rrggbb) sowie beliebig viele Unterkategorien. Kategorien werden am Namen erkannt, eine Datei kann also erneut importiert werden. Die Reihenfolge in der Datei wird die Reihenfolge in der App.",
+    "icons": "Verfügbare Symbole",
+    "import": "Importieren",
+    "error": {
+      "json": "Die Datei ist kein gültiges JSON.",
+      "shape": "Die Datei hat nicht den erwarteten Aufbau.",
+      "empty": "Die Datei enthält keine Kategorien."
+    }
   }
 }
