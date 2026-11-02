@@ -161,6 +161,7 @@ export interface CurrencyTotal {
   expenseMinor: number;
   openingMinor: number | null;
   closingMinor: number | null;
+  correctedOn: string | null;
 }
 
 export interface DayTotal {
@@ -750,4 +751,20 @@ export const sync = {
   unpair: (publicKey: string) => invoke<void>("sync_unpair", { publicKey }),
   setRole: (publicKey: string, role: PeerRole) => invoke<void>("sync_set_role", { publicKey, role }),
   setEnabled: (enabled: boolean) => invoke<void>("sync_set_enabled", { enabled }),
+};
+
+export interface VaultStatus {
+  enabled: boolean;
+  locked: boolean;
+}
+
+export const vault = {
+  status: () => invoke<VaultStatus>("vault_status"),
+  unlock: (password: string) => invoke<void>("vault_unlock", { password }),
+  forget: () => invoke<void>("vault_forget"),
+  enable: (password: string) => invoke<void>("vault_enable", { password }),
+  disable: (password: string) => invoke<void>("vault_disable", { password }),
+  changePassword: (old: string, next: string) => invoke<void>("vault_change_password", { old, new: next }),
+  verify: (password: string) => invoke<void>("vault_verify", { password }),
+  flush: () => invoke<boolean>("vault_flush"),
 };

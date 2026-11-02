@@ -434,6 +434,9 @@ pub async fn import_commit(app: tauri::AppHandle, text: String, options: ImportO
 
 #[tauri::command]
 pub fn backup_database(app: tauri::AppHandle, db: State<SharedDb>, path: String) -> AppResult<()> {
+    if let Some(sealed) = db.encrypted_snapshot()? {
+        return write_target(&app, &path, &sealed);
+    }
     let plain = !path.contains("://");
     if plain {
         return export::backup(&db.conn(), std::path::Path::new(&path));
@@ -661,6 +664,91 @@ pub fn reset_all_data(app: tauri::AppHandle, db: State<SharedDb>) -> AppResult<(
     if let Some(core) = app.try_state::<SyncHandle>() {
         core.disconnect_all();
     }
+    db.forget_vault();
     db.wipe_everything()?;
     app.restart();
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VaultStatus {
+    enabled: bool,
+    locked: bool,
+}
+
+static UNLOCKING: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
+fn data_dir(app: &tauri::AppHandle) -> std::path::PathBuf {
+    app.state::<crate::DataDir>().0.clone()
+}
+
+#[tauri::command]
+pub fn vault_status(app: tauri::AppHandle) -> VaultStatus {
+    match app.try_state::<SharedDb>() {
+        Some(db) => VaultStatus { enabled: db.vault_enabled(), locked: false },
+        None => VaultStatus { enabled: true, locked: true },
+    }
+}
+
+#[tauri::command]
+pub async fn vault_unlock(app: tauri::AppHandle, password: String) -> AppResult<()> {
+    blocking(move || {
+        let _once = UNLOCKING.lock().unwrap_or_else(|e| e.into_inner());
+        if app.try_state::<SharedDb>().is_some() {
+            return Ok(());
+        }
+        let db = Db::open_vault(&data_dir(&app), &password)?;
+        crate::start_services(&app, db);
+        Ok(())
+    })
+    .await
+}
+
+#[tauri::command]
+pub async fn vault_forget(app: tauri::AppHandle) -> AppResult<()> {
+    blocking(move || {
+        let _once = UNLOCKING.lock().unwrap_or_else(|e| e.into_inner());
+        if app.try_state::<SharedDb>().is_some() {
+            return Err(AppError::Invalid("the app is not locked".into()));
+        }
+        let dir = data_dir(&app);
+        let _ = std::fs::remove_file(dir.join(crate::vault::FILE));
+        crate::db::remove_plain_files(&dir.join(crate::db::PLAIN_FILE));
+        for sub in ["attachments", "thumbs"] {
+            let _ = std::fs::remove_dir_all(dir.join(sub));
+        }
+        let db = Db::open(&dir.join(crate::db::PLAIN_FILE))?;
+        crate::start_services(&app, db);
+        Ok(())
+    })
+    .await
+}
+
+#[tauri::command]
+pub async fn vault_enable(app: tauri::AppHandle, password: String) -> AppResult<()> {
+    blocking(move || app.state::<SharedDb>().enable_vault(&password)).await
+}
+
+#[tauri::command]
+pub async fn vault_disable(app: tauri::AppHandle, password: String) -> AppResult<()> {
+    blocking(move || app.state::<SharedDb>().disable_vault(&password)).await
+}
+
+#[tauri::command]
+pub async fn vault_change_password(app: tauri::AppHandle, old: String, new: String) -> AppResult<()> {
+    blocking(move || app.state::<SharedDb>().change_password(&old, &new)).await
+}
+
+#[tauri::command]
+pub async fn vault_verify(app: tauri::AppHandle, password: String) -> AppResult<()> {
+    blocking(move || app.state::<SharedDb>().verify_password(&password)).await
+}
+
+#[tauri::command]
+pub async fn vault_flush(app: tauri::AppHandle) -> AppResult<bool> {
+    blocking(move || match app.try_state::<SharedDb>() {
+        Some(db) => db.save_vault(false),
+        None => Ok(false),
+    })
+    .await
 }

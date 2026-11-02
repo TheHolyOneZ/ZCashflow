@@ -199,6 +199,7 @@ pub struct CurrencyTotal {
     pub expense_minor: i64,
     pub opening_minor: Option<i64>,
     pub closing_minor: Option<i64>,
+    pub corrected_on: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
@@ -251,6 +252,7 @@ pub fn totals(conn: &Connection, f: &TransactionFilter, today: NaiveDate) -> App
                 expense_minor: day.expense_minor,
                 opening_minor: None,
                 closing_minor: None,
+                corrected_on: None,
             }),
         }
         out.days.push(day);
@@ -311,6 +313,7 @@ fn add_balances(conn: &Connection, f: &TransactionFilter, today: NaiveDate, out:
                     expense_minor: 0,
                     opening_minor: None,
                     closing_minor: None,
+                    corrected_on: None,
                 });
                 out.last_mut().expect("just pushed")
             }
@@ -320,8 +323,13 @@ fn add_balances(conn: &Connection, f: &TransactionFilter, today: NaiveDate, out:
     if let (Some(from), Some(before)) = (from, before) {
         for row in out.iter_mut() {
             let mine: Vec<&accounts::Account> = before.iter().filter(|a| a.currency == row.currency).collect();
-            let corrected_in_period = mine.iter().any(|a| a.anchor_on.as_deref().is_some_and(|on| on >= (from - chrono::Duration::days(1)).to_string().as_str()));
-            if !mine.is_empty() && !corrected_in_period {
+            let (start, stop) = ((from - chrono::Duration::days(1)).to_string(), end.to_string());
+            row.corrected_on = mine
+                .iter()
+                .filter_map(|a| a.anchor_on.clone())
+                .filter(|on| on.as_str() > start.as_str() && on.as_str() <= stop.as_str())
+                .max();
+            if !mine.is_empty() && row.corrected_on.is_none() {
                 row.opening_minor = Some(mine.iter().map(|a| a.balance_minor).sum());
             }
         }
@@ -989,7 +997,8 @@ mod tests {
                 income_minor: 10_000,
                 expense_minor: 1_000,
                 opening_minor: None,
-                closing_minor: Some(9_000)
+                closing_minor: Some(9_000),
+                corrected_on: None
             }]
         );
         assert_eq!(t.days.len(), 2);
@@ -1004,9 +1013,16 @@ mod tests {
         accounts::set_balance(&db, &acc, 50_000, "2026-10-08").unwrap();
         let corrected = totals(&db.conn(), &TransactionFilter { from: Some("2026-10-08".into()), ..Default::default() }, today).unwrap();
         assert_eq!((corrected.currencies[0].opening_minor, corrected.currencies[0].closing_minor), (None, Some(50_000)));
+        assert_eq!(corrected.currencies[0].corrected_on.as_deref(), Some("2026-10-08"));
 
         let only_yesterday = totals(&db.conn(), &TransactionFilter { from: Some("2026-10-07".into()), to: Some("2026-10-07".into()), ..Default::default() }, today).unwrap();
         assert_eq!(only_yesterday.currencies[0].expense_minor, 200);
+        let y = &only_yesterday.currencies[0];
+        assert_eq!((y.opening_minor, y.closing_minor), (Some(41_000), Some(40_800)), "days before a correction are counted back from it");
+        let earlier = totals(&db.conn(), &TransactionFilter { from: Some("2026-09-01".into()), to: Some("2026-09-30".into()), ..Default::default() }, today).unwrap();
+        assert_eq!((earlier.currencies[0].opening_minor, earlier.currencies[0].closing_minor), (Some(41_000), Some(41_000)));
+        let later = totals(&db.conn(), &TransactionFilter { from: Some("2026-10-09".into()), to: Some("2026-10-09".into()), ..Default::default() }, d("2026-10-09")).unwrap();
+        assert_eq!((later.currencies[0].opening_minor, later.currencies[0].closing_minor), (Some(50_000), Some(50_000)));
 
         assert!(create(&db, at("x", 1, "2026-10-08", Some("25:99"))).is_err());
         assert_eq!(create(&db, at("x", 1, "2026-10-08", Some(" "))).unwrap().occurred_time, None);

@@ -2,7 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
-import { Ellipsis, Keyboard, Plus, Search, Loader2, ScanLine } from "lucide-react";
+import { Ellipsis, Keyboard, Plus, Search, Loader2, LockKeyhole, ScanLine } from "lucide-react";
+import { useLock, useVaultStatus } from "@/features/security/lock";
 import { Dialog } from "@/components/ui/dialog";
 import { Toaster } from "@/components/ui/toaster";
 import { TransactionDialog } from "@/features/transactions/TransactionDialog";
@@ -38,6 +39,7 @@ function useGlobalShortcuts(openHelp: () => void) {
   const navigate = useNavigate();
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
+      if (useLock.getState().locked) return;
       const mod = e.metaKey || e.ctrlKey;
       const key = e.key.toLowerCase();
       if (e.key === "F11") {
@@ -219,6 +221,8 @@ const linkBase =
 
 export function AppShell() {
   const { t } = useTranslation();
+  const protectedData = useVaultStatus().data?.enabled ?? false;
+  const lock = useLock((s) => s.lock);
   const setPalette = useUi((s) => s.setPaletteOpen);
   const openNew = useUi((s) => s.openNewTx);
   const collapsed = usePrefs((s) => s.sidebarCollapsed);
@@ -318,7 +322,19 @@ export function AppShell() {
             <Logo />
             <span className="text-[14px] font-semibold tracking-tight">{t("app.name")}</span>
           </Link>
-          <ModeSwitch labels />
+          <div className="flex items-center gap-2">
+            {protectedData && (
+              <button
+                type="button"
+                aria-label={t("vault.lockNow")}
+                onClick={lock}
+                className="flex size-8 items-center justify-center rounded-lg text-muted hover:bg-surface-2 hover:text-fg"
+              >
+                <LockKeyhole className="size-4" />
+              </button>
+            )}
+            <ModeSwitch labels />
+          </div>
         </div>
         <div key={pathname} className={cn("animate-[page-in_220ms_var(--ease-out)] mx-auto max-w-6xl px-4 min-[1800px]:max-w-[88rem] pt-4 md:px-8 md:pt-7 md:pb-10", simple ? "pb-[max(2rem,env(safe-area-inset-bottom))]" : "pb-28")}>
           <Outlet />

@@ -1,5 +1,29 @@
 # Changelog
 
+## 1.8.0
+
+### Added
+
+- Password protection with encryption, per device, under *Settings → Security*:
+  - With a password set, the database is stored as one encrypted file (`zcashflow.vault`) and receipt photos and thumbnails are encrypted as well. Encryption uses XChaCha20-Poly1305; the key is derived from the password with Argon2id. The unencrypted database file is removed.
+  - While the app runs, the data is kept in memory and written back encrypted about a second after every change, when the app goes to the background and when it quits.
+  - The app asks for the password when it starts. It can also lock itself as soon as it goes to the background or after 1, 5 or 15 minutes without use (default: 5 minutes), and *Lock now* is available in the title bar, the phone header and the settings.
+  - The password can be changed or removed again; removing it stores the data unencrypted as before.
+  - The password only applies to the device it was set on and is never synced. Paired devices keep syncing while the app is unlocked, and each device can have its own password or none.
+  - A forgotten password can't be recovered. The lock screen offers to reset the device, which deletes all data on it; paired devices keep their data, so the device can be paired again to get it back.
+  - With a password set, *Save backup* writes an encrypted backup (`.zcvault`) that needs the same password.
+- When a period contains a balance correction, the transactions list shows *Balance corrected on …* in place of the carried-over value, with a hint why there is none.
+
+### Fixed
+
+- Balances before a balance correction (*Correct balance*, or an import with *Keep today's balances*) are counted back from the corrected amount. Before, every earlier month and day showed the corrected amount itself as its balance and carried-over value.
+- The carried-over value is only hidden for periods that contain the correction; months before it show it again.
+
+### Notes
+
+- No sync schema change; devices on 1.7.0 still sync. The database gains no new columns.
+- A device with a password can't be opened by older versions of ZCashflow. Remove the password before going back to an older version.
+
 ## 1.7.0
 
 ### Added

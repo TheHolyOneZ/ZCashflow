@@ -41,13 +41,14 @@ const SELECT: &str = "
                    WHEN t.kind = 'expense'  AND t.account_id    = a.id THEN -t.amount_minor
                    WHEN t.kind = 'transfer' AND t.account_id    = a.id THEN -t.amount_minor
                    WHEN t.kind = 'transfer' AND t.to_account_id = a.id THEN t.amount_minor
-                   ELSE 0 END)
+                   ELSE 0 END * CASE
+                   WHEN b.anchor_at IS NULL
+                        OR t.occurred_on > b.anchor_on
+                        OR (t.occurred_on = b.anchor_on AND t.created_at > b.anchor_at)
+                   THEN t.occurred_on <= :today
+                   ELSE -(t.occurred_on > :today) END)
                FROM transactions t
                WHERE t.deleted = 0 AND (t.account_id = a.id OR t.to_account_id = a.id)
-                 AND t.occurred_on <= :today
-                 AND (b.anchor_at IS NULL
-                      OR t.occurred_on > b.anchor_on
-                      OR (t.occurred_on = b.anchor_on AND t.created_at > b.anchor_at))
            ), 0) AS balance,
            b.anchor_on
     FROM accounts a

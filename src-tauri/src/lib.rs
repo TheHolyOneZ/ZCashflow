@@ -5,6 +5,7 @@ mod domain;
 mod error;
 mod ocr;
 mod sync;
+mod vault;
 
 use std::path::PathBuf;
 
@@ -22,6 +23,29 @@ impl sync::Host for TauriHost {
     fn emit(&self, event: &str) {
         let _ = self.0.emit(event, ());
     }
+}
+
+pub struct DataDir(pub PathBuf);
+
+pub(crate) fn start_services(app: &tauri::AppHandle, db: db::Db) {
+    let db = std::sync::Arc::new(db);
+    app.manage(db.clone());
+    match sync::SyncCore::new(db.clone(), std::sync::Arc::new(TauriHost(app.clone()))) {
+        Ok(core) => {
+            if let Err(e) = core.start(false) {
+                eprintln!("sync: could not start: {e}");
+            }
+            app.manage(core);
+        }
+        Err(e) => eprintln!("sync: {e}"),
+    }
+    spawn_scheduler(app.clone());
+    std::thread::spawn(move || loop {
+        std::thread::sleep(std::time::Duration::from_secs(1));
+        if let Err(e) = db.save_vault(false) {
+            eprintln!("vault: {e}");
+        }
+    });
 }
 
 fn spawn_scheduler(app: tauri::AppHandle) {
@@ -62,8 +86,7 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_clipboard_manager::init())
         .setup(|app| {
-            let db = db::Db::open(&data_dir(app).join("zcashflow.db"))?;
-
+            let dir = data_dir(app);
             let models = app
                 .path()
                 .resolve("ocr", tauri::path::BaseDirectory::Resource)
@@ -71,18 +94,11 @@ pub fn run() {
                 .filter(|p| p.join("text-detection.rten").exists())
                 .unwrap_or_else(|| PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("resources/ocr"));
             ocr::set_model_dir(models);
-            let db = std::sync::Arc::new(db);
-            app.manage(db.clone());
-            match sync::SyncCore::new(db, std::sync::Arc::new(TauriHost(app.handle().clone()))) {
-                Ok(core) => {
-                    if let Err(e) = core.start(false) {
-                        eprintln!("sync: could not start: {e}");
-                    }
-                    app.manage(core);
-                }
-                Err(e) => eprintln!("sync: {e}"),
+            app.manage(DataDir(dir.clone()));
+            if !dir.join(vault::FILE).exists() {
+                let db = db::Db::open(&dir.join(db::PLAIN_FILE))?;
+                start_services(app.handle(), db);
             }
-            spawn_scheduler(app.handle().clone());
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -170,7 +186,24 @@ pub fn run() {
             commands::load_demo_data,
             commands::clear_demo_data,
             commands::reset_all_data,
+            commands::vault_status,
+            commands::vault_unlock,
+            commands::vault_forget,
+            commands::vault_enable,
+            commands::vault_disable,
+            commands::vault_change_password,
+            commands::vault_verify,
+            commands::vault_flush,
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while running tauri application")
+        .run(|app, event| {
+            if let tauri::RunEvent::Exit = event {
+                if let Some(db) = app.try_state::<db::SharedDb>() {
+                    if let Err(e) = db.save_vault(false) {
+                        eprintln!("vault: {e}");
+                    }
+                }
+            }
+        });
 }

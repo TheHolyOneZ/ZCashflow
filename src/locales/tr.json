@@ -105,7 +105,9 @@
     "categoriesSelected_one": "{{count}} kategori",
     "categoriesSelected_other": "{{count}} kategori",
     "createMore": "Daha fazla oluştur",
-    "carriedOverHint": "Devreden bakiye zaten hesap bakiyesinin bir parçası – gelir olarak kaydetmen gerekmez."
+    "carriedOverHint": "Devreden bakiye zaten hesap bakiyesinin bir parçası – gelir olarak kaydetmen gerekmez.",
+    "correctedOn": "Bakiye {{date}} tarihinde düzeltildi",
+    "correctedHint": "Bu günden önceki bakiyeler düzeltilen tutardan geriye doğru hesaplanır, bu yüzden bu dönemin devreden bakiyesi yok."
   },
   "stats": {
     "subtitle": "Paran nereye gitti ve nereden geldi – kategoriye göre.",
@@ -234,7 +236,10 @@
     "unsupported_pdf_without_image": "Bu PDF taranmış bir görüntü içermiyor. Taramayı JPEG ya da görüntü PDF'i olarak kaydet.",
     "unsupported_missing_columns": "Dosyada en az bir tarih ve bir tutar sütunu olmalı. ZCashflow şablonunu kullan veya sütun başlıklarını yeniden adlandır.",
     "unsupported_empty_file": "Dosya boş.",
-    "unsupported_currency_decimals": "Bu para birimlerinin ondalık basamak sayısı farklı, bu yüzden tutarlar doğrudan değiştirilemez."
+    "unsupported_currency_decimals": "Bu para birimlerinin ondalık basamak sayısı farklı, bu yüzden tutarlar doğrudan değiştirilemez.",
+    "unsupported_wrong_password": "Yanlış parola.",
+    "unsupported_password_too_short": "Parola çok kısa.",
+    "unsupported_locked": "ZCashflow kilitli."
   },
   "freq": {
     "daily": "günlük",
@@ -1118,5 +1123,52 @@
       "shape": "Dosya beklenen yapıda değil.",
       "empty": "Dosyada kategori yok."
     }
+  },
+  "vault": {
+    "title": "Güvenlik",
+    "hint": "Bu cihaz için parola koruması ve şifreleme.",
+    "protection": "Parola koruması",
+    "on": "Açık",
+    "off": "Kapalı",
+    "onHint": "Bu cihazdaki veriler ve fişler şifrelidir; uygulama açılırken parola istenir.",
+    "offHint": "Bu cihazdaki veriler şifrelenmeden saklanır.",
+    "set": "Parola belirle",
+    "change": "Parolayı değiştir",
+    "remove": "Parolayı kaldır",
+    "manage": "Parola",
+    "removeHint": "Bu cihazdaki veriler yeniden şifrelenmeden saklanır.",
+    "lockNow": "Şimdi kilitle",
+    "lockAfter": "Otomatik kilitle",
+    "lockAfterHint": "Uygulama açılırken parola her zaman istenir.",
+    "lockHidden": "Uygulama arka plana geçer geçmez",
+    "lockStart": "Yalnızca uygulama açılırken",
+    "lockMinutes_one": "{{count}} dakika kullanılmayınca",
+    "lockMinutes_other": "{{count}} dakika kullanılmayınca",
+    "perDevice": "Parola yalnızca bu cihaz için geçerlidir ve asla eşitlenmez. Eşleştirilmiş cihazlar eşitlemeye devam eder; her birinin kendi parolası olabilir veya hiç olmayabilir.",
+    "warnTitle": "Unutulan bir parola kurtarılamaz.",
+    "warnText": "Parola olmadan bu cihazdaki veriler açılamaz. Cihaz eşleştirilmişse onu sıfırlayıp yeniden eşleştirerek verilerini başka bir cihazdan geri alabilirsin.",
+    "current": "Mevcut parola",
+    "new": "Yeni parola",
+    "repeat": "Yeni parolayı tekrarla",
+    "tooShort_one": "En az {{count}} karakter",
+    "tooShort_other": "En az {{count}} karakter",
+    "mismatch": "Parolalar eşleşmiyor.",
+    "enabled": "Parola koruması açık",
+    "changed": "Parola değiştirildi",
+    "removed": "Parola koruması kapalı",
+    "lockedTitle": "ZCashflow kilitli",
+    "lockedHint": "Bu cihazın parolasını gir.",
+    "password": "Parola",
+    "show": "Parolayı göster",
+    "hide": "Parolayı gizle",
+    "unlock": "Kilidi aç",
+    "wrongPassword": "Yanlış parola.",
+    "unlockFailed": "Kilit açılamadı. Lütfen tekrar dene.",
+    "forgot": "Parolanı mı unuttun?",
+    "forgotText": "Parola olmadan bu cihazdaki veriler açılamaz. Bu cihazı sıfırlayabilirsin: üzerindeki tüm veriler silinir ve ZCashflow sıfırdan başlar. Eşitleme kullanıyorsan verilerini başka bir cihazdan geri almak için cihazı ardından yeniden eşleştir.",
+    "forgotRestart": "Bu cihazı sıfırlamak için ZCashflow'u kapat ve bir sonraki açılışta „Parolanı mı unuttun?“ seçeneğini seç.",
+    "reset": "Bu cihazı sıfırla",
+    "resetConfirm": "Bu cihazdaki tüm verileri sil",
+    "back": "Geri"
   }
 }

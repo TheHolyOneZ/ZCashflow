@@ -14,6 +14,7 @@ import {
   Palette,
   RotateCcw,
   ScanLine,
+  ShieldCheck,
   SlidersHorizontal,
   Upload,
   type LucideIcon,
@@ -36,6 +37,8 @@ import { ResetData } from "./ResetData";
 import { ExportDialog } from "@/features/data/ExportDialog";
 import { ImportDialog } from "@/features/data/ImportDialog";
 import { ExportColumnFields, pickSavePath } from "@/features/data/export";
+import { SecuritySettings } from "@/features/security/SecuritySettings";
+import { useVaultStatus } from "@/features/security/lock";
 import { api, planning } from "@/lib/api";
 import { isoDate } from "@/lib/dates";
 import { activeLocale, languages } from "@/lib/i18n";
@@ -50,6 +53,7 @@ const SECTIONS: { id: string; icon: LucideIcon; key: string }[] = [
   { id: "dashboard", icon: LayoutDashboard, key: "dashboardSettings.title" },
   { id: "reminders", icon: Bell, key: "settings.reminders" },
   { id: "receipts", icon: ScanLine, key: "ocr.title" },
+  { id: "security", icon: ShieldCheck, key: "vault.title" },
   { id: "data", icon: Database, key: "settings.data" },
   { id: "reset", icon: RotateCcw, key: "reset.title" },
   { id: "about", icon: Info, key: "settings.about" },
@@ -96,6 +100,7 @@ export function SettingsPage() {
   const expenseStyle = usePrefs((s) => s.expenseStyle);
   const txPeriod = usePrefs((s) => s.txPeriod);
   const txEnter = usePrefs((s) => s.txEnter);
+  const protectedData = useVaultStatus().data?.enabled ?? false;
   const setPref = usePrefs((s) => s.set);
   const settings = useSettings().data ?? {};
   const [active, setActive] = useState("general");
@@ -134,7 +139,10 @@ export function SettingsPage() {
 
   async function saveBackup() {
     try {
-      const path = await pickSavePath(`zcashflow-backup-${isoDate()}.db`, { name: "SQLite", extensions: ["db"] });
+      const path = await pickSavePath(
+        protectedData ? `zcashflow-backup-${isoDate()}.zcvault` : `zcashflow-backup-${isoDate()}.db`,
+        protectedData ? { name: "ZCashflow", extensions: ["zcvault"] } : { name: "SQLite", extensions: ["db"] },
+      );
       if (!path) return;
       await planning.backupDatabase(path);
       toast(t("settings.backedUp"));
@@ -312,6 +320,10 @@ export function SettingsPage() {
 
           <Section id="receipts" icon={ScanLine} title={t("ocr.title")}>
             <OcrSettings />
+          </Section>
+
+          <Section id="security" icon={ShieldCheck} title={t("vault.title")} hint={t("vault.hint")}>
+            <SecuritySettings Wrap={Field2} />
           </Section>
 
           <Section id="data" icon={Database} title={t("settings.data")} hint={t("settings.dataHint")}>

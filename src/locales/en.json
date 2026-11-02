@@ -105,7 +105,9 @@
     "categoriesSelected_one": "{{count}} category",
     "categoriesSelected_other": "{{count}} categories",
     "createMore": "Create more",
-    "carriedOverHint": "The carried-over balance is already part of your account balance – it doesn't need to be booked as income."
+    "carriedOverHint": "The carried-over balance is already part of your account balance – it doesn't need to be booked as income.",
+    "correctedOn": "Balance corrected on {{date}}",
+    "correctedHint": "Balances before this day are counted back from the corrected amount, so this period has no carried-over value."
   },
   "stats": {
     "subtitle": "Where your money went and where it came from – by category.",
@@ -234,7 +236,10 @@
     "unsupported_pdf_without_image": "This PDF contains no scanned image. Please save the scan as JPEG or as an image PDF.",
     "unsupported_missing_columns": "The file needs at least a date and an amount column. Use the ZCashflow template or rename the column headers.",
     "unsupported_empty_file": "The file is empty.",
-    "unsupported_currency_decimals": "These currencies have a different number of decimal places, so the amounts can't simply be switched."
+    "unsupported_currency_decimals": "These currencies have a different number of decimal places, so the amounts can't simply be switched.",
+    "unsupported_wrong_password": "Wrong password.",
+    "unsupported_password_too_short": "The password is too short.",
+    "unsupported_locked": "ZCashflow is locked."
   },
   "freq": {
     "daily": "daily",
@@ -1118,5 +1123,52 @@
       "shape": "The file doesn't have the expected structure.",
       "empty": "The file contains no categories."
     }
+  },
+  "vault": {
+    "title": "Security",
+    "hint": "Password protection and encryption for this device.",
+    "protection": "Password protection",
+    "on": "On",
+    "off": "Off",
+    "onHint": "Data and receipts on this device are encrypted and need the password when the app starts.",
+    "offHint": "Data on this device is stored without encryption.",
+    "set": "Set password",
+    "change": "Change password",
+    "remove": "Remove password",
+    "manage": "Password",
+    "removeHint": "The data on this device is stored without encryption again.",
+    "lockNow": "Lock now",
+    "lockAfter": "Lock automatically",
+    "lockAfterHint": "The password is always needed when the app starts.",
+    "lockHidden": "As soon as the app is in the background",
+    "lockStart": "Only when the app starts",
+    "lockMinutes_one": "After {{count}} minute without use",
+    "lockMinutes_other": "After {{count}} minutes without use",
+    "perDevice": "The password only applies to this device and is never synced. Paired devices keep syncing, and each of them can have its own password or none.",
+    "warnTitle": "There is no way to recover a forgotten password.",
+    "warnText": "Without it, the data on this device can't be opened. If the device is paired, you can reset it and pair it again to get your data back from another device.",
+    "current": "Current password",
+    "new": "New password",
+    "repeat": "Repeat new password",
+    "tooShort_one": "At least {{count}} character",
+    "tooShort_other": "At least {{count}} characters",
+    "mismatch": "The passwords don't match.",
+    "enabled": "Password protection is on",
+    "changed": "Password changed",
+    "removed": "Password protection is off",
+    "lockedTitle": "ZCashflow is locked",
+    "lockedHint": "Enter the password for this device.",
+    "password": "Password",
+    "show": "Show password",
+    "hide": "Hide password",
+    "unlock": "Unlock",
+    "wrongPassword": "Wrong password.",
+    "unlockFailed": "Couldn't unlock. Please try again.",
+    "forgot": "Forgot your password?",
+    "forgotText": "Without the password the data on this device can't be opened. You can reset this device: all data on it is deleted and ZCashflow starts fresh. If you use sync, pair the device again afterwards to get your data back from another device.",
+    "forgotRestart": "To reset this device, close ZCashflow and choose “Forgot your password?” when it starts again.",
+    "reset": "Reset this device",
+    "resetConfirm": "Delete all data on this device",
+    "back": "Back"
   }
 }

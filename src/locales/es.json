@@ -107,7 +107,9 @@
     "categoriesSelected_other": "{{count}} categorías",
     "categoriesSelected_many": "{{count}} categorías",
     "createMore": "Crear más",
-    "carriedOverHint": "El saldo arrastrado ya forma parte del saldo de la cuenta – no hace falta registrarlo como ingreso."
+    "carriedOverHint": "El saldo arrastrado ya forma parte del saldo de la cuenta – no hace falta registrarlo como ingreso.",
+    "correctedOn": "Saldo corregido el {{date}}",
+    "correctedHint": "Los saldos anteriores a este día se calculan hacia atrás desde el importe corregido, por eso este periodo no tiene saldo arrastrado."
   },
   "stats": {
     "subtitle": "En qué se fue tu dinero y de dónde vino – por categoría.",
@@ -237,7 +239,10 @@
     "unsupported_pdf_without_image": "Este PDF no contiene ninguna imagen escaneada. Guarda el escaneo como JPEG o como PDF de imagen.",
     "unsupported_missing_columns": "El archivo necesita al menos una columna de fecha y otra de importe. Usa la plantilla de ZCashflow o cambia los encabezados.",
     "unsupported_empty_file": "El archivo está vacío.",
-    "unsupported_currency_decimals": "Estas monedas tienen distinto número de decimales, así que los importes no se pueden cambiar sin más."
+    "unsupported_currency_decimals": "Estas monedas tienen distinto número de decimales, así que los importes no se pueden cambiar sin más.",
+    "unsupported_wrong_password": "Contraseña incorrecta.",
+    "unsupported_password_too_short": "La contraseña es demasiado corta.",
+    "unsupported_locked": "ZCashflow está bloqueado."
   },
   "freq": {
     "daily": "diario",
@@ -1165,5 +1170,54 @@
       "shape": "El archivo no tiene la estructura esperada.",
       "empty": "El archivo no contiene categorías."
     }
+  },
+  "vault": {
+    "title": "Seguridad",
+    "hint": "Protección con contraseña y cifrado para este dispositivo.",
+    "protection": "Protección con contraseña",
+    "on": "Activada",
+    "off": "Desactivada",
+    "onHint": "Los datos y recibos de este dispositivo están cifrados y piden la contraseña al iniciar la app.",
+    "offHint": "Los datos de este dispositivo se guardan sin cifrar.",
+    "set": "Establecer contraseña",
+    "change": "Cambiar contraseña",
+    "remove": "Quitar contraseña",
+    "manage": "Contraseña",
+    "removeHint": "Los datos de este dispositivo vuelven a guardarse sin cifrar.",
+    "lockNow": "Bloquear ahora",
+    "lockAfter": "Bloquear automáticamente",
+    "lockAfterHint": "Al iniciar la app siempre se pide la contraseña.",
+    "lockHidden": "En cuanto la app pase a segundo plano",
+    "lockStart": "Solo al iniciar la app",
+    "lockMinutes_one": "Tras {{count}} minuto sin uso",
+    "lockMinutes_many": "Tras {{count}} minutos sin uso",
+    "lockMinutes_other": "Tras {{count}} minutos sin uso",
+    "perDevice": "La contraseña solo vale para este dispositivo y nunca se sincroniza. Los dispositivos vinculados siguen sincronizando y cada uno puede tener su propia contraseña o ninguna.",
+    "warnTitle": "Una contraseña olvidada no se puede recuperar.",
+    "warnText": "Sin ella no se pueden abrir los datos de este dispositivo. Si está vinculado, puedes restablecerlo y volver a vincularlo para recuperar los datos desde otro dispositivo.",
+    "current": "Contraseña actual",
+    "new": "Nueva contraseña",
+    "repeat": "Repetir nueva contraseña",
+    "tooShort_one": "Al menos {{count}} carácter",
+    "tooShort_many": "Al menos {{count}} caracteres",
+    "tooShort_other": "Al menos {{count}} caracteres",
+    "mismatch": "Las contraseñas no coinciden.",
+    "enabled": "Protección con contraseña activada",
+    "changed": "Contraseña cambiada",
+    "removed": "Protección con contraseña desactivada",
+    "lockedTitle": "ZCashflow está bloqueado",
+    "lockedHint": "Introduce la contraseña de este dispositivo.",
+    "password": "Contraseña",
+    "show": "Mostrar contraseña",
+    "hide": "Ocultar contraseña",
+    "unlock": "Desbloquear",
+    "wrongPassword": "Contraseña incorrecta.",
+    "unlockFailed": "No se pudo desbloquear. Inténtalo de nuevo.",
+    "forgot": "¿Olvidaste la contraseña?",
+    "forgotText": "Sin la contraseña no se pueden abrir los datos de este dispositivo. Puedes restablecerlo: se borran todos sus datos y ZCashflow empieza de cero. Si usas la sincronización, vuelve a vincular el dispositivo para recuperar tus datos desde otro dispositivo.",
+    "forgotRestart": "Para restablecer este dispositivo, cierra ZCashflow y elige «¿Olvidaste la contraseña?» al volver a abrirlo.",
+    "reset": "Restablecer este dispositivo",
+    "resetConfirm": "Borrar todos los datos de este dispositivo",
+    "back": "Volver"
   }
 }

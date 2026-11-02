@@ -107,7 +107,9 @@
     "categoriesSelected_other": "{{count}} catégories",
     "categoriesSelected_many": "{{count}} catégories",
     "createMore": "En créer d'autres",
-    "carriedOverHint": "Le solde reporté fait déjà partie du solde du compte – inutile de l'enregistrer comme revenu."
+    "carriedOverHint": "Le solde reporté fait déjà partie du solde du compte – inutile de l'enregistrer comme revenu.",
+    "correctedOn": "Solde corrigé le {{date}}",
+    "correctedHint": "Les soldes avant ce jour sont recalculés à partir du montant corrigé, cette période n'a donc pas de solde reporté."
   },
   "stats": {
     "subtitle": "Où est passé ton argent et d'où il vient – par catégorie.",
@@ -237,7 +239,10 @@
     "unsupported_pdf_without_image": "Ce PDF ne contient aucune image numérisée. Enregistre le scan en JPEG ou en PDF image.",
     "unsupported_missing_columns": "Le fichier doit contenir au moins une colonne date et une colonne montant. Utilise le modèle ZCashflow ou renomme les en-têtes.",
     "unsupported_empty_file": "Le fichier est vide.",
-    "unsupported_currency_decimals": "Ces devises n'ont pas le même nombre de décimales, les montants ne peuvent donc pas être simplement convertis."
+    "unsupported_currency_decimals": "Ces devises n'ont pas le même nombre de décimales, les montants ne peuvent donc pas être simplement convertis.",
+    "unsupported_wrong_password": "Mot de passe incorrect.",
+    "unsupported_password_too_short": "Le mot de passe est trop court.",
+    "unsupported_locked": "ZCashflow est verrouillé."
   },
   "freq": {
     "daily": "quotidien",
@@ -1165,5 +1170,54 @@
       "shape": "Le fichier n'a pas la structure attendue.",
       "empty": "Le fichier ne contient aucune catégorie."
     }
+  },
+  "vault": {
+    "title": "Sécurité",
+    "hint": "Protection par mot de passe et chiffrement pour cet appareil.",
+    "protection": "Protection par mot de passe",
+    "on": "Activée",
+    "off": "Désactivée",
+    "onHint": "Les données et reçus de cet appareil sont chiffrés et demandent le mot de passe au démarrage.",
+    "offHint": "Les données de cet appareil sont enregistrées sans chiffrement.",
+    "set": "Définir un mot de passe",
+    "change": "Changer le mot de passe",
+    "remove": "Supprimer le mot de passe",
+    "manage": "Mot de passe",
+    "removeHint": "Les données de cet appareil sont de nouveau enregistrées sans chiffrement.",
+    "lockNow": "Verrouiller",
+    "lockAfter": "Verrouiller automatiquement",
+    "lockAfterHint": "Le mot de passe est toujours demandé au démarrage de l'app.",
+    "lockHidden": "Dès que l'app passe en arrière-plan",
+    "lockStart": "Seulement au démarrage de l'app",
+    "lockMinutes_one": "Après {{count}} minute d'inactivité",
+    "lockMinutes_many": "Après {{count}} minutes d'inactivité",
+    "lockMinutes_other": "Après {{count}} minutes d'inactivité",
+    "perDevice": "Le mot de passe ne vaut que pour cet appareil et n'est jamais synchronisé. Les appareils associés continuent de se synchroniser, et chacun peut avoir son propre mot de passe ou aucun.",
+    "warnTitle": "Un mot de passe oublié ne peut pas être récupéré.",
+    "warnText": "Sans lui, les données de cet appareil ne peuvent pas être ouvertes. Si l'appareil est associé, tu peux le réinitialiser et l'associer à nouveau pour récupérer tes données depuis un autre appareil.",
+    "current": "Mot de passe actuel",
+    "new": "Nouveau mot de passe",
+    "repeat": "Répéter le nouveau mot de passe",
+    "tooShort_one": "Au moins {{count}} caractère",
+    "tooShort_many": "Au moins {{count}} caractères",
+    "tooShort_other": "Au moins {{count}} caractères",
+    "mismatch": "Les mots de passe ne correspondent pas.",
+    "enabled": "Protection par mot de passe activée",
+    "changed": "Mot de passe changé",
+    "removed": "Protection par mot de passe désactivée",
+    "lockedTitle": "ZCashflow est verrouillé",
+    "lockedHint": "Saisis le mot de passe de cet appareil.",
+    "password": "Mot de passe",
+    "show": "Afficher le mot de passe",
+    "hide": "Masquer le mot de passe",
+    "unlock": "Déverrouiller",
+    "wrongPassword": "Mot de passe incorrect.",
+    "unlockFailed": "Déverrouillage impossible. Réessaie.",
+    "forgot": "Mot de passe oublié ?",
+    "forgotText": "Sans le mot de passe, les données de cet appareil ne peuvent pas être ouvertes. Tu peux réinitialiser cet appareil : toutes ses données sont supprimées et ZCashflow repart de zéro. Si tu utilises la synchronisation, associe ensuite l'appareil à nouveau pour récupérer tes données depuis un autre appareil.",
+    "forgotRestart": "Pour réinitialiser cet appareil, ferme ZCashflow et choisis « Mot de passe oublié ? » au prochain démarrage.",
+    "reset": "Réinitialiser cet appareil",
+    "resetConfirm": "Supprimer toutes les données de cet appareil",
+    "back": "Retour"
   }
 }

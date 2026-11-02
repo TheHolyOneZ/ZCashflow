@@ -26,6 +26,7 @@ export type TxPeriod = "all" | "month";
 export type ExportExpenses = "minus" | "plain";
 export type ExportCategories = "path" | "split";
 export type TxEnter = "save" | "next";
+export type LockAfter = "never" | "0" | "1" | "5" | "15";
 
 export const DASHBOARD_WIDGETS = [
   "hero",
@@ -66,6 +67,7 @@ export interface Prefs {
   exportCategories: ExportCategories;
   txEnter: TxEnter;
   txCreateMore: boolean;
+  lockAfter: LockAfter;
 }
 
 export const DEFAULT_PREFS: Prefs = {
@@ -92,6 +94,7 @@ export const DEFAULT_PREFS: Prefs = {
   exportCategories: "path",
   txEnter: "save",
   txCreateMore: false,
+  lockAfter: "5",
 };
 
 const KEY = "zc.prefs";

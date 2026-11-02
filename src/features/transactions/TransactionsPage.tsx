@@ -318,6 +318,13 @@ function TotalsBar({ totals, to }: { totals: TransactionTotals; to: string }) {
                   </span>
                 </Tip>
               )}
+              {c.correctedOn && (
+                <Tip label={t("tx.correctedHint")}>
+                  <span tabIndex={0} className="cursor-help underline decoration-dotted underline-offset-2 focus-visible:outline-none">
+                    {t("tx.correctedOn", { date: formatDay(c.correctedOn) })}
+                  </span>
+                </Tip>
+              )}
               <span>
                 {endLabel}: <Money minor={c.closingMinor} currency={c.currency} tone="auto" className="font-medium text-fg" />
               </span>

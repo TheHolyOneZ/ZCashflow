@@ -105,7 +105,9 @@
     "categoriesSelected_one": "{{count}} Kategorie",
     "categoriesSelected_other": "{{count}} Kategorien",
     "createMore": "Weitere erstellen",
-    "carriedOverHint": "Der Übertrag ist bereits im Kontostand enthalten – er muss nicht als Einnahme gebucht werden."
+    "carriedOverHint": "Der Übertrag ist bereits im Kontostand enthalten – er muss nicht als Einnahme gebucht werden.",
+    "correctedOn": "Kontostand korrigiert am {{date}}",
+    "correctedHint": "Kontostände vor diesem Tag werden vom korrigierten Betrag aus zurückgerechnet, daher gibt es für diesen Zeitraum keinen Übertrag."
   },
   "stats": {
     "subtitle": "Wofür dein Geld ausgegeben wurde und woher es kam – nach Kategorien.",
@@ -234,7 +236,10 @@
     "unsupported_pdf_without_image": "Dieses PDF enthält kein gescanntes Bild. Bitte speichere den Scan als JPEG oder als Bild-PDF.",
     "unsupported_missing_columns": "Die Datei braucht mindestens eine Spalte für Datum und Betrag. Nutze die ZCashflow-Vorlage oder benenne die Spaltenüberschriften um.",
     "unsupported_empty_file": "Die Datei ist leer.",
-    "unsupported_currency_decimals": "Diese Währungen haben unterschiedlich viele Nachkommastellen, deshalb lassen sich die Beträge nicht einfach umstellen."
+    "unsupported_currency_decimals": "Diese Währungen haben unterschiedlich viele Nachkommastellen, deshalb lassen sich die Beträge nicht einfach umstellen.",
+    "unsupported_wrong_password": "Falsches Passwort.",
+    "unsupported_password_too_short": "Das Passwort ist zu kurz.",
+    "unsupported_locked": "ZCashflow ist gesperrt."
   },
   "freq": {
     "daily": "täglich",
@@ -1118,5 +1123,52 @@
       "shape": "Die Datei hat nicht den erwarteten Aufbau.",
       "empty": "Die Datei enthält keine Kategorien."
     }
+  },
+  "vault": {
+    "title": "Sicherheit",
+    "hint": "Passwortschutz und Verschlüsselung für dieses Gerät.",
+    "protection": "Passwortschutz",
+    "on": "An",
+    "off": "Aus",
+    "onHint": "Daten und Belege auf diesem Gerät sind verschlüsselt und brauchen beim Start das Passwort.",
+    "offHint": "Die Daten auf diesem Gerät sind unverschlüsselt gespeichert.",
+    "set": "Passwort festlegen",
+    "change": "Passwort ändern",
+    "remove": "Passwort entfernen",
+    "manage": "Passwort",
+    "removeHint": "Die Daten auf diesem Gerät werden wieder unverschlüsselt gespeichert.",
+    "lockNow": "Jetzt sperren",
+    "lockAfter": "Automatisch sperren",
+    "lockAfterHint": "Beim Start der App wird das Passwort immer abgefragt.",
+    "lockHidden": "Sobald die App im Hintergrund ist",
+    "lockStart": "Nur beim Start der App",
+    "lockMinutes_one": "Nach {{count}} Minute ohne Nutzung",
+    "lockMinutes_other": "Nach {{count}} Minuten ohne Nutzung",
+    "perDevice": "Das Passwort gilt nur für dieses Gerät und wird nie synchronisiert. Gekoppelte Geräte synchronisieren weiter, und jedes kann ein eigenes oder kein Passwort haben.",
+    "warnTitle": "Ein vergessenes Passwort lässt sich nicht wiederherstellen.",
+    "warnText": "Ohne Passwort lassen sich die Daten auf diesem Gerät nicht öffnen. Ist das Gerät gekoppelt, kannst du es zurücksetzen und neu koppeln, um die Daten von einem anderen Gerät zurückzubekommen.",
+    "current": "Aktuelles Passwort",
+    "new": "Neues Passwort",
+    "repeat": "Neues Passwort wiederholen",
+    "tooShort_one": "Mindestens {{count}} Zeichen",
+    "tooShort_other": "Mindestens {{count}} Zeichen",
+    "mismatch": "Die Passwörter stimmen nicht überein.",
+    "enabled": "Passwortschutz ist an",
+    "changed": "Passwort geändert",
+    "removed": "Passwortschutz ist aus",
+    "lockedTitle": "ZCashflow ist gesperrt",
+    "lockedHint": "Gib das Passwort für dieses Gerät ein.",
+    "password": "Passwort",
+    "show": "Passwort anzeigen",
+    "hide": "Passwort verbergen",
+    "unlock": "Entsperren",
+    "wrongPassword": "Falsches Passwort.",
+    "unlockFailed": "Entsperren fehlgeschlagen. Bitte versuch es noch einmal.",
+    "forgot": "Passwort vergessen?",
+    "forgotText": "Ohne Passwort lassen sich die Daten auf diesem Gerät nicht öffnen. Du kannst das Gerät zurücksetzen: Alle Daten darauf werden gelöscht und ZCashflow startet neu. Nutzt du die Synchronisierung, kopple das Gerät danach neu, um deine Daten von einem anderen Gerät zurückzubekommen.",
+    "forgotRestart": "Um dieses Gerät zurückzusetzen, schließ ZCashflow und wähle beim nächsten Start „Passwort vergessen?“.",
+    "reset": "Dieses Gerät zurücksetzen",
+    "resetConfirm": "Alle Daten auf diesem Gerät löschen",
+    "back": "Zurück"
   }
 }

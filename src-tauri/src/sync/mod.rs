@@ -772,7 +772,7 @@ impl SyncCore {
                 }
                 Msg::BlobRequest { sha } => {
                     let path = attachments::original_path(&self.db, &sha);
-                    match std::fs::read(&path) {
+                    match self.db.read_file(&path) {
                         Ok(bytes) => {
                             let mut chunks = bytes.chunks(BLOB_CHUNK).peekable();
                             while let Some(c) = chunks.next() {
@@ -920,7 +920,11 @@ mod tests {
     }
 
     fn core() -> Arc<SyncCore> {
-        let db = Arc::new(Db::open_in_memory().unwrap());
+        core_with(Db::open_in_memory().unwrap())
+    }
+
+    fn core_with(db: Db) -> Arc<SyncCore> {
+        let db = Arc::new(db);
         let c = SyncCore::new(db, Arc::new(Quiet)).unwrap();
 
         let listener = TcpListener::bind("127.0.0.1:0").unwrap();
@@ -999,6 +1003,33 @@ mod tests {
 
         a.unpair(&b.public_hex()).unwrap();
         assert!(wait_for(|| !b.status().unwrap().peers.iter().any(|p| p.connected)));
+    }
+
+    #[test]
+    fn syncs_between_a_password_protected_and_a_plain_device() {
+        let protected = Db::open_in_memory().unwrap();
+        protected.enable_vault("geheim123").unwrap();
+        let a = core_with(protected);
+        let b = core();
+        let code = a.start_pairing();
+        b.pair_with(&format!("127.0.0.1:{}", a.port()), &code).unwrap();
+        assert!(wait_for(|| a.status().unwrap().peers.iter().any(|p| p.connected) && b.status().unwrap().peers.iter().any(|p| p.connected)));
+
+        let id = add(&a.db, "Miete");
+        assert!(wait_for(|| transactions::get(&b.db.conn(), &id).is_ok()), "the protected device sends");
+        let id2 = add(&b.db, "Strom");
+        assert!(wait_for(|| transactions::get(&a.db.conn(), &id2).is_ok()), "the protected device receives");
+
+        let img = image::RgbImage::from_fn(24, 24, |x, y| image::Rgb([x as u8 * 9, y as u8 * 9, 40]));
+        let mut png = std::io::Cursor::new(Vec::new());
+        img.write_to(&mut png, image::ImageFormat::Png).unwrap();
+        b.db.conn().execute("INSERT INTO meta (key, value) VALUES ('ocr_engine', 'none')", []).unwrap();
+        let att = attachments::import(&b.db, png.get_ref(), None, Some(id2.clone()), chrono::NaiveDate::from_ymd_opt(2026, 10, 8).unwrap()).unwrap();
+        let on_a = attachments::original_path(&a.db, &att.sha256);
+        assert!(wait_for(|| on_a.exists()), "the photo reaches the protected device");
+        assert!(crate::vault::is_blob(&std::fs::read(&on_a).unwrap()), "and is stored encrypted there");
+        assert_eq!(a.db.read_file(&on_a).unwrap(), std::fs::read(attachments::original_path(&b.db, &att.sha256)).unwrap());
+        assert!(a.db.save_vault(false).is_ok());
     }
 
     #[test]

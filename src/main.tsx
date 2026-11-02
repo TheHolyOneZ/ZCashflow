@@ -11,6 +11,7 @@ import "@/stores/ui";
 import "@/stores/prefs";
 import { router } from "@/app/router";
 import { TooltipProvider } from "@/components/ui/inputs";
+import { VaultGate } from "@/features/security/VaultGate";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -22,7 +23,9 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider delayDuration={400} skipDelayDuration={300}>
-        <RouterProvider router={router} />
+        <VaultGate>
+          <RouterProvider router={router} />
+        </VaultGate>
       </TooltipProvider>
     </QueryClientProvider>
   </React.StrictMode>,

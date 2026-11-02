@@ -37,7 +37,7 @@ encrypted, over your own Wi-Fi.
 
 ## Contents
 
-- [What's new in 1.7.0](#-whats-new-in-170)
+- [What's new in 1.8.0](#-whats-new-in-180)
 - [Why ZCashflow?](#-why-zcashflow)
 - [Features](#-features)
 - [Screenshots](#-screenshots)
@@ -57,7 +57,16 @@ encrypted, over your own Wi-Fi.
 
 ---
 
-## 🆕 What's new in 1.7.0
+## 🆕 What's new in 1.8.0
+
+- **Password protection with encryption** – under *Settings → Security* you can protect a device with a password. The database and all receipt photos on that device are then stored encrypted (XChaCha20-Poly1305, key derived with Argon2id) and the app asks for the password when it starts. It can also lock itself after a few minutes without use or as soon as it goes to the background, and *Lock now* is one click away in the title bar.
+- **Per device, never synced** – every device has its own password or none. Paired devices keep syncing as before; the password itself never leaves the device.
+- **Forgot the password?** – there is no way to recover it, but the lock screen can reset the device. Pair it again afterwards to get your data back from another device.
+- **Balances before a correction** – months before a *Correct balance* (or an import that kept today's balances) now show their real balance and carried-over value, counted back from the corrected amount, instead of repeating the corrected amount. The month of the correction says so.
+
+No sync schema change – 1.7.0 devices still sync.
+
+### 1.7.0
 
 - **Change several entries at once** – right-click (long-press on the phone) a transaction and choose *Select*, or <kbd>Ctrl</kbd>/<kbd>⌘</kbd>-click and <kbd>Shift</kbd>-click. Then change the category, date or account of all selected entries, or delete them.
 - **Create more** – tick *Create more* in the new-transaction dialog to save and start the next entry right away.
@@ -508,6 +517,7 @@ If automatic discovery doesn't find the other device (e.g. guest networks with c
 | Android / iOS | App sandbox (removed when the app is uninstalled) |
 
 - `zcashflow.db` – the SQLite database; `attachments/` – receipt photos.
+- **Password protection:** with a password set under *Settings → Security*, the database is stored encrypted as `zcashflow.vault` instead, and the files in `attachments/` and `thumbs/` are encrypted too. *Save backup* then writes an encrypted `.zcvault` file; to restore it, copy it into the data folder as `zcashflow.vault` and open the app with the password the backup was made with.
 - **Backup:** *Settings → Data → Save backup* writes a complete copy of the database. **Export:** *Settings → Data → Export data* saves all data or a selection as CSV (several selections as one ZIP) – expenses with a minus or as positive amounts, categories in one column or split into main and subcategory. **Import:** *Import CSV* reads the ZCashflow template or a bank export and shows a preview first.
 - **Reset:** *Settings → Reset* resets the appearance or deletes everything (optionally saving a backup first).
 - Syncing devices is *not* a backup – deleting on one device deletes everywhere. Keep a backup.
@@ -595,7 +605,7 @@ You don't need every toolchain locally – GitHub builds everything:
   - *Actions → Build → Run workflow* builds selected platforms as artifacts.
   - Pushing a version tag builds **all** platforms and creates a **draft release** with consistently named files and `SHA256SUMS.txt`:
     ```sh
-    git tag v1.7.0 && git push origin v1.7.0
+    git tag v1.8.0 && git push origin v1.8.0
     ```
   - Android signing uses the repository secrets `ANDROID_KEYSTORE_B64` (base64 of the keystore) and `ANDROID_KEY_PASSWORD`.
 

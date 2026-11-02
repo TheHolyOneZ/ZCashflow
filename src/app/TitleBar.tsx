@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { CalendarCheck2, Eye, EyeOff, LayoutGrid, Minus, Moon, PanelLeft, Search, Square, Sun, X } from "lucide-react";
+import { CalendarCheck2, Eye, EyeOff, LayoutGrid, LockKeyhole, Minus, Moon, PanelLeft, Search, Square, Sun, X } from "lucide-react";
+import { useLock, useVaultStatus } from "@/features/security/lock";
 import { Tip } from "@/components/ui/inputs";
 import { Kbd } from "@/components/ui/misc";
 import { api } from "@/lib/api";
@@ -94,6 +95,8 @@ export function TitleBar() {
   const custom = isTauri && os !== "mac" && titleBar === "custom";
   const desktopApp = isTauri && isDesktop;
   const dark = document.documentElement.classList.contains("dark");
+  const protectedData = useVaultStatus().data?.enabled ?? false;
+  const lock = useLock((s) => s.lock);
 
   return (
     <header
@@ -155,6 +158,11 @@ export function TitleBar() {
         >
           {privacy ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
         </ToolButton>
+        {protectedData && (
+          <ToolButton label={t("vault.lockNow")} onClick={lock}>
+            <LockKeyhole className="size-4" />
+          </ToolButton>
+        )}
         <span className="hidden sm:contents">
           <ToolButton
             label={t("palette.toggleTheme")}
@@ -165,6 +173,23 @@ export function TitleBar() {
         </span>
       </div>
 
+      {custom && win && <WindowControls maximized={maximized} onMin={() => win.minimize()} onMax={() => win.toggleMaximize()} onClose={() => closeApp(win)} />}
+    </header>
+  );
+}
+
+export function BareTitleBar() {
+  const titleBar = usePrefs((s) => s.titleBar);
+  const { win, maximized } = useWindow();
+  const custom = isTauri && os !== "mac" && titleBar === "custom";
+  if (!isTauri || !isDesktop) return null;
+  return (
+    <header
+      data-tauri-drag-region
+      className={cn("flex h-12 shrink-0 items-center gap-2 select-none", os === "mac" ? "pl-[84px]" : "pl-4", custom ? "pr-0" : "pr-3")}
+    >
+      <Logo className="pointer-events-none" />
+      <span data-tauri-drag-region className="flex-1" />
       {custom && win && <WindowControls maximized={maximized} onMin={() => win.minimize()} onMax={() => win.toggleMaximize()} onClose={() => closeApp(win)} />}
     </header>
   );

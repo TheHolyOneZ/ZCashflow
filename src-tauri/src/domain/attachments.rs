@@ -107,16 +107,16 @@ pub fn write_files(db: &Db, bytes: &[u8]) -> AppResult<(String, image::DynamicIm
     let img = ocr::decode(bytes)?;
     let original = original_path(db, &sha);
     if !original.exists() {
-        std::fs::create_dir_all(original.parent().unwrap())?;
-        std::fs::write(&original, bytes)?;
+        db.write_file(&original, bytes)?;
     }
     let thumb = thumb_path(db, &sha);
     if !thumb.exists() {
-        std::fs::create_dir_all(thumb.parent().unwrap())?;
+        let mut jpeg = std::io::Cursor::new(Vec::new());
         img.thumbnail(640, 640)
             .to_rgb8()
-            .save_with_format(&thumb, image::ImageFormat::Jpeg)
+            .write_to(&mut jpeg, image::ImageFormat::Jpeg)
             .map_err(|e| AppError::Invalid(format!("thumbnail: {e}")))?;
+        db.write_file(&thumb, jpeg.get_ref())?;
     }
     Ok((sha, img))
 }
@@ -197,7 +197,7 @@ fn process_image(db: &Db, id: &str, img: image::DynamicImage, force_llm: bool, t
 
 pub fn reprocess(db: &Db, id: &str, today: NaiveDate) -> AppResult<Attachment> {
     let a = get(db, &db.conn(), id)?;
-    let bytes = std::fs::read(original_path(db, &a.sha256))?;
+    let bytes = db.read_file(&original_path(db, &a.sha256))?;
     let img = ocr::decode(&bytes)?;
     process_image(db, id, img, true, today)?;
     get(db, &db.conn(), id)
@@ -306,17 +306,17 @@ pub fn image_bytes(db: &Db, id: &str, thumb: bool) -> AppResult<(Vec<u8>, String
     let a = get(db, &db.conn(), id)?;
     let t = thumb_path(db, &a.sha256);
     if thumb && t.exists() {
-        return Ok((std::fs::read(t)?, "image/jpeg".into()));
+        return Ok((db.read_file(&t)?, "image/jpeg".into()));
     }
     let o = original_path(db, &a.sha256);
     if !o.exists() {
         return Err(AppError::NotFound("file not on this device yet".into()));
     }
-    let bytes = std::fs::read(&o)?;
+    let bytes = db.read_file(&o)?;
     if thumb {
         let _ = write_files(db, &bytes);
         if t.exists() {
-            return Ok((std::fs::read(t)?, "image/jpeg".into()));
+            return Ok((db.read_file(&t)?, "image/jpeg".into()));
         }
     }
     Ok((bytes, a.mime))
