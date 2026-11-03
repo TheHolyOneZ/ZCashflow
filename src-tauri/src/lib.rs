@@ -194,6 +194,8 @@ pub fn run() {
             commands::vault_change_password,
             commands::vault_verify,
             commands::vault_flush,
+            commands::inspect_backup,
+            commands::restore_backup,
         ])
         .build(tauri::generate_context!())
         .expect("error while running tauri application")

@@ -1,5 +1,26 @@
 # Changelog
 
+## 1.8.1
+
+### Added
+
+- *Restore backup* under *Settings → Data*, on all platforms including Android and iOS:
+  - Pick a backup file (`.db`, or `.zcvault` for backups saved with a password). Before anything changes, the dialog shows how many entries and accounts the backup holds and the period it covers; encrypted backups first ask for the password that was set when they were saved.
+  - By default the current data is saved as a backup first.
+  - The backup replaces entries, accounts, categories and settings on this device. The device keeps its own identity, password (if set), pairings and device-specific settings (sync, OCR and AI). On a protected device the restored data is stored encrypted right away.
+  - Paired devices take over the restored data with the next sync; entries added on them after the backup are kept. Backups from older versions are updated on the fly; backups from newer versions are refused with a message.
+  - Receipt photos aren't part of a backup. Paired devices send missing photos again.
+- The *Data* settings explain what a backup contains and that backups made with a password are encrypted. After saving a backup, a message says where to restore it.
+
+### Fixed
+
+- Sync could connect and drop again every few seconds without exchanging anything. Changes arrive in batches of 500, and a batch that referenced a row from a later batch – typically a category changed after the entries that use it – failed as a whole and was retried endlessly. Changes are now applied regardless of order, and a single row that can't be applied is skipped and logged instead of stopping the sync.
+- *Delete everything* with *Save a backup first* now saves an encrypted `.zcvault` backup on a protected device, named accordingly.
+
+### Notes
+
+- No sync schema change; devices on 1.8.0 and 1.7.0 still sync. Update all devices to get the sync fix on both ends.
+
 ## 1.8.0
 
 ### Added

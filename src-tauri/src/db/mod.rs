@@ -267,6 +267,35 @@ impl Db {
         Ok(())
     }
 
+    pub fn restore_backup(&self, data: &[u8], password: Option<&str>) -> AppResult<BackupSummary> {
+        let (mut restored, encrypted) = read_backup(data, password)?;
+        let saving = self.saving.lock().unwrap_or_else(|e| e.into_inner());
+        let mut conn = self.conn();
+        adopt_device(&conn, &mut restored, &self.hlc)?;
+        let summary = summarize(&restored, encrypted)?;
+        if self.vault_enabled() {
+            let old = std::mem::replace(&mut *conn, restored);
+            drop(old);
+            drop(conn);
+            drop(saving);
+            self.save_vault(true)?;
+            return Ok(summary);
+        }
+        let tmp = self.plain_path.with_extension("db.restore");
+        let _ = std::fs::remove_file(&tmp);
+        restored.execute("VACUUM INTO ?1", [tmp.to_string_lossy()])?;
+        drop(restored);
+        let old = std::mem::replace(&mut *conn, Connection::open_in_memory()?);
+        drop(old);
+        remove_plain_files(&self.plain_path);
+        if let Err(e) = std::fs::rename(&tmp, &self.plain_path) {
+            *conn = open_plain(&tmp)?;
+            return Err(e.into());
+        }
+        *conn = open_plain(&self.plain_path)?;
+        Ok(summary)
+    }
+
     pub fn forget_vault(&self) {
         let _saving = self.saving.lock().unwrap_or_else(|e| e.into_inner());
         *self.vault.lock().unwrap_or_else(|e| e.into_inner()) = None;
@@ -366,6 +395,123 @@ impl Db {
         }
         Ok(())
     }
+}
+
+#[derive(Debug, Clone, serde::Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct BackupSummary {
+    pub encrypted: bool,
+    pub transactions: i64,
+    pub accounts: i64,
+    pub first_on: Option<String>,
+    pub last_on: Option<String>,
+}
+
+const DEVICE_META: [&str; 10] = [
+    "device_id",
+    "sync_private_key",
+    "sync_public_key",
+    "sync_enabled",
+    "discoverable",
+    "ocr_engine",
+    "llm_enabled",
+    "llm_model",
+    "llm_url",
+    "llm_vision",
+];
+
+fn not_a_backup() -> AppError {
+    AppError::Unsupported("not_a_backup".into())
+}
+
+fn read_backup(data: &[u8], password: Option<&str>) -> AppResult<(Connection, bool)> {
+    let (mut conn, encrypted) = if vault::is_vault(data) {
+        let password = password.filter(|p| !p.is_empty()).ok_or_else(|| AppError::Unsupported("password_required".into()))?;
+        let header = vault::header_of(data)?;
+        let key = vault::unwrap(&header, password)?;
+        (open_memory(&vault::open(data, &key)?)?, true)
+    } else if data.starts_with(b"SQLite format 3\0") {
+        (open_memory(data).map_err(|_| not_a_backup())?, false)
+    } else {
+        return Err(not_a_backup());
+    };
+    let tables: i64 = conn
+        .query_row(
+            "SELECT count(*) FROM sqlite_master WHERE type = 'table' AND name IN ('meta', 'accounts', 'transactions')",
+            [],
+            |r| r.get(0),
+        )
+        .map_err(|_| not_a_backup())?;
+    if tables != 3 {
+        return Err(not_a_backup());
+    }
+    match migrations().to_latest(&mut conn) {
+        Ok(()) => {}
+        Err(rusqlite_migration::Error::MigrationDefinition(rusqlite_migration::MigrationDefinitionError::DatabaseTooFarAhead)) => {
+            return Err(AppError::Unsupported("backup_too_new".into()))
+        }
+        Err(e) => return Err(e.into()),
+    }
+    conn.pragma_update(None, "foreign_keys", "ON")?;
+    Ok((conn, encrypted))
+}
+
+fn summarize(conn: &Connection, encrypted: bool) -> AppResult<BackupSummary> {
+    let (transactions, first_on, last_on) = conn.query_row(
+        "SELECT count(*), min(occurred_on), max(occurred_on) FROM transactions WHERE deleted = 0",
+        [],
+        |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)),
+    )?;
+    let accounts = conn.query_row("SELECT count(*) FROM accounts WHERE deleted = 0", [], |r| r.get(0))?;
+    Ok(BackupSummary { encrypted, transactions, accounts, first_on, last_on })
+}
+
+pub fn inspect_backup(data: &[u8], password: Option<&str>) -> AppResult<BackupSummary> {
+    let (conn, encrypted) = read_backup(data, password)?;
+    summarize(&conn, encrypted)
+}
+
+type PeerRow = (String, String, String, String, Option<String>, Option<String>);
+
+fn adopt_device(current: &Connection, restored: &mut Connection, hlc: &Hlc) -> AppResult<()> {
+    let peers: Vec<PeerRow> = current
+        .prepare("SELECT public_key, name, role, paired_at, last_seen, last_addr FROM paired_devices")?
+        .query_map([], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?, r.get(4)?, r.get(5)?)))?
+        .collect::<Result<_, _>>()?;
+    let seq: i64 = current.query_row("SELECT coalesce(max(seq), 0) FROM sync_changes", [], |r| r.get(0))?;
+    let tx = restored.transaction()?;
+    for key in DEVICE_META {
+        tx.execute("DELETE FROM meta WHERE key = ?1", [key])?;
+        if let Some(value) = get_meta(current, key)? {
+            set_meta(&tx, key, &value)?;
+        }
+    }
+    tx.execute("DELETE FROM paired_devices", [])?;
+    for (key, name, role, paired_at, last_seen, last_addr) in peers {
+        tx.execute(
+            "INSERT INTO paired_devices (public_key, name, role, paired_at, last_seen, last_addr, cursor) VALUES (?1, ?2, ?3, ?4, ?5, ?6, 0)",
+            rusqlite::params![key, name, role, paired_at, last_seen, last_addr],
+        )?;
+    }
+    let restored_seq: i64 = tx
+        .query_row("SELECT seq FROM sqlite_sequence WHERE name = 'sync_changes'", [], |r| r.get(0))
+        .optional()?
+        .unwrap_or(0);
+    tx.execute("DELETE FROM sync_changes", [])?;
+    tx.execute("DELETE FROM sqlite_sequence WHERE name = 'sync_changes'", [])?;
+    tx.execute("INSERT INTO sqlite_sequence (name, seq) VALUES ('sync_changes', ?1)", [seq.max(restored_seq)])?;
+    for (tbl, pk) in crate::sync::rows::TABLES {
+        if let Some(newest) = tx.query_row(&format!("SELECT max(updated_hlc) FROM {tbl}"), [], |r| r.get::<_, Option<String>>(0))? {
+            hlc.observe(&newest);
+        }
+        let ids: Vec<String> = tx.prepare(&format!("SELECT {pk} FROM {tbl}"))?.query_map([], |r| r.get(0))?.collect::<Result<_, _>>()?;
+        let mut stamp = tx.prepare(&format!("UPDATE {tbl} SET updated_hlc = ?1 WHERE {pk} = ?2"))?;
+        for id in ids {
+            stamp.execute(rusqlite::params![hlc.tick(), id])?;
+        }
+    }
+    tx.commit()?;
+    Ok(())
 }
 
 fn ensure_device_id(conn: &Connection) -> AppResult<String> {
@@ -469,6 +615,96 @@ mod tests {
         let db = Db::open(&path).unwrap();
         assert_eq!(db.device_id(), device);
         assert_eq!(count(&db, "transactions"), txs);
+    }
+
+    fn plain_backup(db: &Db, dir: &Path) -> Vec<u8> {
+        let file = dir.join("backup.db");
+        crate::domain::export::backup(&db.conn(), &file).unwrap();
+        std::fs::read(file).unwrap()
+    }
+
+    fn live(db: &Db) -> i64 {
+        db.conn().query_row("SELECT count(*) FROM transactions WHERE deleted = 0", [], |r| r.get(0)).unwrap()
+    }
+
+    #[test]
+    fn restores_a_backup_on_this_device_and_sync_takes_it_over() {
+        use crate::sync::rows;
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join(PLAIN_FILE);
+        let db = Db::open(&path).unwrap();
+        crate::domain::demo::load(&db, chrono::NaiveDate::from_ymd_opt(2026, 10, 8).unwrap()).unwrap();
+        let saved = live(&db);
+        let bytes = plain_backup(&db, dir.path());
+
+        set_meta(&db.conn(), "sync_public_key", "this-device").unwrap();
+        db.conn()
+            .execute("INSERT INTO paired_devices (public_key, name, paired_at, cursor) VALUES ('peer', 'Phone', '2026-10-01', 99)", [])
+            .unwrap();
+        let peer = Db::open_in_memory().unwrap();
+        let mut cursor = 0;
+        let (changes, upto, _) = rows::changes_since(&db.conn(), cursor, 100_000).unwrap();
+        rows::apply(&peer, &changes, None).unwrap();
+        cursor = upto;
+        let ids: Vec<String> = db.conn().prepare("SELECT id FROM transactions").unwrap().query_map([], |r| r.get(0)).unwrap().map(Result::unwrap).collect();
+        for id in &ids {
+            crate::domain::transactions::delete(&db, id).unwrap();
+        }
+        let (changes, upto, _) = rows::changes_since(&db.conn(), cursor, 100_000).unwrap();
+        rows::apply(&peer, &changes, None).unwrap();
+        cursor = upto;
+        assert_eq!((live(&db), live(&peer)), (0, 0));
+
+        assert!(inspect_backup(b"not a backup", None).unwrap_err().to_string().contains("not_a_backup"));
+        let summary = inspect_backup(&bytes, None).unwrap();
+        assert_eq!((summary.encrypted, summary.transactions), (false, saved));
+        let device = db.device_id().to_owned();
+        db.restore_backup(&bytes, None).unwrap();
+        assert_eq!(live(&db), saved);
+        assert_eq!(db.device_id(), device);
+        assert_eq!(get_meta(&db.conn(), "sync_public_key").unwrap().as_deref(), Some("this-device"));
+        let peer_cursor: i64 = db.conn().query_row("SELECT cursor FROM paired_devices WHERE public_key = 'peer'", [], |r| r.get(0)).unwrap();
+        assert_eq!(peer_cursor, 0, "pull everything from paired devices again");
+
+        let (changes, _, _) = rows::changes_since(&db.conn(), cursor, 100_000).unwrap();
+        assert!(!changes.is_empty(), "restored rows are numbered after what peers already have");
+        rows::apply(&peer, &changes, None).unwrap();
+        assert_eq!(live(&peer), saved, "the restored state wins on paired devices");
+
+        drop(db);
+        let db = Db::open(&path).unwrap();
+        assert_eq!((live(&db), db.device_id()), (saved, device.as_str()));
+    }
+
+    #[test]
+    fn restores_encrypted_backups_and_keeps_the_device_password() {
+        let protected_dir = tempfile::tempdir().unwrap();
+        let protected = Db::open(&protected_dir.path().join(PLAIN_FILE)).unwrap();
+        crate::domain::demo::load(&protected, chrono::NaiveDate::from_ymd_opt(2026, 10, 8).unwrap()).unwrap();
+        let saved = live(&protected);
+        let plain = plain_backup(&protected, protected_dir.path());
+        protected.enable_vault("pw1234").unwrap();
+        let sealed = protected.encrypted_snapshot().unwrap().unwrap();
+
+        assert!(inspect_backup(&sealed, None).unwrap_err().to_string().contains("password_required"));
+        assert!(inspect_backup(&sealed, Some("wrong")).unwrap_err().to_string().contains("wrong_password"));
+        assert!(inspect_backup(&sealed, Some("pw1234")).unwrap().encrypted);
+
+        let other_dir = tempfile::tempdir().unwrap();
+        let other_path = other_dir.path().join(PLAIN_FILE);
+        let other = Db::open(&other_path).unwrap();
+        other.restore_backup(&sealed, Some("pw1234")).unwrap();
+        assert_eq!(live(&other), saved);
+        assert!(!other.vault_enabled() && other_path.exists(), "an unprotected device stays unprotected");
+
+        protected.conn().execute("UPDATE transactions SET deleted = 1", []).unwrap();
+        protected.save_vault(true).unwrap();
+        protected.restore_backup(&plain, None).unwrap();
+        assert!(protected.vault_enabled());
+        drop(protected);
+        assert!(!protected_dir.path().join(PLAIN_FILE).exists());
+        let reopened = Db::open_vault(protected_dir.path(), "pw1234").unwrap();
+        assert_eq!(live(&reopened), saved);
     }
 
     #[test]

@@ -219,7 +219,11 @@
     "demoRemoved": "Demo data removed",
     "general": "General",
     "subtitle": "Everything the way you like it – applies to this device.",
-    "importCsv": "Import CSV"
+    "importCsv": "Import CSV",
+    "restore": "Restore backup",
+    "backedUpHint": "Backup saved. Restore it any time under Settings → Data → Restore backup.",
+    "backupNote": "A backup holds all entries, accounts, categories and settings, but no receipt photos. Restore it with Restore backup, on this or another device.",
+    "backupNoteProtected": "With a password set, backups are encrypted (.zcvault) and need the password that was set when they were saved."
   },
   "errors": {
     "db": "Database error",
@@ -239,7 +243,10 @@
     "unsupported_currency_decimals": "These currencies have a different number of decimal places, so the amounts can't simply be switched.",
     "unsupported_wrong_password": "Wrong password.",
     "unsupported_password_too_short": "The password is too short.",
-    "unsupported_locked": "ZCashflow is locked."
+    "unsupported_locked": "ZCashflow is locked.",
+    "unsupported_not_a_backup": "This file isn't a ZCashflow backup.",
+    "unsupported_backup_too_new": "This backup comes from a newer version of ZCashflow. Update the app first.",
+    "unsupported_password_required": "This backup needs its password."
   },
   "freq": {
     "daily": "daily",
@@ -1170,5 +1177,30 @@
     "reset": "Reset this device",
     "resetConfirm": "Delete all data on this device",
     "back": "Back"
+  },
+  "restore": {
+    "title": "Restore backup",
+    "intro": "Choose a ZCashflow backup (.db, or .zcvault if it was saved with a password). You'll see what it contains before anything changes.",
+    "choose": "Choose backup file",
+    "other": "Choose another file",
+    "reading": "Reading backup …",
+    "passwordNeeded": "This backup is encrypted. Enter the password that was set when it was saved.",
+    "password": "Backup password",
+    "continue": "Continue",
+    "entries_one": "{{count}} entry",
+    "entries_other": "{{count}} entries",
+    "accounts_one": "{{count}} account",
+    "accounts_other": "{{count}} accounts",
+    "range": "{{from}} – {{to}}",
+    "encrypted": "Encrypted",
+    "warnTitle": "This replaces all data on this device",
+    "warnText": "Entries, accounts, categories and settings are replaced by the backup. Receipt photos aren't part of a backup. The password and pairings of this device stay as they are.",
+    "warnSync": "Paired devices take over the restored data with the next sync. Entries added on them after the backup are kept.",
+    "backupFirst": "Save the current data first",
+    "backupFirstHint": "Recommended – so you can go back.",
+    "confirm": "Restore",
+    "working": "Restoring …",
+    "done_one": "Backup restored – {{count}} entry",
+    "done_other": "Backup restored – {{count}} entries"
   }
 }

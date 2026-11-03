@@ -48,7 +48,6 @@ impl Hlc {
         self.encode(*st)
     }
 
-    #[allow(dead_code)]
     pub fn observe(&self, remote: &str) {
         let Some(remote) = decode(remote) else { return };
         let mut st = self.state.lock().unwrap();

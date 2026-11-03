@@ -704,6 +704,35 @@ pub async fn vault_unlock(app: tauri::AppHandle, password: String) -> AppResult<
     .await
 }
 
+fn backup_request(request: &tauri::ipc::Request<'_>) -> AppResult<(Vec<u8>, Option<String>)> {
+    let tauri::ipc::InvokeBody::Raw(bytes) = request.body() else {
+        return Err(AppError::Invalid("expected the backup file".into()));
+    };
+    let password = request
+        .headers()
+        .get("x-backup-password")
+        .and_then(|v| v.to_str().ok())
+        .map(percent_decode)
+        .filter(|p| !p.is_empty());
+    Ok((bytes.clone(), password))
+}
+
+#[tauri::command]
+pub async fn inspect_backup(request: tauri::ipc::Request<'_>) -> AppResult<crate::db::BackupSummary> {
+    let (bytes, password) = backup_request(&request)?;
+    blocking(move || crate::db::inspect_backup(&bytes, password.as_deref())).await
+}
+
+#[tauri::command]
+pub async fn restore_backup(app: tauri::AppHandle, request: tauri::ipc::Request<'_>) -> AppResult<crate::db::BackupSummary> {
+    let (bytes, password) = backup_request(&request)?;
+    blocking(move || {
+        let db = app.state::<SharedDb>();
+        db.restore_backup(&bytes, password.as_deref())
+    })
+    .await
+}
+
 #[tauri::command]
 pub async fn vault_forget(app: tauri::AppHandle) -> AppResult<()> {
     blocking(move || {

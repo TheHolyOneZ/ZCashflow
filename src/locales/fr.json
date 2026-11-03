@@ -222,7 +222,11 @@
     "general": "Général",
     "subtitle": "Tout comme tu l'aimes – s'applique à cet appareil.",
     "daysBefore_many": "{{count}} jours avant",
-    "importCsv": "Importer un CSV"
+    "importCsv": "Importer un CSV",
+    "restore": "Restaurer une sauvegarde",
+    "backedUpHint": "Sauvegarde enregistrée. Restaure-la quand tu veux via Réglages → Données → Restaurer une sauvegarde.",
+    "backupNote": "Une sauvegarde contient toutes les opérations, comptes, catégories et réglages, mais pas les photos de reçus. Restaure-la avec « Restaurer une sauvegarde » sur cet appareil ou un autre.",
+    "backupNoteProtected": "Avec un mot de passe, les sauvegardes sont chiffrées (.zcvault) et demandent le mot de passe défini au moment de l'enregistrement."
   },
   "errors": {
     "db": "Erreur de base de données",
@@ -242,7 +246,10 @@
     "unsupported_currency_decimals": "Ces devises n'ont pas le même nombre de décimales, les montants ne peuvent donc pas être simplement convertis.",
     "unsupported_wrong_password": "Mot de passe incorrect.",
     "unsupported_password_too_short": "Le mot de passe est trop court.",
-    "unsupported_locked": "ZCashflow est verrouillé."
+    "unsupported_locked": "ZCashflow est verrouillé.",
+    "unsupported_not_a_backup": "Ce fichier n'est pas une sauvegarde ZCashflow.",
+    "unsupported_backup_too_new": "Cette sauvegarde vient d'une version plus récente de ZCashflow. Mets d'abord l'app à jour.",
+    "unsupported_password_required": "Cette sauvegarde demande son mot de passe."
   },
   "freq": {
     "daily": "quotidien",
@@ -1219,5 +1226,33 @@
     "reset": "Réinitialiser cet appareil",
     "resetConfirm": "Supprimer toutes les données de cet appareil",
     "back": "Retour"
+  },
+  "restore": {
+    "title": "Restaurer une sauvegarde",
+    "intro": "Choisis une sauvegarde ZCashflow (.db, ou .zcvault si elle a été enregistrée avec un mot de passe). Tu vois son contenu avant que quoi que ce soit ne change.",
+    "choose": "Choisir le fichier",
+    "other": "Choisir un autre fichier",
+    "reading": "Lecture de la sauvegarde …",
+    "passwordNeeded": "Cette sauvegarde est chiffrée. Saisis le mot de passe défini au moment de l'enregistrement.",
+    "password": "Mot de passe de la sauvegarde",
+    "continue": "Continuer",
+    "entries_one": "{{count}} opération",
+    "entries_many": "{{count}} opérations",
+    "entries_other": "{{count}} opérations",
+    "accounts_one": "{{count}} compte",
+    "accounts_many": "{{count}} comptes",
+    "accounts_other": "{{count}} comptes",
+    "range": "{{from}} – {{to}}",
+    "encrypted": "Chiffrée",
+    "warnTitle": "Cela remplace toutes les données de cet appareil",
+    "warnText": "Opérations, comptes, catégories et réglages sont remplacés par la sauvegarde. Les photos de reçus n'en font pas partie. Le mot de passe et les appairages de cet appareil restent inchangés.",
+    "warnSync": "Les appareils appairés reprennent les données restaurées à la prochaine synchronisation. Les opérations ajoutées sur eux après la sauvegarde sont conservées.",
+    "backupFirst": "Sauvegarder d'abord les données actuelles",
+    "backupFirstHint": "Recommandé – pour pouvoir revenir en arrière.",
+    "confirm": "Restaurer",
+    "working": "Restauration …",
+    "done_one": "Sauvegarde restaurée – {{count}} opération",
+    "done_many": "Sauvegarde restaurée – {{count}} opérations",
+    "done_other": "Sauvegarde restaurée – {{count}} opérations"
   }
 }

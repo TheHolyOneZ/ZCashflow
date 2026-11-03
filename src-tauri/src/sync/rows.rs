@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
 
 use crate::db::Db;
-use crate::error::{AppError, AppResult};
+use crate::error::AppResult;
 
 pub const TABLES: &[(&str, &str)] = &[
     ("accounts", "id"),
@@ -91,6 +91,7 @@ pub fn changes_since(conn: &Connection, since: i64, limit: usize) -> AppResult<(
 pub struct ApplyStats {
     pub applied: usize,
     pub skipped: usize,
+    pub failed: usize,
 }
 
 fn columns(conn: &Connection, tbl: &str, cache: &mut HashMap<String, Vec<String>>) -> AppResult<Vec<String>> {
@@ -121,8 +122,14 @@ fn upsert(conn: &Connection, tbl: &str, pk: &str, row: &Map<String, Value>, cols
 
 pub fn apply(db: &Db, changes: &[RowChange], only: Option<&[&str]>) -> AppResult<ApplyStats> {
     let mut conn = db.conn();
+    conn.pragma_update(None, "foreign_keys", "OFF")?;
+    let result = apply_rows(db, &mut conn, changes, only);
+    conn.pragma_update(None, "foreign_keys", "ON")?;
+    result
+}
+
+fn apply_rows(db: &Db, conn: &mut Connection, changes: &[RowChange], only: Option<&[&str]>) -> AppResult<ApplyStats> {
     let tx = conn.transaction()?;
-    tx.pragma_update(None, "defer_foreign_keys", "ON")?;
     let mut cache = HashMap::new();
     let mut stats = ApplyStats::default();
 
@@ -151,9 +158,9 @@ pub fn apply(db: &Db, changes: &[RowChange], only: Option<&[&str]>) -> AppResult
         }
         db.hlc.observe(incoming);
         let cols = columns(&tx, &change.tbl, &mut cache)?;
-        match upsert(&tx, &change.tbl, pk, &change.row, &cols) {
-            Ok(_) => {}
-
+        tx.execute_batch("SAVEPOINT row_change")?;
+        let written = match upsert(&tx, &change.tbl, pk, &change.row, &cols) {
+            Ok(_) => Ok(()),
             Err(rusqlite::Error::SqliteFailure(e, Some(msg)))
                 if e.code == rusqlite::ErrorCode::ConstraintViolation && msg.contains("occurrence_key") =>
             {
@@ -161,12 +168,23 @@ pub fn apply(db: &Db, changes: &[RowChange], only: Option<&[&str]>) -> AppResult
                     "UPDATE transactions SET occurrence_key = NULL, deleted = 1, updated_hlc = ?2
                      WHERE occurrence_key = ?1 AND id <> ?3",
                     rusqlite::params![change.row.get("occurrence_key").and_then(Value::as_str), db.hlc.tick(), id],
-                )?;
-                upsert(&tx, &change.tbl, pk, &change.row, &cols)?;
+                )
+                .and_then(|_| upsert(&tx, &change.tbl, pk, &change.row, &cols))
+                .map(|_| ())
             }
-            Err(e) => return Err(AppError::Db(e)),
+            Err(e) => Err(e),
+        };
+        match written {
+            Ok(()) => {
+                tx.execute_batch("RELEASE row_change")?;
+                stats.applied += 1;
+            }
+            Err(e) => {
+                tx.execute_batch("ROLLBACK TO row_change; RELEASE row_change")?;
+                eprintln!("sync: skipped {} {id}: {e}", change.tbl);
+                stats.failed += 1;
+            }
         }
-        stats.applied += 1;
     }
     tx.commit()?;
     Ok(stats)
@@ -380,5 +398,69 @@ mod tests {
                 .count();
             assert_eq!(n, 1);
         }
+    }
+
+    #[test]
+    fn small_batches_apply_even_when_a_category_arrives_after_its_entries() {
+        use crate::domain::categories::{self, CategoryInput};
+        let a = Db::open_in_memory().unwrap();
+        let b = Db::open_in_memory().unwrap();
+        let mut cursor = 0;
+        sync(&a, &b, &mut cursor);
+
+        let cat = categories::upsert(&a, CategoryInput { id: None, parent_id: None, name: "Imported".into(), kind: "expense".into(), icon: None, color: None }).unwrap();
+        let acc = accounts::list(&a.conn()).unwrap()[0].id.clone();
+        let mut input = transactions::TransactionInput {
+            kind: "expense".into(),
+            amount_minor: 700,
+            currency: None,
+            occurred_on: "2026-10-08".into(),
+            occurred_time: None,
+            account_id: acc,
+            to_account_id: None,
+            category_id: Some(cat.id.clone()),
+            counterparty: None,
+            title: "Old entry".into(),
+            note: None,
+            tags: vec![],
+            debt_id: None,
+            goal_id: None,
+        };
+        let t = transactions::create(&a, input.clone()).unwrap();
+        input.title = "Second".into();
+        transactions::create(&a, input).unwrap();
+        categories::upsert(&a, CategoryInput { id: Some(cat.id.clone()), parent_id: None, name: "Imported (renamed)".into(), kind: "expense".into(), icon: None, color: None }).unwrap();
+
+        loop {
+            let (rows, upto, more) = changes_since(&a.conn(), cursor, 1).unwrap();
+            apply(&b, &rows, None).expect("a batch must not fail because a referenced row comes later");
+            cursor = upto;
+            if !more {
+                break;
+            }
+        }
+        assert_eq!(transactions::get(&b.conn(), &t.id).unwrap().category_id.as_deref(), Some(cat.id.as_str()));
+        assert!(categories::list(&b.conn()).unwrap().iter().any(|c| c.name == "Imported (renamed)"));
+        let broken: i64 = b.conn().query_row("SELECT count(*) FROM pragma_foreign_key_check", [], |r| r.get(0)).unwrap();
+        assert_eq!(broken, 0);
+        assert_eq!(b.conn().query_row("PRAGMA foreign_keys", [], |r| r.get::<_, i64>(0)).unwrap(), 1);
+    }
+
+    #[test]
+    fn one_broken_row_does_not_stop_the_rest() {
+        let a = Db::open_in_memory().unwrap();
+        let b = Db::open_in_memory().unwrap();
+        let mut cursor = 0;
+        sync(&a, &b, &mut cursor);
+        let good = expense(&a, "Good");
+        let bad = expense(&a, "Bad");
+        let (mut rows, _, _) = changes_since(&a.conn(), cursor, 100).unwrap();
+        for r in rows.iter_mut().filter(|r| r.row.get("id").and_then(Value::as_str) == Some(bad.id.as_str())) {
+            r.row.insert("amount_minor".into(), Value::from(-5));
+        }
+        let stats = apply(&b, &rows, None).unwrap();
+        assert_eq!(stats.failed, 1);
+        assert_eq!(transactions::get(&b.conn(), &good.id).unwrap().title, "Good");
+        assert!(transactions::get(&b.conn(), &bad.id).is_err());
     }
 }

@@ -4,6 +4,7 @@ import { About } from "./About";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 import {
+  ArchiveRestore,
   Bell,
   Coins,
   Database,
@@ -36,11 +37,12 @@ import { DashboardSettings } from "./DashboardSettings";
 import { ResetData } from "./ResetData";
 import { ExportDialog } from "@/features/data/ExportDialog";
 import { ImportDialog } from "@/features/data/ImportDialog";
-import { ExportColumnFields, pickSavePath } from "@/features/data/export";
+import { ExportColumnFields } from "@/features/data/export";
+import { useSaveBackup } from "@/features/data/backup";
+import { RestoreDialog } from "@/features/data/RestoreDialog";
 import { SecuritySettings } from "@/features/security/SecuritySettings";
 import { useVaultStatus } from "@/features/security/lock";
 import { api, planning } from "@/lib/api";
-import { isoDate } from "@/lib/dates";
 import { activeLocale, languages } from "@/lib/i18n";
 import { currencyItems } from "@/lib/currencies";
 import { invalidateData, useAccounts, useAppInfo, useErrorMessage, useSettings } from "@/lib/queries";
@@ -106,6 +108,8 @@ export function SettingsPage() {
   const [active, setActive] = useState("general");
   const [exportOpen, setExportOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+  const [restoreOpen, setRestoreOpen] = useState(false);
+  const saveBackup = useSaveBackup();
   const rootRef = useRef<HTMLDivElement>(null);
   const lockUntil = useRef(0);
 
@@ -132,20 +136,6 @@ export function SettingsPage() {
     try {
       await planning.setSetting(key, value);
       await qc.invalidateQueries();
-    } catch (e) {
-      toast(errorMessage(e), "error");
-    }
-  }
-
-  async function saveBackup() {
-    try {
-      const path = await pickSavePath(
-        protectedData ? `zcashflow-backup-${isoDate()}.zcvault` : `zcashflow-backup-${isoDate()}.db`,
-        protectedData ? { name: "ZCashflow", extensions: ["zcvault"] } : { name: "SQLite", extensions: ["db"] },
-      );
-      if (!path) return;
-      await planning.backupDatabase(path);
-      toast(t("settings.backedUp"));
     } catch (e) {
       toast(errorMessage(e), "error");
     }
@@ -344,11 +334,19 @@ export function SettingsPage() {
                   <HardDriveDownload className="size-4" />
                   {t("settings.backup")}
                 </Button>
+                <Button onClick={() => setRestoreOpen(true)}>
+                  <ArchiveRestore className="size-4" />
+                  {t("settings.restore")}
+                </Button>
               </div>
+              <p className="text-[12px] text-muted">
+                {t("settings.backupNote")} {protectedData && t("settings.backupNoteProtected")}
+              </p>
               <DemoControls />
             </div>
             <ExportDialog open={exportOpen} onOpenChange={setExportOpen} />
             <ImportDialog open={importOpen} onOpenChange={setImportOpen} />
+            <RestoreDialog open={restoreOpen} onOpenChange={setRestoreOpen} />
           </Section>
 
           <Section id="reset" icon={RotateCcw} title={t("reset.title")} hint={t("reset.hint")}>

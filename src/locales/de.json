@@ -219,7 +219,11 @@
     "demoRemoved": "Demo-Daten entfernt",
     "general": "Allgemein",
     "subtitle": "Alles so, wie du es magst – gilt für dieses Gerät.",
-    "importCsv": "CSV importieren"
+    "importCsv": "CSV importieren",
+    "restore": "Backup wiederherstellen",
+    "backedUpHint": "Backup gespeichert. Wiederherstellen jederzeit unter Einstellungen → Daten → Backup wiederherstellen.",
+    "backupNote": "Ein Backup enthält alle Buchungen, Konten, Kategorien und Einstellungen, aber keine Belegfotos. Mit „Backup wiederherstellen“ spielst du es auf diesem oder einem anderen Gerät zurück.",
+    "backupNoteProtected": "Mit Passwort sind Backups verschlüsselt (.zcvault) und brauchen das Passwort, das beim Speichern gesetzt war."
   },
   "errors": {
     "db": "Datenbankfehler",
@@ -239,7 +243,10 @@
     "unsupported_currency_decimals": "Diese Währungen haben unterschiedlich viele Nachkommastellen, deshalb lassen sich die Beträge nicht einfach umstellen.",
     "unsupported_wrong_password": "Falsches Passwort.",
     "unsupported_password_too_short": "Das Passwort ist zu kurz.",
-    "unsupported_locked": "ZCashflow ist gesperrt."
+    "unsupported_locked": "ZCashflow ist gesperrt.",
+    "unsupported_not_a_backup": "Diese Datei ist kein ZCashflow-Backup.",
+    "unsupported_backup_too_new": "Dieses Backup stammt aus einer neueren ZCashflow-Version. Aktualisiere zuerst die App.",
+    "unsupported_password_required": "Dieses Backup braucht sein Passwort."
   },
   "freq": {
     "daily": "täglich",
@@ -1170,5 +1177,30 @@
     "reset": "Dieses Gerät zurücksetzen",
     "resetConfirm": "Alle Daten auf diesem Gerät löschen",
     "back": "Zurück"
+  },
+  "restore": {
+    "title": "Backup wiederherstellen",
+    "intro": "Wähle ein ZCashflow-Backup (.db, oder .zcvault, wenn es mit Passwort gespeichert wurde). Du siehst zuerst, was es enthält – vorher ändert sich nichts.",
+    "choose": "Backup-Datei wählen",
+    "other": "Andere Datei wählen",
+    "reading": "Backup wird gelesen …",
+    "passwordNeeded": "Dieses Backup ist verschlüsselt. Gib das Passwort ein, das beim Speichern gesetzt war.",
+    "password": "Backup-Passwort",
+    "continue": "Weiter",
+    "entries_one": "{{count}} Buchung",
+    "entries_other": "{{count}} Buchungen",
+    "accounts_one": "{{count}} Konto",
+    "accounts_other": "{{count}} Konten",
+    "range": "{{from}} – {{to}}",
+    "encrypted": "Verschlüsselt",
+    "warnTitle": "Das ersetzt alle Daten auf diesem Gerät",
+    "warnText": "Buchungen, Konten, Kategorien und Einstellungen werden durch das Backup ersetzt. Belegfotos sind nicht Teil eines Backups. Passwort und Kopplungen dieses Geräts bleiben, wie sie sind.",
+    "warnSync": "Gekoppelte Geräte übernehmen die wiederhergestellten Daten beim nächsten Sync. Buchungen, die dort nach dem Backup dazugekommen sind, bleiben erhalten.",
+    "backupFirst": "Aktuelle Daten vorher sichern",
+    "backupFirstHint": "Empfohlen – damit du zurück kannst.",
+    "confirm": "Wiederherstellen",
+    "working": "Wird wiederhergestellt …",
+    "done_one": "Backup wiederhergestellt – {{count}} Buchung",
+    "done_other": "Backup wiederhergestellt – {{count}} Buchungen"
   }
 }

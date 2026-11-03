@@ -222,7 +222,11 @@
     "general": "Generale",
     "subtitle": "Tutto come piace a te – vale per questo dispositivo.",
     "daysBefore_many": "{{count}} giorni prima",
-    "importCsv": "Importa CSV"
+    "importCsv": "Importa CSV",
+    "restore": "Ripristina backup",
+    "backedUpHint": "Backup salvato. Puoi ripristinarlo in Impostazioni → Dati → Ripristina backup.",
+    "backupNote": "Un backup contiene tutti i movimenti, conti, categorie e impostazioni, ma non le foto delle ricevute. Ripristinalo con «Ripristina backup» su questo o un altro dispositivo.",
+    "backupNoteProtected": "Con una password, i backup sono cifrati (.zcvault) e richiedono la password impostata al momento del salvataggio."
   },
   "errors": {
     "db": "Errore del database",
@@ -242,7 +246,10 @@
     "unsupported_currency_decimals": "Queste valute hanno un numero diverso di decimali, quindi gli importi non si possono semplicemente convertire.",
     "unsupported_wrong_password": "Password errata.",
     "unsupported_password_too_short": "La password è troppo corta.",
-    "unsupported_locked": "ZCashflow è bloccato."
+    "unsupported_locked": "ZCashflow è bloccato.",
+    "unsupported_not_a_backup": "Questo file non è un backup di ZCashflow.",
+    "unsupported_backup_too_new": "Questo backup proviene da una versione più recente di ZCashflow. Aggiorna prima l'app.",
+    "unsupported_password_required": "Questo backup richiede la sua password."
   },
   "freq": {
     "daily": "giornaliero",
@@ -1219,5 +1226,33 @@
     "reset": "Reimposta questo dispositivo",
     "resetConfirm": "Elimina tutti i dati su questo dispositivo",
     "back": "Indietro"
+  },
+  "restore": {
+    "title": "Ripristina backup",
+    "intro": "Scegli un backup di ZCashflow (.db, oppure .zcvault se è stato salvato con una password). Vedrai cosa contiene prima che cambi qualcosa.",
+    "choose": "Scegli file di backup",
+    "other": "Scegli un altro file",
+    "reading": "Lettura del backup …",
+    "passwordNeeded": "Questo backup è cifrato. Inserisci la password impostata al momento del salvataggio.",
+    "password": "Password del backup",
+    "continue": "Continua",
+    "entries_one": "{{count}} movimento",
+    "entries_many": "{{count}} movimenti",
+    "entries_other": "{{count}} movimenti",
+    "accounts_one": "{{count}} conto",
+    "accounts_many": "{{count}} conti",
+    "accounts_other": "{{count}} conti",
+    "range": "{{from}} – {{to}}",
+    "encrypted": "Cifrato",
+    "warnTitle": "Questo sostituisce tutti i dati su questo dispositivo",
+    "warnText": "Movimenti, conti, categorie e impostazioni vengono sostituiti dal backup. Le foto delle ricevute non fanno parte di un backup. Password e abbinamenti di questo dispositivo restano invariati.",
+    "warnSync": "I dispositivi abbinati adottano i dati ripristinati alla prossima sincronizzazione. I movimenti aggiunti su di essi dopo il backup restano.",
+    "backupFirst": "Salva prima i dati attuali",
+    "backupFirstHint": "Consigliato – così puoi tornare indietro.",
+    "confirm": "Ripristina",
+    "working": "Ripristino …",
+    "done_one": "Backup ripristinato – {{count}} movimento",
+    "done_many": "Backup ripristinato – {{count}} movimenti",
+    "done_other": "Backup ripristinato – {{count}} movimenti"
   }
 }

@@ -222,7 +222,11 @@
     "general": "General",
     "subtitle": "Todo a tu gusto – se aplica a este dispositivo.",
     "daysBefore_many": "{{count}} días antes",
-    "importCsv": "Importar CSV"
+    "importCsv": "Importar CSV",
+    "restore": "Restaurar copia",
+    "backedUpHint": "Copia guardada. Puedes restaurarla en Ajustes → Datos → Restaurar copia.",
+    "backupNote": "Una copia contiene todos los movimientos, cuentas, categorías y ajustes, pero no las fotos de recibos. Restáurala con «Restaurar copia» en este u otro dispositivo.",
+    "backupNoteProtected": "Con contraseña, las copias se cifran (.zcvault) y necesitan la contraseña que estaba puesta al guardarlas."
   },
   "errors": {
     "db": "Error de base de datos",
@@ -242,7 +246,10 @@
     "unsupported_currency_decimals": "Estas monedas tienen distinto número de decimales, así que los importes no se pueden cambiar sin más.",
     "unsupported_wrong_password": "Contraseña incorrecta.",
     "unsupported_password_too_short": "La contraseña es demasiado corta.",
-    "unsupported_locked": "ZCashflow está bloqueado."
+    "unsupported_locked": "ZCashflow está bloqueado.",
+    "unsupported_not_a_backup": "Este archivo no es una copia de ZCashflow.",
+    "unsupported_backup_too_new": "Esta copia procede de una versión más reciente de ZCashflow. Actualiza primero la app.",
+    "unsupported_password_required": "Esta copia necesita su contraseña."
   },
   "freq": {
     "daily": "diario",
@@ -1219,5 +1226,33 @@
     "reset": "Restablecer este dispositivo",
     "resetConfirm": "Borrar todos los datos de este dispositivo",
     "back": "Volver"
+  },
+  "restore": {
+    "title": "Restaurar copia",
+    "intro": "Elige una copia de ZCashflow (.db, o .zcvault si se guardó con contraseña). Verás lo que contiene antes de que cambie nada.",
+    "choose": "Elegir archivo de copia",
+    "other": "Elegir otro archivo",
+    "reading": "Leyendo la copia …",
+    "passwordNeeded": "Esta copia está cifrada. Introduce la contraseña que estaba puesta al guardarla.",
+    "password": "Contraseña de la copia",
+    "continue": "Continuar",
+    "entries_one": "{{count}} movimiento",
+    "entries_many": "{{count}} movimientos",
+    "entries_other": "{{count}} movimientos",
+    "accounts_one": "{{count}} cuenta",
+    "accounts_many": "{{count}} cuentas",
+    "accounts_other": "{{count}} cuentas",
+    "range": "{{from}} – {{to}}",
+    "encrypted": "Cifrada",
+    "warnTitle": "Esto reemplaza todos los datos de este dispositivo",
+    "warnText": "Movimientos, cuentas, categorías y ajustes se reemplazan por la copia. Las fotos de recibos no forman parte de una copia. La contraseña y los emparejamientos de este dispositivo se mantienen.",
+    "warnSync": "Los dispositivos emparejados adoptan los datos restaurados en la próxima sincronización. Los movimientos añadidos en ellos después de la copia se conservan.",
+    "backupFirst": "Guardar antes los datos actuales",
+    "backupFirstHint": "Recomendado – para poder volver atrás.",
+    "confirm": "Restaurar",
+    "working": "Restaurando …",
+    "done_one": "Copia restaurada – {{count}} movimiento",
+    "done_many": "Copia restaurada – {{count}} movimientos",
+    "done_other": "Copia restaurada – {{count}} movimientos"
   }
 }

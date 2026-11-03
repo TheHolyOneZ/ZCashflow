@@ -78,7 +78,7 @@ export const useUi = create<UiState>((set, get) => ({
   toast: (message, tone = "default") => {
     const id = ++toastSeq;
     set({ toasts: [...get().toasts, { id, message, tone }] });
-    setTimeout(() => get().dismissToast(id), tone === "error" ? 6000 : 3000);
+    setTimeout(() => get().dismissToast(id), tone === "error" || message.length > 60 ? 6000 : 3000);
   },
   dismissToast: (id) => set({ toasts: get().toasts.filter((t) => t.id !== id) }),
 }));

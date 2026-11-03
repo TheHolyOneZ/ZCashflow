@@ -225,7 +225,11 @@
     "demoRemoved": "Dane demonstracyjne usunięte",
     "general": "Ogólne",
     "subtitle": "Wszystko tak, jak lubisz – dotyczy tego urządzenia.",
-    "importCsv": "Importuj CSV"
+    "importCsv": "Importuj CSV",
+    "restore": "Przywróć kopię",
+    "backedUpHint": "Kopia zapisana. Przywrócisz ją w Ustawienia → Dane → Przywróć kopię.",
+    "backupNote": "Kopia zawiera wszystkie transakcje, konta, kategorie i ustawienia, ale bez zdjęć paragonów. Przywróć ją przyciskiem „Przywróć kopię” na tym lub innym urządzeniu.",
+    "backupNoteProtected": "Przy ustawionym haśle kopie są szyfrowane (.zcvault) i wymagają hasła ustawionego w chwili zapisu."
   },
   "errors": {
     "db": "Błąd bazy danych",
@@ -245,7 +249,10 @@
     "unsupported_currency_decimals": "Te waluty mają różną liczbę miejsc po przecinku, więc kwot nie da się po prostu przestawić.",
     "unsupported_wrong_password": "Nieprawidłowe hasło.",
     "unsupported_password_too_short": "Hasło jest za krótkie.",
-    "unsupported_locked": "ZCashflow jest zablokowany."
+    "unsupported_locked": "ZCashflow jest zablokowany.",
+    "unsupported_not_a_backup": "Ten plik nie jest kopią ZCashflow.",
+    "unsupported_backup_too_new": "Ta kopia pochodzi z nowszej wersji ZCashflow. Najpierw zaktualizuj aplikację.",
+    "unsupported_password_required": "Ta kopia wymaga hasła."
   },
   "freq": {
     "daily": "codziennie",
@@ -1268,5 +1275,36 @@
     "reset": "Zresetuj to urządzenie",
     "resetConfirm": "Usuń wszystkie dane z tego urządzenia",
     "back": "Wstecz"
+  },
+  "restore": {
+    "title": "Przywróć kopię",
+    "intro": "Wybierz kopię ZCashflow (.db lub .zcvault, jeśli zapisano ją z hasłem). Najpierw zobaczysz, co zawiera – nic się wcześniej nie zmieni.",
+    "choose": "Wybierz plik kopii",
+    "other": "Wybierz inny plik",
+    "reading": "Odczyt kopii …",
+    "passwordNeeded": "Ta kopia jest zaszyfrowana. Wpisz hasło ustawione w chwili zapisu.",
+    "password": "Hasło kopii",
+    "continue": "Dalej",
+    "entries_one": "{{count}} transakcja",
+    "entries_few": "{{count}} transakcje",
+    "entries_many": "{{count}} transakcji",
+    "entries_other": "{{count}} transakcji",
+    "accounts_one": "{{count}} konto",
+    "accounts_few": "{{count}} konta",
+    "accounts_many": "{{count}} kont",
+    "accounts_other": "{{count}} kont",
+    "range": "{{from}} – {{to}}",
+    "encrypted": "Zaszyfrowana",
+    "warnTitle": "To zastąpi wszystkie dane na tym urządzeniu",
+    "warnText": "Transakcje, konta, kategorie i ustawienia zostaną zastąpione kopią. Zdjęcia paragonów nie są częścią kopii. Hasło i parowania tego urządzenia pozostaną bez zmian.",
+    "warnSync": "Sparowane urządzenia przejmą przywrócone dane przy następnej synchronizacji. Transakcje dodane na nich po wykonaniu kopii zostaną zachowane.",
+    "backupFirst": "Najpierw zapisz obecne dane",
+    "backupFirstHint": "Zalecane – aby móc wrócić.",
+    "confirm": "Przywróć",
+    "working": "Przywracanie …",
+    "done_one": "Kopia przywrócona – {{count}} transakcja",
+    "done_few": "Kopia przywrócona – {{count}} transakcje",
+    "done_many": "Kopia przywrócona – {{count}} transakcji",
+    "done_other": "Kopia przywrócona – {{count}} transakcji"
   }
 }

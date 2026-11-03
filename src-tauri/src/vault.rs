@@ -160,6 +160,10 @@ pub fn open(data: &[u8], key: &Key) -> AppResult<Zeroizing<Vec<u8>>> {
     Ok(Zeroizing::new(plain))
 }
 
+pub fn is_vault(data: &[u8]) -> bool {
+    data.len() >= 8 && &data[..8] == MAGIC
+}
+
 pub fn is_blob(data: &[u8]) -> bool {
     data.len() >= 8 && &data[..8] == BLOB_MAGIC
 }

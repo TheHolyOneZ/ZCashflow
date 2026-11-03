@@ -194,6 +194,14 @@ export interface PeriodSummary {
   expenseByCategory: { categoryId: string | null; totalMinor: number }[];
 }
 
+export interface BackupSummary {
+  encrypted: boolean;
+  transactions: number;
+  accounts: number;
+  firstOn: string | null;
+  lastOn: string | null;
+}
+
 export interface ApiError {
   code: "db" | "io" | "not_found" | "invalid" | "unreachable" | "unsupported";
   message: string;
@@ -564,6 +572,10 @@ export const planning = {
   exportCsv: (path: string) => invoke<number>("export_csv", { path }),
   exportData: (path: string, options: ExportOptions) => invoke<number>("export_data", { path, options }),
   backupDatabase: (path: string) => invoke<void>("backup_database", { path }),
+  inspectBackup: (bytes: Uint8Array, password?: string) =>
+    invoke<BackupSummary>("inspect_backup", bytes, { headers: { "x-backup-password": encodeURIComponent(password ?? "") } }),
+  restoreBackup: (bytes: Uint8Array, password?: string) =>
+    invoke<BackupSummary>("restore_backup", bytes, { headers: { "x-backup-password": encodeURIComponent(password ?? "") } }),
   importTemplate: (path: string, delimiter: string) => invoke<void>("import_template", { path, delimiter }),
   importPreview: (text: string, options: ImportOptions) => invoke<ImportPreview>("import_preview", { text, options }),
   importCommit: (text: string, options: ImportOptions) => invoke<ImportResult>("import_commit", { text, options }),

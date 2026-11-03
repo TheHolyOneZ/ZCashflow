@@ -6,8 +6,7 @@ import { Dialog } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/field";
 import { SwitchRow } from "@/components/ui/extra";
 import { invoke } from "@tauri-apps/api/core";
-import { planning } from "@/lib/api";
-import { isoDate } from "@/lib/dates";
+import { useSaveBackup } from "@/features/data/backup";
 import { useErrorMessage } from "@/lib/queries";
 import { usePrefs } from "@/stores/prefs";
 import { useUi } from "@/stores/ui";
@@ -57,6 +56,7 @@ function ResetForm({ onCancel }: { onCancel: () => void }) {
   const toast = useUi((s) => s.toast);
   const errorMessage = useErrorMessage();
   const [backup, setBackup] = useState(true);
+  const saveBackup = useSaveBackup();
   const [word, setWord] = useState("");
   const [busy, setBusy] = useState(false);
   const required = t("reset.word");
@@ -67,17 +67,9 @@ function ResetForm({ onCancel }: { onCancel: () => void }) {
   async function run() {
     setBusy(true);
     try {
-      if (backup) {
-        const { save } = await import("@tauri-apps/plugin-dialog");
-        const path = await save({
-          defaultPath: `zcashflow-backup-${isoDate()}.db`,
-          filters: [{ name: "SQLite", extensions: ["db"] }],
-        });
-        if (!path) {
-          setBusy(false);
-          return;
-        }
-        await planning.backupDatabase(path);
+      if (backup && !(await saveBackup())) {
+        setBusy(false);
+        return;
       }
       try {
         Object.keys(localStorage)

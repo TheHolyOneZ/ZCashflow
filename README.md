@@ -37,7 +37,7 @@ encrypted, over your own Wi-Fi.
 
 ## Contents
 
-- [What's new in 1.8.0](#-whats-new-in-180)
+- [What's new in 1.8.1](#-whats-new-in-181)
 - [Why ZCashflow?](#-why-zcashflow)
 - [Features](#-features)
 - [Screenshots](#-screenshots)
@@ -57,7 +57,15 @@ encrypted, over your own Wi-Fi.
 
 ---
 
-## 🆕 What's new in 1.8.0
+## 🆕 What's new in 1.8.1
+
+- **Restore backup** – *Settings → Data → Restore backup* puts a saved backup back, on desktop and on phones. You pick the file, see how many entries and accounts it holds and which period it covers, and confirm; by default the current data is saved first. Encrypted backups (`.zcvault`) ask for their password. The device keeps its own password and pairings, and paired devices take over the restored data with the next sync.
+- **Clearer backups** – the settings now say what a backup contains (no receipt photos) and that backups made with a password are encrypted. After saving, a message says where to restore it.
+- **Sync no longer gets stuck** – a device could connect and drop again every few seconds without syncing anything, when a category had been changed after the entries that use it. Such changes are now applied in any order, and a single faulty entry no longer blocks the rest.
+
+No sync schema change – 1.8.0 and 1.7.0 devices still sync.
+
+### 1.8.0
 
 - **Password protection with encryption** – under *Settings → Security* you can protect a device with a password. The database and all receipt photos on that device are then stored encrypted (XChaCha20-Poly1305, key derived with Argon2id) and the app asks for the password when it starts. It can also lock itself after a few minutes without use or as soon as it goes to the background, and *Lock now* is one click away in the title bar.
 - **Per device, never synced** – every device has its own password or none. Paired devices keep syncing as before; the password itself never leaves the device.
@@ -517,8 +525,8 @@ If automatic discovery doesn't find the other device (e.g. guest networks with c
 | Android / iOS | App sandbox (removed when the app is uninstalled) |
 
 - `zcashflow.db` – the SQLite database; `attachments/` – receipt photos.
-- **Password protection:** with a password set under *Settings → Security*, the database is stored encrypted as `zcashflow.vault` instead, and the files in `attachments/` and `thumbs/` are encrypted too. *Save backup* then writes an encrypted `.zcvault` file; to restore it, copy it into the data folder as `zcashflow.vault` and open the app with the password the backup was made with. To restore an unencrypted `.db` backup on a protected device, remove the password first – a `zcashflow.db` next to `zcashflow.vault` is treated as a leftover and deleted when the app is unlocked.
-- **Backup:** *Settings → Data → Save backup* writes a complete copy of the database. **Export:** *Settings → Data → Export data* saves all data or a selection as CSV (several selections as one ZIP) – expenses with a minus or as positive amounts, categories in one column or split into main and subcategory. **Import:** *Import CSV* reads the ZCashflow template or a bank export and shows a preview first.
+- **Password protection:** with a password set under *Settings → Security*, the database is stored encrypted as `zcashflow.vault` instead, and the files in `attachments/` and `thumbs/` are encrypted too. *Save backup* then writes an encrypted `.zcvault` file, which *Restore backup* opens with the password that was set when it was saved. Restoring keeps the password of the device it is restored on. Don't copy a `zcashflow.db` into the data folder of a protected device by hand – next to `zcashflow.vault` it is treated as a leftover and deleted when the app is unlocked; use *Restore backup* instead.
+- **Backup:** *Settings → Data → Save backup* writes a complete copy of the database (without receipt photos), and *Restore backup* puts one back – on any platform, including phones. **Export:** *Settings → Data → Export data* saves all data or a selection as CSV (several selections as one ZIP) – expenses with a minus or as positive amounts, categories in one column or split into main and subcategory. **Import:** *Import CSV* reads the ZCashflow template or a bank export and shows a preview first.
 - **Reset:** *Settings → Reset* resets the appearance or deletes everything (optionally saving a backup first).
 - Syncing devices is *not* a backup – deleting on one device deletes everywhere. Keep a backup.
 
@@ -605,7 +613,7 @@ You don't need every toolchain locally – GitHub builds everything:
   - *Actions → Build → Run workflow* builds selected platforms as artifacts.
   - Pushing a version tag builds **all** platforms and creates a **draft release** with consistently named files and `SHA256SUMS.txt`:
     ```sh
-    git tag v1.8.0 && git push origin v1.8.0
+    git tag v1.8.1 && git push origin v1.8.1
     ```
   - Android signing uses the repository secrets `ANDROID_KEYSTORE_B64` (base64 of the keystore) and `ANDROID_KEY_PASSWORD`.
 

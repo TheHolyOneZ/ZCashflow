@@ -219,7 +219,11 @@
     "demoRemoved": "Demo verileri kaldırıldı",
     "general": "Genel",
     "subtitle": "Her şey sevdiğin gibi – bu cihaz için geçerli.",
-    "importCsv": "CSV içe aktar"
+    "importCsv": "CSV içe aktar",
+    "restore": "Yedeği geri yükle",
+    "backedUpHint": "Yedek kaydedildi. İstediğin zaman Ayarlar → Veriler → Yedeği geri yükle ile geri yükleyebilirsin.",
+    "backupNote": "Bir yedek tüm işlemleri, hesapları, kategorileri ve ayarları içerir, fiş fotoğraflarını içermez. Bu veya başka bir cihazda „Yedeği geri yükle“ ile geri yükle.",
+    "backupNoteProtected": "Parola ayarlıyken yedekler şifrelenir (.zcvault) ve kaydedildikleri andaki parolayı gerektirir."
   },
   "errors": {
     "db": "Veritabanı hatası",
@@ -239,7 +243,10 @@
     "unsupported_currency_decimals": "Bu para birimlerinin ondalık basamak sayısı farklı, bu yüzden tutarlar doğrudan değiştirilemez.",
     "unsupported_wrong_password": "Yanlış parola.",
     "unsupported_password_too_short": "Parola çok kısa.",
-    "unsupported_locked": "ZCashflow kilitli."
+    "unsupported_locked": "ZCashflow kilitli.",
+    "unsupported_not_a_backup": "Bu dosya bir ZCashflow yedeği değil.",
+    "unsupported_backup_too_new": "Bu yedek daha yeni bir ZCashflow sürümünden. Önce uygulamayı güncelle.",
+    "unsupported_password_required": "Bu yedek parolasını gerektiriyor."
   },
   "freq": {
     "daily": "günlük",
@@ -1170,5 +1177,30 @@
     "reset": "Bu cihazı sıfırla",
     "resetConfirm": "Bu cihazdaki tüm verileri sil",
     "back": "Geri"
+  },
+  "restore": {
+    "title": "Yedeği geri yükle",
+    "intro": "Bir ZCashflow yedeği seç (.db veya parolayla kaydedildiyse .zcvault). Bir şey değişmeden önce içeriğini görürsün.",
+    "choose": "Yedek dosyası seç",
+    "other": "Başka dosya seç",
+    "reading": "Yedek okunuyor …",
+    "passwordNeeded": "Bu yedek şifreli. Kaydedildiği andaki parolayı gir.",
+    "password": "Yedek parolası",
+    "continue": "Devam",
+    "entries_one": "{{count}} işlem",
+    "entries_other": "{{count}} işlem",
+    "accounts_one": "{{count}} hesap",
+    "accounts_other": "{{count}} hesap",
+    "range": "{{from}} – {{to}}",
+    "encrypted": "Şifreli",
+    "warnTitle": "Bu, bu cihazdaki tüm verilerin yerini alır",
+    "warnText": "İşlemler, hesaplar, kategoriler ve ayarlar yedekle değiştirilir. Fiş fotoğrafları yedeğe dahil değildir. Bu cihazın parolası ve eşleştirmeleri olduğu gibi kalır.",
+    "warnSync": "Eşleştirilmiş cihazlar geri yüklenen verileri bir sonraki senkronizasyonda devralır. Yedekten sonra onlara eklenen işlemler korunur.",
+    "backupFirst": "Önce mevcut verileri kaydet",
+    "backupFirstHint": "Önerilir – geri dönebilmen için.",
+    "confirm": "Geri yükle",
+    "working": "Geri yükleniyor …",
+    "done_one": "Yedek geri yüklendi – {{count}} işlem",
+    "done_other": "Yedek geri yüklendi – {{count}} işlem"
   }
 }
