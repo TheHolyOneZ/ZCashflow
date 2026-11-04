@@ -1055,7 +1055,11 @@
     "txEnterSave": "Saves",
     "txEnterNext": "Next field",
     "txEnterSaveHint": "Enter saves the entry right away.",
-    "txEnterNextHint": "Enter goes from amount to description and category, then to Save. {{shortcut}} always saves."
+    "txEnterNextHint": "Enter goes from amount to description and category, then to Save. {{shortcut}} always saves.",
+    "timeFormat": "Time format",
+    "timeFormatHint": "24-hour is the default. Applies to time fields and lists on this device.",
+    "time24": "24-hour",
+    "time12": "12-hour"
   },
   "currencySwitch": {
     "title": "Switch your accounts to {{currency}} too?",
@@ -1202,5 +1206,14 @@
     "working": "Restoring …",
     "done_one": "Backup restored – {{count}} entry",
     "done_other": "Backup restored – {{count}} entries"
+  },
+  "time": {
+    "pick": "Choose time",
+    "hour": "Hour",
+    "minute": "Minute",
+    "minuteLess": "One minute earlier",
+    "minuteMore": "One minute later",
+    "now": "Now",
+    "done": "Done"
   }
 }

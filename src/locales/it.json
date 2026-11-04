@@ -1094,7 +1094,11 @@
     "txEnterSave": "Salva",
     "txEnterNext": "Campo successivo",
     "txEnterSaveHint": "Invio salva subito il movimento.",
-    "txEnterNextHint": "Invio passa dall'importo alla descrizione e alla categoria, poi a Salva. {{shortcut}} salva sempre."
+    "txEnterNextHint": "Invio passa dall'importo alla descrizione e alla categoria, poi a Salva. {{shortcut}} salva sempre.",
+    "timeFormat": "Formato orario",
+    "timeFormatHint": "Il formato predefinito è 24 ore. Vale per i campi orario e gli elenchi su questo dispositivo.",
+    "time24": "24 ore",
+    "time12": "12 ore"
   },
   "currencySwitch": {
     "title": "Passare anche i conti a {{currency}}?",
@@ -1254,5 +1258,14 @@
     "done_one": "Backup ripristinato – {{count}} movimento",
     "done_many": "Backup ripristinato – {{count}} movimenti",
     "done_other": "Backup ripristinato – {{count}} movimenti"
+  },
+  "time": {
+    "pick": "Scegli l'ora",
+    "hour": "Ora",
+    "minute": "Minuto",
+    "minuteLess": "Un minuto prima",
+    "minuteMore": "Un minuto dopo",
+    "now": "Adesso",
+    "done": "Fatto"
   }
 }

@@ -1,5 +1,6 @@
 import { endOfMonth, format, parseISO, startOfMonth } from "date-fns";
 import { activeLocale } from "@/lib/i18n";
+import { usePrefs } from "@/stores/prefs";
 
 export function isoDate(d: Date = new Date()): string {
   return format(d, "yyyy-MM-dd");
@@ -23,5 +24,9 @@ export function entryTime(day: string): string | null {
 
 export function formatTime(hhmm: string) {
   const [h, m] = hhmm.split(":").map(Number);
-  return new Intl.DateTimeFormat(activeLocale(), { hour: "2-digit", minute: "2-digit" }).format(new Date(2000, 0, 1, h, m));
+  const twelve = usePrefs.getState().timeFormat === "12";
+  const options: Intl.DateTimeFormatOptions = twelve
+    ? { hour: "numeric", minute: "2-digit", hour12: true }
+    : { hour: "2-digit", minute: "2-digit", hourCycle: "h23" };
+  return new Intl.DateTimeFormat(activeLocale(), options).format(new Date(2000, 0, 1, h, m));
 }

@@ -1055,7 +1055,11 @@
     "txEnterSave": "Kaydeder",
     "txEnterNext": "Sonraki alan",
     "txEnterSaveHint": "Enter işlemi hemen kaydeder.",
-    "txEnterNextHint": "Enter tutardan açıklamaya ve kategoriye, ardından Kaydet'e geçer. {{shortcut}} her zaman kaydeder."
+    "txEnterNextHint": "Enter tutardan açıklamaya ve kategoriye, ardından Kaydet'e geçer. {{shortcut}} her zaman kaydeder.",
+    "timeFormat": "Saat biçimi",
+    "timeFormatHint": "Varsayılan 24 saattir. Bu cihazdaki saat alanları ve listeler için geçerlidir.",
+    "time24": "24 saat",
+    "time12": "12 saat"
   },
   "currencySwitch": {
     "title": "Hesapların da {{currency}} olarak değiştirilsin mi?",
@@ -1202,5 +1206,14 @@
     "working": "Geri yükleniyor …",
     "done_one": "Yedek geri yüklendi – {{count}} işlem",
     "done_other": "Yedek geri yüklendi – {{count}} işlem"
+  },
+  "time": {
+    "pick": "Saat seç",
+    "hour": "Saat",
+    "minute": "Dakika",
+    "minuteLess": "Bir dakika önce",
+    "minuteMore": "Bir dakika sonra",
+    "now": "Şimdi",
+    "done": "Tamam"
   }
 }

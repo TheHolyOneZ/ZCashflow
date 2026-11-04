@@ -37,7 +37,7 @@ encrypted, over your own Wi-Fi.
 
 ## Contents
 
-- [What's new in 1.8.1](#-whats-new-in-181)
+- [What's new in 1.8.2](#-whats-new-in-182)
 - [Why ZCashflow?](#-why-zcashflow)
 - [Features](#-features)
 - [Screenshots](#-screenshots)
@@ -57,7 +57,15 @@ encrypted, over your own Wi-Fi.
 
 ---
 
-## 🆕 What's new in 1.8.1
+## 🆕 What's new in 1.8.2
+
+- **Time picker** – the clock icon in every time field opens a picker: tap the hour and minute, fine-tune by a minute, or take the current time. Typing still works.
+- **12-hour format, if you want it** – *Settings → Amounts & transactions → Time format*. 24-hour stays the default.
+- **Statistics remembers where you were** – when you open a category's transactions and come back, the month or year, the tab and the unfolded categories are still there.
+
+No database or sync schema change – 1.8.1, 1.8.0 and 1.7.0 devices still sync.
+
+### 1.8.1
 
 - **Restore backup** – *Settings → Data → Restore backup* puts a saved backup back, on desktop and on phones. You pick the file, see how many entries and accounts it holds and which period it covers, and confirm; by default the current data is saved first. Encrypted backups (`.zcvault`) ask for their password. The device keeps its own password and pairings, and paired devices take over the restored data with the next sync.
 - **Clearer backups** – the settings now say what a backup contains (no receipt photos) and that backups made with a password are encrypted. After saving, a message says where to restore it.
@@ -613,7 +621,7 @@ You don't need every toolchain locally – GitHub builds everything:
   - *Actions → Build → Run workflow* builds selected platforms as artifacts.
   - Pushing a version tag builds **all** platforms and creates a **draft release** with consistently named files and `SHA256SUMS.txt`:
     ```sh
-    git tag v1.8.1 && git push origin v1.8.1
+    git tag v1.8.2 && git push origin v1.8.2
     ```
   - Android signing uses the repository secrets `ANDROID_KEYSTORE_B64` (base64 of the keystore) and `ANDROID_KEY_PASSWORD`.
 

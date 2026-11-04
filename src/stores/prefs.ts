@@ -27,6 +27,7 @@ export type ExportExpenses = "minus" | "plain";
 export type ExportCategories = "path" | "split";
 export type TxEnter = "save" | "next";
 export type LockAfter = "never" | "0" | "1" | "5" | "15";
+export type TimeFormat = "24" | "12";
 
 export const DASHBOARD_WIDGETS = [
   "hero",
@@ -68,6 +69,7 @@ export interface Prefs {
   txEnter: TxEnter;
   txCreateMore: boolean;
   lockAfter: LockAfter;
+  timeFormat: TimeFormat;
 }
 
 export const DEFAULT_PREFS: Prefs = {
@@ -95,6 +97,7 @@ export const DEFAULT_PREFS: Prefs = {
   txEnter: "save",
   txCreateMore: false,
   lockAfter: "5",
+  timeFormat: "24",
 };
 
 const KEY = "zc.prefs";

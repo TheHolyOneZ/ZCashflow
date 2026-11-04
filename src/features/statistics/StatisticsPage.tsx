@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "@tanstack/react-router";
 import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
@@ -17,9 +17,7 @@ import { percent } from "@/lib/format";
 import { activeLocale, displayName } from "@/lib/i18n";
 import { useAppInfo, useCategories, useCategoryTotals } from "@/lib/queries";
 import { useSwipe } from "@/lib/swipe";
-
-type Span = "month" | "year";
-type Tab = "expense" | "income";
+import { useStatsView, type Span } from "./view";
 
 const PALETTE = ["#e76f51", "#f4a261", "#e9c46a", "#2a9d8f", "#264653", "#8ab17d", "#b5838d", "#6d597a", "#457b9d", "#c9ada7"];
 
@@ -32,11 +30,8 @@ export function StatisticsPage() {
   const navigate = useNavigate();
   const categories = useCategories().data ?? [];
   const main = useAppInfo().data?.mainCurrency;
-  const [span, setSpan] = useState<Span>("month");
-  const [at, setAt] = useState(() => new Date());
-  const [tab, setTab] = useState<Tab>("expense");
-  const [picked, setPicked] = useState<string | null>(null);
-  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const { span, at, tab, picked, expanded: openIds, update } = useStatsView();
+  const expanded = useMemo(() => new Set(openIds), [openIds]);
   const range = rangeOf(span, at);
   const sums = useCategoryTotals({ from: range.from, to: range.to }).data ?? [];
   const currencies = currenciesOf(sums, main);
@@ -53,7 +48,10 @@ export function StatisticsPage() {
     span === "month"
       ? new Intl.DateTimeFormat(activeLocale(), { month: "long", year: "numeric" }).format(at)
       : String(at.getFullYear());
-  const step = (by: number) => setAt((d) => (span === "month" ? addMonths(d, by) : addYears(d, by)));
+  const step = (by: number) => {
+    const view = useStatsView.getState();
+    update({ at: view.span === "month" ? addMonths(view.at, by) : addYears(view.at, by) });
+  };
   const swipe = useSwipe(step);
   const open = (id: string) => navigate({ to: "/transactions", search: { category: id, from: range.from, to: range.to } });
 
@@ -79,7 +77,7 @@ export function StatisticsPage() {
             <Select
               aria-label={t("settings.currency")}
               value={currency}
-              onValueChange={setPicked}
+              onValueChange={(v) => update({ picked: v })}
               className="w-24"
               items={currencies.map((c) => ({ value: c, label: c }))}
             />
@@ -99,7 +97,7 @@ export function StatisticsPage() {
         <Segmented<Span>
           aria-label={t("stats.span")}
           value={span}
-          onChange={setSpan}
+          onChange={(v) => update({ span: v })}
           options={[
             { value: "month", label: t("stats.month") },
             { value: "year", label: t("stats.year") },
@@ -113,7 +111,7 @@ export function StatisticsPage() {
             type="button"
             role="tab"
             aria-selected={tab === k}
-            onClick={() => setTab(k)}
+            onClick={() => update({ tab: k })}
             className={cn(
               "flex min-w-0 flex-col items-start gap-0.5 rounded-xl border bg-surface px-4 py-2.5 text-left transition-colors active:scale-100",
               tab === k ? (k === "expense" ? "border-expense/60" : "border-income/60") : "border-border text-muted hover:bg-surface-2",
@@ -187,14 +185,7 @@ export function StatisticsPage() {
                         type="button"
                         aria-label={expanded.has(node.id) ? t("categories.collapse") : t("categories.expand")}
                         aria-expanded={expanded.has(node.id)}
-                        onClick={() =>
-                          setExpanded((s) => {
-                            const next = new Set(s);
-                            if (next.has(node.id)) next.delete(node.id);
-                            else next.add(node.id);
-                            return next;
-                          })
-                        }
+                        onClick={() => update({ expanded: expanded.has(node.id) ? openIds.filter((id) => id !== node.id) : [...openIds, node.id] })}
                         className={cn("flex size-8 shrink-0 items-center justify-center rounded-md text-muted hover:text-fg", !kids.length && "invisible")}
                       >
                         <ChevronRight className={cn("size-4 transition-transform", expanded.has(node.id) && "rotate-90")} />

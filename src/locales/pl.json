@@ -1133,7 +1133,11 @@
     "txEnterSave": "Zapisuje",
     "txEnterNext": "Następne pole",
     "txEnterSaveHint": "Enter od razu zapisuje transakcję.",
-    "txEnterNextHint": "Enter przechodzi z kwoty do opisu i kategorii, a potem do Zapisz. {{shortcut}} zawsze zapisuje."
+    "txEnterNextHint": "Enter przechodzi z kwoty do opisu i kategorii, a potem do Zapisz. {{shortcut}} zawsze zapisuje.",
+    "timeFormat": "Format czasu",
+    "timeFormatHint": "Domyślnie 24 godziny. Dotyczy pól czasu i list na tym urządzeniu.",
+    "time24": "24 godziny",
+    "time12": "12 godzin"
   },
   "currencySwitch": {
     "title": "Przestawić też konta na {{currency}}?",
@@ -1306,5 +1310,14 @@
     "done_few": "Kopia przywrócona – {{count}} transakcje",
     "done_many": "Kopia przywrócona – {{count}} transakcji",
     "done_other": "Kopia przywrócona – {{count}} transakcji"
+  },
+  "time": {
+    "pick": "Wybierz godzinę",
+    "hour": "Godzina",
+    "minute": "Minuta",
+    "minuteLess": "Minutę wcześniej",
+    "minuteMore": "Minutę później",
+    "now": "Teraz",
+    "done": "Gotowe"
   }
 }

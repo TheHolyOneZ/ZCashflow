@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.8.2
+
+### Added
+
+- Time picker in all time fields (transactions, recurring payments, receipts and bulk changes): the clock icon opens a grid for the hour and minute, with buttons to change the time by one minute and to take the current time. Typing a time works as before.
+- New setting *Settings → Amounts & transactions → Time format*, per device: *24-hour* (default) or *12-hour*, which shows AM/PM in time fields, the picker and lists.
+
+### Changed
+
+- *Statistics* keeps the month or year, the income or expense tab, the currency and the unfolded categories while the app is open, so they are still there when you come back from a category's transactions.
+- Times now always follow the *Time format* setting. With the English language, lists used to show 12-hour times; they now show 24-hour times unless *12-hour* is selected.
+
+### Notes
+
+- No database or sync schema change; devices on 1.8.1, 1.8.0 and 1.7.0 still sync.
+
 ## 1.8.1
 
 ### Added

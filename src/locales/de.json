@@ -1055,7 +1055,11 @@
     "txEnterSave": "Speichert",
     "txEnterNext": "Nächstes Feld",
     "txEnterSaveHint": "Enter speichert die Buchung sofort.",
-    "txEnterNextHint": "Enter springt von Betrag zu Beschreibung und Kategorie, dann zu Speichern. {{shortcut}} speichert immer."
+    "txEnterNextHint": "Enter springt von Betrag zu Beschreibung und Kategorie, dann zu Speichern. {{shortcut}} speichert immer.",
+    "timeFormat": "Zeitformat",
+    "timeFormatHint": "Standard ist 24 Stunden. Gilt für Zeitfelder und Listen auf diesem Gerät.",
+    "time24": "24 Stunden",
+    "time12": "12 Stunden"
   },
   "currencySwitch": {
     "title": "Konten auch auf {{currency}} umstellen?",
@@ -1202,5 +1206,14 @@
     "working": "Wird wiederhergestellt …",
     "done_one": "Backup wiederhergestellt – {{count}} Buchung",
     "done_other": "Backup wiederhergestellt – {{count}} Buchungen"
+  },
+  "time": {
+    "pick": "Uhrzeit wählen",
+    "hour": "Stunde",
+    "minute": "Minute",
+    "minuteLess": "Eine Minute früher",
+    "minuteMore": "Eine Minute später",
+    "now": "Jetzt",
+    "done": "Fertig"
   }
 }

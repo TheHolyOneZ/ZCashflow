@@ -1094,7 +1094,11 @@
     "txEnterSave": "Enregistre",
     "txEnterNext": "Champ suivant",
     "txEnterSaveHint": "Entrée enregistre l'opération tout de suite.",
-    "txEnterNextHint": "Entrée passe du montant à la description et à la catégorie, puis à Enregistrer. {{shortcut}} enregistre toujours."
+    "txEnterNextHint": "Entrée passe du montant à la description et à la catégorie, puis à Enregistrer. {{shortcut}} enregistre toujours.",
+    "timeFormat": "Format de l'heure",
+    "timeFormatHint": "Le format 24 heures est utilisé par défaut. S'applique aux champs d'heure et aux listes sur cet appareil.",
+    "time24": "24 heures",
+    "time12": "12 heures"
   },
   "currencySwitch": {
     "title": "Passer aussi vos comptes en {{currency}} ?",
@@ -1254,5 +1258,14 @@
     "done_one": "Sauvegarde restaurée – {{count}} opération",
     "done_many": "Sauvegarde restaurée – {{count}} opérations",
     "done_other": "Sauvegarde restaurée – {{count}} opérations"
+  },
+  "time": {
+    "pick": "Choisir l'heure",
+    "hour": "Heure",
+    "minute": "Minute",
+    "minuteLess": "Une minute plus tôt",
+    "minuteMore": "Une minute plus tard",
+    "now": "Maintenant",
+    "done": "Terminé"
   }
 }

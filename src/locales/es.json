@@ -1094,7 +1094,11 @@
     "txEnterSave": "Guarda",
     "txEnterNext": "Siguiente campo",
     "txEnterSaveHint": "Enter guarda el movimiento al instante.",
-    "txEnterNextHint": "Enter pasa del importe a la descripción y la categoría, luego a Guardar. {{shortcut}} siempre guarda."
+    "txEnterNextHint": "Enter pasa del importe a la descripción y la categoría, luego a Guardar. {{shortcut}} siempre guarda.",
+    "timeFormat": "Formato de hora",
+    "timeFormatHint": "El valor predeterminado es 24 horas. Se aplica a los campos de hora y las listas de este dispositivo.",
+    "time24": "24 horas",
+    "time12": "12 horas"
   },
   "currencySwitch": {
     "title": "¿Cambiar también tus cuentas a {{currency}}?",
@@ -1254,5 +1258,14 @@
     "done_one": "Copia restaurada – {{count}} movimiento",
     "done_many": "Copia restaurada – {{count}} movimientos",
     "done_other": "Copia restaurada – {{count}} movimientos"
+  },
+  "time": {
+    "pick": "Elegir hora",
+    "hour": "Hora",
+    "minute": "Minuto",
+    "minuteLess": "Un minuto antes",
+    "minuteMore": "Un minuto después",
+    "now": "Ahora",
+    "done": "Listo"
   }
 }

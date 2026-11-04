@@ -27,7 +27,7 @@ import { SwitchRow } from "@/components/ui/extra";
 import { Dialog } from "@/components/ui/dialog";
 import { Segmented } from "@/components/ui/segmented";
 import { minorDigits } from "@/lib/money";
-import { usePrefs, type CurrencySymbol, type ExpenseStyle, type TxEnter, type TxPeriod } from "@/stores/prefs";
+import { usePrefs, type CurrencySymbol, type ExpenseStyle, type TimeFormat, type TxEnter, type TxPeriod } from "@/stores/prefs";
 import { cn } from "@/lib/cn";
 import { shortcutLabel } from "@/lib/platform";
 import { OcrSettings } from "./OcrSettings";
@@ -43,6 +43,7 @@ import { RestoreDialog } from "@/features/data/RestoreDialog";
 import { SecuritySettings } from "@/features/security/SecuritySettings";
 import { useVaultStatus } from "@/features/security/lock";
 import { api, planning } from "@/lib/api";
+import { formatTime } from "@/lib/dates";
 import { activeLocale, languages } from "@/lib/i18n";
 import { currencyItems } from "@/lib/currencies";
 import { invalidateData, useAccounts, useAppInfo, useErrorMessage, useSettings } from "@/lib/queries";
@@ -102,6 +103,7 @@ export function SettingsPage() {
   const expenseStyle = usePrefs((s) => s.expenseStyle);
   const txPeriod = usePrefs((s) => s.txPeriod);
   const txEnter = usePrefs((s) => s.txEnter);
+  const timeFormat = usePrefs((s) => s.timeFormat);
   const protectedData = useVaultStatus().data?.enabled ?? false;
   const setPref = usePrefs((s) => s.set);
   const settings = useSettings().data ?? {};
@@ -273,6 +275,18 @@ export function SettingsPage() {
                 ]}
               />
             </Field2>
+            <Field2 label={t("amounts.timeFormat")} hint={t("amounts.timeFormatHint")}>
+              <Segmented<TimeFormat>
+                aria-label={t("amounts.timeFormat")}
+                value={timeFormat}
+                onChange={(v) => setPref("timeFormat", v)}
+                className="w-full"
+                options={[
+                  { value: "24", label: t("amounts.time24") },
+                  { value: "12", label: t("amounts.time12") },
+                ]}
+              />
+            </Field2>
           </Section>
 
           <Section id="dashboard" icon={LayoutDashboard} title={t("dashboardSettings.title")}>
@@ -294,7 +308,7 @@ export function SettingsPage() {
                   aria-label={t("today.reminder")}
                   value={settings.daily_reminder || "off"}
                   onValueChange={(v) => setSetting("daily_reminder", v === "off" ? "" : v)}
-                  items={[{ value: "off", label: t("today.reminderOff") }, ...REMINDER_TIMES.map((v) => ({ value: v, label: v }))]}
+                  items={[{ value: "off", label: t("today.reminderOff") }, ...REMINDER_TIMES.map((v) => ({ value: v, label: formatTime(v) }))]}
                 />
               </Field2>
               <Field2 label={t("settings.remindDays")}>
