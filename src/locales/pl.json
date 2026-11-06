@@ -735,7 +735,16 @@
     "navigate": "Nawigacja",
     "palette": "Wyszukiwanie i szybkie dodawanie",
     "privacy": "Ukryj/pokaż kwoty",
-    "fullscreen": "Pełny ekran"
+    "fullscreen": "Pełny ekran",
+    "scroll": "Przewijanie",
+    "toTop": "Na samą górę",
+    "toBottom": "Na sam dół",
+    "pageUp": "Strona w górę",
+    "pageDown": "Strona w dół",
+    "keyHome": "Home",
+    "keyEnd": "End",
+    "keyPageUp": "PgUp",
+    "keyPageDown": "PgDn"
   },
   "appearance": {
     "title": "Wygląd",

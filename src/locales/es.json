@@ -706,7 +706,16 @@
     "navigate": "Navegación",
     "palette": "Búsqueda y entrada rápida",
     "privacy": "Ocultar/mostrar importes",
-    "fullscreen": "Pantalla completa"
+    "fullscreen": "Pantalla completa",
+    "scroll": "Desplazamiento",
+    "toTop": "Ir al principio",
+    "toBottom": "Ir al final",
+    "pageUp": "Una página arriba",
+    "pageDown": "Una página abajo",
+    "keyHome": "Inicio",
+    "keyEnd": "Fin",
+    "keyPageUp": "RePág",
+    "keyPageDown": "AvPág"
   },
   "appearance": {
     "title": "Apariencia",

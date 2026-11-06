@@ -677,7 +677,16 @@
     "navigate": "Navigation",
     "palette": "Suche & Schnellerfassung",
     "privacy": "Beträge verbergen/zeigen",
-    "fullscreen": "Vollbild"
+    "fullscreen": "Vollbild",
+    "scroll": "Scrollen",
+    "toTop": "Nach ganz oben",
+    "toBottom": "Nach ganz unten",
+    "pageUp": "Eine Seite nach oben",
+    "pageDown": "Eine Seite nach unten",
+    "keyHome": "Pos1",
+    "keyEnd": "Ende",
+    "keyPageUp": "Bild↑",
+    "keyPageDown": "Bild↓"
   },
   "appearance": {
     "title": "Darstellung",

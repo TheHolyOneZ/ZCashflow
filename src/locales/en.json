@@ -677,7 +677,16 @@
     "navigate": "Navigation",
     "palette": "Search & quick entry",
     "privacy": "Hide/show amounts",
-    "fullscreen": "Full screen"
+    "fullscreen": "Full screen",
+    "scroll": "Scrolling",
+    "toTop": "Jump to the top",
+    "toBottom": "Jump to the bottom",
+    "pageUp": "One page up",
+    "pageDown": "One page down",
+    "keyHome": "Home",
+    "keyEnd": "End",
+    "keyPageUp": "PgUp",
+    "keyPageDown": "PgDn"
   },
   "appearance": {
     "title": "Appearance",

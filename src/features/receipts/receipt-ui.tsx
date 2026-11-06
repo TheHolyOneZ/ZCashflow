@@ -8,6 +8,8 @@ import { cn } from "@/lib/cn";
 import { invalidateData, useAttachmentImage, useErrorMessage } from "@/lib/queries";
 import { useUi } from "@/stores/ui";
 
+export const CAMERA_ACCEPT = "image/*";
+
 export const IMAGE_ACCEPT = "image/jpeg,image/png,image/webp,image/bmp,image/tiff,image/heic,image/heif,application/pdf,.pdf,.heic,.heif";
 
 export function useReceiptImport() {

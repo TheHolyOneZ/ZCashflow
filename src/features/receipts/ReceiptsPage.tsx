@@ -11,7 +11,7 @@ import { Badge, Money } from "@/components/ui/extra";
 import type { Attachment } from "@/lib/api";
 import { formatDay } from "@/lib/dates";
 import { useUi } from "@/stores/ui";
-import { IMAGE_ACCEPT, Lightbox, ReceiptThumb, useReceiptImport } from "./receipt-ui";
+import { CAMERA_ACCEPT, IMAGE_ACCEPT, Lightbox, ReceiptThumb, useReceiptImport } from "./receipt-ui";
 
 export function ReceiptsPage() {
   const { t } = useTranslation();
@@ -57,7 +57,7 @@ export function ReceiptsPage() {
         <input
           ref={cameraRef}
           type="file"
-          accept={IMAGE_ACCEPT}
+          accept={CAMERA_ACCEPT}
           capture="environment"
           hidden
           onChange={(e) => {

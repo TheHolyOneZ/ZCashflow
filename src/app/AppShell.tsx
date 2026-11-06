@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
@@ -27,19 +27,28 @@ import { useInsightNotifications } from "@/features/insights/insights";
 import { useDailyReminder } from "@/features/today/reminder";
 import { invalidateData, useAccounts, useInsights, useSyncStatus } from "@/lib/queries";
 import { useMoneyDisplay } from "@/lib/money";
+import { calmMotion, jumpTarget, scrollBlocked, scrollJump } from "@/lib/scroll-keys";
 
 function isTyping(target: EventTarget | null) {
   const el = target as HTMLElement | null;
   return !!el && (el.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(el.tagName));
 }
 
-function useGlobalShortcuts(openHelp: () => void) {
+function useGlobalShortcuts(openHelp: () => void, scroller: RefObject<HTMLElement | null>) {
   const setPalette = useUi((s) => s.setPaletteOpen);
   const openNew = useUi((s) => s.openNewTx);
   const navigate = useNavigate();
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (useLock.getState().locked) return;
+      const jump = scrollJump(e);
+      if (jump) {
+        const main = scroller.current;
+        if (!main || e.defaultPrevented || isTyping(e.target) || scrollBlocked(e.target) || useUi.getState().paletteOpen) return;
+        e.preventDefault();
+        main.scrollTo({ top: jumpTarget(jump, main.scrollTop, main.scrollHeight, main.clientHeight), behavior: calmMotion() ? "auto" : "smooth" });
+        return;
+      }
       const mod = e.metaKey || e.ctrlKey;
       const key = e.key.toLowerCase();
       if (e.key === "F11") {
@@ -87,7 +96,7 @@ function useGlobalShortcuts(openHelp: () => void) {
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [setPalette, openNew, navigate, openHelp]);
+  }, [setPalette, openNew, navigate, openHelp, scroller]);
 }
 
 function useStartPage() {
@@ -230,7 +239,8 @@ export function AppShell() {
   const [moreOpen, setMoreOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const openHelp = useCallback(() => setHelpOpen(true), []);
-  useGlobalShortcuts(openHelp);
+  const mainRef = useRef<HTMLElement>(null);
+  useGlobalShortcuts(openHelp, mainRef);
   useStartPage();
   useApplyTitleBar();
   useLedgerEvents();
@@ -241,7 +251,6 @@ export function AppShell() {
   const dragging = useGlobalDrop();
   const processing = useUi((s) => s.processing);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const mainRef = useRef<HTMLElement>(null);
   useEffect(() => {
     mainRef.current?.scrollTo({ top: 0 });
   }, [pathname]);

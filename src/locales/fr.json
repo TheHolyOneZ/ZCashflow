@@ -706,7 +706,16 @@
     "navigate": "Navigation",
     "palette": "Recherche et saisie rapide",
     "privacy": "Masquer/afficher les montants",
-    "fullscreen": "Plein écran"
+    "fullscreen": "Plein écran",
+    "scroll": "Défilement",
+    "toTop": "Aller tout en haut",
+    "toBottom": "Aller tout en bas",
+    "pageUp": "Une page vers le haut",
+    "pageDown": "Une page vers le bas",
+    "keyHome": "Début",
+    "keyEnd": "Fin",
+    "keyPageUp": "Pg préc",
+    "keyPageDown": "Pg suiv"
   },
   "appearance": {
     "title": "Apparence",

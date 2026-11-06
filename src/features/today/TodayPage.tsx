@@ -44,7 +44,7 @@ import {
   useTransactions,
 } from "@/lib/queries";
 import { useQueryClient } from "@tanstack/react-query";
-import { IMAGE_ACCEPT, ReceiptThumb, useReceiptImport } from "@/features/receipts/receipt-ui";
+import { CAMERA_ACCEPT, IMAGE_ACCEPT, ReceiptThumb, useReceiptImport } from "@/features/receipts/receipt-ui";
 import { usePrefs } from "@/stores/prefs";
 import { readDone } from "./reminder";
 import { REPEAT_PRESETS, type RepeatPreset } from "@/features/recurring/rule-input";
@@ -647,7 +647,7 @@ function DayReceipts({ day, entries }: { day: string; entries: Transaction[] }) 
           </Button>
         </div>
       </div>
-      <input ref={camRef} type="file" accept={IMAGE_ACCEPT} capture="environment" hidden onChange={(e) => { if (e.target.files) importFiles(e.target.files, { review: false }); e.target.value = ""; }} />
+      <input ref={camRef} type="file" accept={CAMERA_ACCEPT} capture="environment" hidden onChange={(e) => { if (e.target.files) importFiles(e.target.files, { review: false }); e.target.value = ""; }} />
       <input ref={fileRef} type="file" accept={IMAGE_ACCEPT} multiple hidden onChange={(e) => { if (e.target.files) importFiles(e.target.files, { review: false }); e.target.value = ""; }} />
       {inbox.length === 0 ? (
         <div

@@ -706,7 +706,16 @@
     "navigate": "Navigazione",
     "palette": "Ricerca e inserimento rapido",
     "privacy": "Nascondi/mostra importi",
-    "fullscreen": "Schermo intero"
+    "fullscreen": "Schermo intero",
+    "scroll": "Scorrimento",
+    "toTop": "Vai all'inizio",
+    "toBottom": "Vai alla fine",
+    "pageUp": "Una pagina su",
+    "pageDown": "Una pagina giù",
+    "keyHome": "Home",
+    "keyEnd": "Fine",
+    "keyPageUp": "PagSu",
+    "keyPageDown": "PagGiù"
   },
   "appearance": {
     "title": "Aspetto",

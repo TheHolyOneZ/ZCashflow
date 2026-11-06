@@ -37,7 +37,7 @@ encrypted, over your own Wi-Fi.
 
 ## Contents
 
-- [What's new in 1.8.2](#-whats-new-in-182)
+- [What's new in 1.8.3](#-whats-new-in-183)
 - [Why ZCashflow?](#-why-zcashflow)
 - [Features](#-features)
 - [Screenshots](#-screenshots)
@@ -57,7 +57,14 @@ encrypted, over your own Wi-Fi.
 
 ---
 
-## 🆕 What's new in 1.8.2
+## 🆕 What's new in 1.8.3
+
+- **Take photo opens the camera on Android** – *Take photo* on the receipts and overview pages opened the file manager instead of the camera. It now starts the phone's camera app directly. ZCashflow doesn't need its own camera permission for that.
+- **Jump to the top or bottom** – <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>↑</kbd>/<kbd>↓</kbd>, <kbd>Home</kbd>/<kbd>End</kbd> and <kbd>Page Up</kbd>/<kbd>Page Down</kbd> scroll the current page, even when nothing on it has focus. They're listed under *Keyboard shortcuts* (<kbd>?</kbd>).
+
+No database or sync schema change – 1.8.2 and older 1.7/1.8 devices still sync.
+
+### 1.8.2
 
 - **Time picker** – the clock icon in every time field opens a picker: tap the hour and minute, fine-tune by a minute, or take the current time. Typing still works.
 - **12-hour format, if you want it** – *Settings → Amounts & transactions → Time format*. 24-hour stays the default.
@@ -621,7 +628,7 @@ You don't need every toolchain locally – GitHub builds everything:
   - *Actions → Build → Run workflow* builds selected platforms as artifacts.
   - Pushing a version tag builds **all** platforms and creates a **draft release** with consistently named files and `SHA256SUMS.txt`:
     ```sh
-    git tag v1.8.2 && git push origin v1.8.2
+    git tag v1.8.3 && git push origin v1.8.3
     ```
   - Android signing uses the repository secrets `ANDROID_KEYSTORE_B64` (base64 of the keystore) and `ANDROID_KEY_PASSWORD`.
 

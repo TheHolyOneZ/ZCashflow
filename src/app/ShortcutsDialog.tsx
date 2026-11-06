@@ -37,6 +37,17 @@ export function ShortcutsDialog({ open, onOpenChange }: { open: boolean; onOpenC
       ],
     },
     {
+      title: t("shortcuts.scroll"),
+      items: [
+        ["Mod+↑", t("shortcuts.toTop")],
+        ["Mod+↓", t("shortcuts.toBottom")],
+        [t("shortcuts.keyHome"), t("shortcuts.toTop")],
+        [t("shortcuts.keyEnd"), t("shortcuts.toBottom")],
+        [t("shortcuts.keyPageUp"), t("shortcuts.pageUp")],
+        [t("shortcuts.keyPageDown"), t("shortcuts.pageDown")],
+      ],
+    },
+    {
       title: t("shortcuts.navigate"),
       items: shortcutItems.map((n, i) => [`Mod+${i + 1}`, t(n.labelKey)] as [string, string]),
     },

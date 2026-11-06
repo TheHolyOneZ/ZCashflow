@@ -677,7 +677,16 @@
     "navigate": "Gezinme",
     "palette": "Arama ve hızlı giriş",
     "privacy": "Tutarları gizle/göster",
-    "fullscreen": "Tam ekran"
+    "fullscreen": "Tam ekran",
+    "scroll": "Kaydırma",
+    "toTop": "En üste git",
+    "toBottom": "En alta git",
+    "pageUp": "Bir sayfa yukarı",
+    "pageDown": "Bir sayfa aşağı",
+    "keyHome": "Home",
+    "keyEnd": "End",
+    "keyPageUp": "PgUp",
+    "keyPageDown": "PgDn"
   },
   "appearance": {
     "title": "Görünüm",

@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.8.3
+
+### Added
+
+- Keyboard shortcuts to scroll the current page, also when nothing on it has focus: <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>↑</kbd>/<kbd>↓</kbd> and <kbd>Home</kbd>/<kbd>End</kbd> jump to the top or bottom, <kbd>Page Up</kbd>/<kbd>Page Down</kbd> move by one screen. They don't apply while typing in a field, in open dialogs and menus, or to controls that use these keys themselves. The shortcut overview (<kbd>?</kbd>) lists them, with the key names of the selected language.
+
+### Fixed
+
+- *Take photo* on Android opened the file manager instead of the camera. The Android WebView only starts the camera for photo fields that accept `image/*`, and the camera fields listed the individual image formats instead. *Take photo* now starts the phone's camera app directly; ZCashflow needs no camera permission of its own for this. *Choose files* still accepts images and PDFs.
+
+### Notes
+
+- No database or sync schema change; devices on 1.8.2, 1.8.1, 1.8.0 and 1.7.0 still sync.
+
 ## 1.8.2
 
 ### Added
