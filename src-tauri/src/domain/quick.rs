@@ -47,7 +47,7 @@ fn parse_amount(token: &str) -> Option<(i64, bool)> {
     let mut s = token.trim();
     let income = s.starts_with('+');
     s = s.trim_start_matches(['+', '-']);
-    for sym in ["€", "$", "£", "EUR", "eur", "USD", "usd", "CHF", "chf"] {
+    for sym in ["€", "$", "£", "₽", "EUR", "eur", "USD", "usd", "CHF", "chf", "RUB", "rub", "руб"] {
         s = s.trim_start_matches(sym).trim_end_matches(sym);
     }
     if s.is_empty() || !s.chars().next()?.is_ascii_digit() {
@@ -74,9 +74,9 @@ fn parse_amount(token: &str) -> Option<(i64, bool)> {
 
 fn parse_date(token: &str, today: NaiveDate) -> Option<NaiveDate> {
     match token.to_lowercase().as_str() {
-        "heute" | "today" => return Some(today),
-        "gestern" | "yesterday" => return Some(today - Duration::days(1)),
-        "vorgestern" => return Some(today - Duration::days(2)),
+        "heute" | "today" | "сегодня" => return Some(today),
+        "gestern" | "yesterday" | "вчера" => return Some(today - Duration::days(1)),
+        "vorgestern" | "позавчера" => return Some(today - Duration::days(2)),
         _ => {}
     }
     if let Ok(d) = NaiveDate::parse_from_str(token, "%Y-%m-%d") {
@@ -145,6 +145,13 @@ mod tests {
         assert_eq!(e.amount_minor, Some(250_000));
         assert_eq!(e.title, "Gehalt");
         assert_eq!(e.occurred_on, "2026-10-07");
+    }
+
+    #[test]
+    fn russian_words_and_rubles() {
+        let e = p("Хостинг 500₽ вчера");
+        assert_eq!((e.title.as_str(), e.amount_minor, e.occurred_on.as_str()), ("Хостинг", Some(50_000), "2026-10-07"));
+        assert_eq!(p("Кофе 250 руб").amount_minor, Some(25_000));
     }
 
     #[test]

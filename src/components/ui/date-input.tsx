@@ -13,6 +13,7 @@ import {
 } from "date-fns";
 import { CalendarDays, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { monthLabel } from "@/lib/dates";
 import { activeLocale } from "@/lib/i18n";
 
 const iso = (d: Date) => format(d, "yyyy-MM-dd");
@@ -190,9 +191,9 @@ function Calendar({
         <button
           type="button"
           onClick={() => setMode("years")}
-          className="rounded-lg px-2 py-1 text-[13px] font-semibold capitalize hover:bg-surface-2"
+          className="rounded-lg px-2 py-1 text-[13px] font-semibold hover:bg-surface-2"
         >
-          {new Intl.DateTimeFormat(loc, { month: "long", year: "numeric" }).format(view)}
+          {monthLabel(view, loc)}
         </button>
         <button type="button" className={navBtn} aria-label={t("date.next")} onClick={() => setView(addMonths(view, 1))}>
           <ChevronRight className="size-4" />

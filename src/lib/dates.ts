@@ -14,6 +14,11 @@ export function formatDay(iso: string, opts: Intl.DateTimeFormatOptions = { date
   return new Intl.DateTimeFormat(activeLocale(), opts).format(parseISO(iso));
 }
 
+export function monthLabel(d: Date, locale: string = activeLocale()): string {
+  const text = new Intl.DateTimeFormat(locale, { month: "long", year: "numeric" }).format(d);
+  return text.charAt(0).toLocaleUpperCase(locale) + text.slice(1);
+}
+
 export function nowTime(d: Date = new Date()): string {
   return format(d, "HH:mm");
 }

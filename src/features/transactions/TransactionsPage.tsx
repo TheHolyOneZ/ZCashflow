@@ -22,8 +22,7 @@ import { CategoryFilter } from "./CategoryFilter";
 import { BulkBar } from "./BulkActions";
 import { useSwipe } from "@/lib/swipe";
 import { modKey } from "@/lib/platform";
-import { formatDay, isoDate, monthRange } from "@/lib/dates";
-import { activeLocale } from "@/lib/i18n";
+import { formatDay, isoDate, monthLabel, monthRange } from "@/lib/dates";
 import { usePrefs } from "@/stores/prefs";
 
 type KindFilter = TxKind | "all";
@@ -254,13 +253,13 @@ function PeriodBar({ from, to, onChange }: { from: string; to: string; onChange:
   const month = fullMonth(from, to);
   if (from || to) {
     if (!month) return null;
-    const label = new Intl.DateTimeFormat(activeLocale(), { month: "long", year: "numeric" }).format(month);
+    const label = monthLabel(month);
     return (
       <div className="flex items-center justify-between gap-2 border-b border-border px-2 py-1.5">
         <Button variant="ghost" size="icon" aria-label={t("tx.prevMonth")} onClick={() => onChange(monthRange(addMonths(month, -1)))}>
           <ChevronLeft className="size-4" />
         </Button>
-        <span className="text-[13.5px] font-semibold capitalize">{label}</span>
+        <span className="text-[13.5px] font-semibold">{label}</span>
         <Button variant="ghost" size="icon" aria-label={t("tx.nextMonth")} onClick={() => onChange(monthRange(addMonths(month, 1)))}>
           <ChevronRight className="size-4" />
         </Button>

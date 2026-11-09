@@ -1,5 +1,5 @@
 import logo from "@/assets/logo.png";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 import { Dialog as D } from "radix-ui";
@@ -12,9 +12,9 @@ import { Stepper } from "@/components/ui/inputs";
 import { Segmented } from "@/components/ui/segmented";
 import { api, demo, planning } from "@/lib/api";
 import { cn } from "@/lib/cn";
-import { activeLocale, languages } from "@/lib/i18n";
+import { activeLocale, languages, suggestedCurrency } from "@/lib/i18n";
 import { currencyItems } from "@/lib/currencies";
-import { parseMoney } from "@/lib/money";
+import { minorDigits, parseMoney } from "@/lib/money";
 import { invalidateData, useAccounts, useAppInfo, useErrorMessage, useSettings, useTransactions } from "@/lib/queries";
 import { useUi, type Theme } from "@/stores/ui";
 
@@ -51,7 +51,8 @@ function Wizard() {
   const setAccent = usePrefs((s) => s.set);
   const [step, setStep] = useState(0);
   const [busy, setBusy] = useState(false);
-  const [currency, setCurrency] = useState(info?.defaultCurrency ?? "EUR");
+  const [currency, setCurrency] = useState(() => suggestedCurrency(i18n.language) ?? info?.defaultCurrency ?? "EUR");
+  const pickedCurrency = useRef(false);
   const [giro, setGiro] = useState("");
   const [cash, setCash] = useState("");
   const [salary, setSalary] = useState("");
@@ -63,6 +64,24 @@ function Wizard() {
     setBusy(true);
     try {
       await api.setDefaultCurrency(currency);
+      const used = [...new Set(accounts.map((a) => a.currency))];
+      if (used.length === 1 && used[0] !== currency) {
+        if (minorDigits(used[0]) === minorDigits(currency)) {
+          await api.relabelCurrency(used[0], currency);
+        } else {
+          for (const a of accounts) {
+            await api.upsertAccount({
+              id: a.id,
+              name: a.systemKey ? t(a.systemKey) : a.name,
+              kind: a.kind,
+              currency,
+              openingMinor: a.openingMinor,
+              color: a.color,
+              archived: a.archived,
+            });
+          }
+        }
+      }
       const cashAccount = accounts.find((a) => a.kind === "cash") ?? accounts[0];
       if (cashAccount && cash.trim()) {
         await api.upsertAccount({
@@ -142,10 +161,26 @@ function Wizard() {
         <div className="flex flex-col gap-4">
           <div className="grid grid-cols-2 gap-3">
             <Field label={t("settings.language")} htmlFor="ob-lang">
-              <Select id="ob-lang" value={i18n.language} onValueChange={(v) => i18n.changeLanguage(v)} items={languages.map((l) => ({ value: l.code, label: l.label }))} />
+              <Select
+                id="ob-lang"
+                value={i18n.language}
+                onValueChange={(v) => {
+                  i18n.changeLanguage(v);
+                  if (!pickedCurrency.current) setCurrency(suggestedCurrency(v) ?? "EUR");
+                }}
+                items={languages.map((l) => ({ value: l.code, label: l.label }))}
+              />
             </Field>
             <Field label={t("settings.currency")} htmlFor="ob-cur">
-              <Select id="ob-cur" value={currency} onValueChange={setCurrency} items={currencyItems(activeLocale(), currency)} />
+              <Select
+                id="ob-cur"
+                value={currency}
+                onValueChange={(v) => {
+                  pickedCurrency.current = true;
+                  setCurrency(v);
+                }}
+                items={currencyItems(activeLocale(), currency)}
+              />
             </Field>
           </div>
           <Field label={t("settings.theme")}>

@@ -14,7 +14,7 @@ encrypted, over your own Wi-Fi.
   <a href="https://github.com/TheHolyOneZ/ZCashflow/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/TheHolyOneZ/ZCashflow?style=flat-square&color=14b8a6&label=release"></a>
   <a href="LICENSE"><img alt="License: GPL-3.0" src="https://img.shields.io/badge/license-GPL--3.0-14b8a6?style=flat-square"></a>
   <img alt="Platforms" src="https://img.shields.io/badge/platforms-Windows%20%7C%20macOS%20%7C%20Linux%20%7C%20Android%20%7C%20iOS-0f766e?style=flat-square">
-  <img alt="Languages" src="https://img.shields.io/badge/languages-7-0f766e?style=flat-square">
+  <img alt="Languages" src="https://img.shields.io/badge/languages-8-0f766e?style=flat-square">
   <a href="https://ko-fi.com/theholyonez"><img alt="Support on Ko-fi" src="https://img.shields.io/badge/Ko--fi-support-ff5e5b?style=flat-square&logo=ko-fi&logoColor=white"></a>
 </p>
 
@@ -37,7 +37,7 @@ encrypted, over your own Wi-Fi.
 
 ## Contents
 
-- [What's new in 1.8.3](#-whats-new-in-183)
+- [What's new in 1.8.4](#-whats-new-in-184)
 - [Why ZCashflow?](#-why-zcashflow)
 - [Features](#-features)
 - [Screenshots](#-screenshots)
@@ -57,7 +57,16 @@ encrypted, over your own Wi-Fi.
 
 ---
 
-## 🆕 What's new in 1.8.3
+## 🆕 What's new in 1.8.4
+
+- **Русский** – ZCashflow is now available in Russian, including the Windows installer. Amounts and dates follow Russian conventions (*1 234,56 ₽*, *9 нояб. 2026 г.*), and choosing Russian in the welcome wizard suggests RUB as the currency.
+- **The currency chosen at the start sticks** – picking a currency in the welcome wizard without entering a starting cash amount left the built-in *Cash* account in EUR, so the app kept showing EUR. The account now takes the chosen currency.
+- **Bank exports in more languages** – the CSV import recognises Russian column names (*Дата операции*, *Сумма*, *Описание* …) and accented ones like *Libellé*, *Categoría* or *Açıklama*. Duplicate detection no longer mixes up entries whose descriptions use non-Latin letters.
+- **Quick entry** understands *сегодня*, *вчера*, *позавчера* and amounts with ₽ or *руб*.
+
+No database or sync schema change – 1.8.3 and older 1.7/1.8 devices still sync.
+
+### 1.8.3
 
 - **Take photo opens the camera on Android** – *Take photo* on the receipts and overview pages opened the file manager instead of the camera. It now starts the phone's camera app directly. ZCashflow doesn't need its own camera permission for that.
 - **Jump to the top or bottom** – <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>↑</kbd>/<kbd>↓</kbd>, <kbd>Home</kbd>/<kbd>End</kbd> and <kbd>Page Up</kbd>/<kbd>Page Down</kbd> scroll the current page, even when nothing on it has focus. They're listed under *Keyboard shortcuts* (<kbd>?</kbd>).
@@ -142,7 +151,7 @@ See [changelog.md](changelog.md) for the full change list.
 | 🔮 **Knows what's coming** | Recurring payments, installments and savings goals feed a forecast: how much you'll have at the end of the month and how much you can safely spend per day. |
 | 🧾 **Receipts that type themselves** | Snap a receipt – date, total and merchant are recognized on the device. Optionally refined by a local AI model. |
 | ⚡ **Two minutes a day** | The *Simple* view is built for a daily routine: enter today's spending, drop today's receipts, done. |
-| 🎨 **Yours** | Light, dark and midnight themes, 9 accent colors, 4 fonts, density, corner style, size, a privacy blur – and 7 languages. |
+| 🎨 **Yours** | Light, dark and midnight themes, 9 accent colors, 4 fonts, density, corner style, size, a privacy blur – and 8 languages. |
 
 ---
 
@@ -247,7 +256,7 @@ See [changelog.md](changelog.md) for the full change list.
 </tr>
 </table>
 
-**Also included:** 7 languages (English, Deutsch, Español, Français, Italiano, Polski, Türkçe) · light / dark / midnight themes · accent colors, fonts, density, corner radius, interface size · privacy mode that blurs every amount (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>H</kbd>) · custom title bar · command palette · system notifications · CSV / ZIP export and CSV import · every ISO currency, optional hiding of the currency symbol and red expenses without a minus · full database backup · demo data to explore · factory reset with backup.
+**Also included:** 8 languages (English, Deutsch, Español, Français, Italiano, Polski, Русский, Türkçe) · light / dark / midnight themes · accent colors, fonts, density, corner radius, interface size · privacy mode that blurs every amount (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>H</kbd>) · custom title bar · command palette · system notifications · CSV / ZIP export and CSV import · every ISO currency, optional hiding of the currency symbol and red expenses without a minus · full database backup · demo data to explore · factory reset with backup.
 
 ---
 
@@ -628,7 +637,7 @@ You don't need every toolchain locally – GitHub builds everything:
   - *Actions → Build → Run workflow* builds selected platforms as artifacts.
   - Pushing a version tag builds **all** platforms and creates a **draft release** with consistently named files and `SHA256SUMS.txt`:
     ```sh
-    git tag v1.8.3 && git push origin v1.8.3
+    git tag v1.8.4 && git push origin v1.8.4
     ```
   - Android signing uses the repository secrets `ANDROID_KEYSTORE_B64` (base64 of the keystore) and `ANDROID_KEY_PASSWORD`.
 

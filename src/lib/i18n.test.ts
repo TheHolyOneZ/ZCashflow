@@ -5,9 +5,10 @@ import es from "@/locales/es.json";
 import fr from "@/locales/fr.json";
 import itLocale from "@/locales/it.json";
 import pl from "@/locales/pl.json";
+import ru from "@/locales/ru.json";
 import tr from "@/locales/tr.json";
 
-const locales: Record<string, object> = { de, en, es, fr, it: itLocale, pl, tr };
+const locales: Record<string, object> = { de, en, es, fr, it: itLocale, pl, ru, tr };
 const PLURAL = /_(zero|one|two|few|many|other)$/;
 
 function keys(obj: object, prefix = ""): string[] {

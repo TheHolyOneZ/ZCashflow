@@ -6,6 +6,7 @@ import es from "@/locales/es.json";
 import fr from "@/locales/fr.json";
 import it from "@/locales/it.json";
 import pl from "@/locales/pl.json";
+import ru from "@/locales/ru.json";
 import tr from "@/locales/tr.json";
 
 export const languages = [
@@ -15,6 +16,7 @@ export const languages = [
   { code: "fr", label: "Français", locale: "fr-FR" },
   { code: "it", label: "Italiano", locale: "it-IT" },
   { code: "pl", label: "Polski", locale: "pl-PL" },
+  { code: "ru", label: "Русский", locale: "ru-RU" },
   { code: "tr", label: "Türkçe", locale: "tr-TR" },
 ] as const;
 
@@ -40,6 +42,7 @@ i18n.use(initReactI18next).init({
     fr: { translation: fr },
     it: { translation: it },
     pl: { translation: pl },
+    ru: { translation: ru },
     tr: { translation: tr },
   },
   lng: initialLanguage(),
@@ -55,6 +58,12 @@ i18n.on("languageChanged", (lng) => {
   }
 });
 document.documentElement.lang = i18n.language;
+
+const LANGUAGE_CURRENCY: Partial<Record<LanguageCode, string>> = { pl: "PLN", ru: "RUB", tr: "TRY" };
+
+export function suggestedCurrency(language: string): string | null {
+  return LANGUAGE_CURRENCY[language as LanguageCode] ?? null;
+}
 
 export function activeLocale(): string {
   return languages.find((l) => l.code === i18n.language)?.locale ?? "en-US";

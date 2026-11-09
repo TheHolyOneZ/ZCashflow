@@ -90,30 +90,67 @@ enum Col {
 }
 
 const ALIASES: &[(Col, &[&str])] = &[
-    (Col::Date, &["date", "datum", "buchungstag", "buchungsdatum", "fecha", "data", "tarih", "bookingdate", "transactiondate", "datadioperazione", "dataoperacji", "dateoperation"]),
-    (Col::Time, &["time", "uhrzeit", "zeit", "buchungszeit", "hora", "heure", "ora", "godzina", "saat", "zaman"]),
-    (Col::Kind, &["type", "typ", "art", "kind", "tipo", "rodzaj", "tur", "tuer", "turu"]),
-    (Col::Amount, &["amount", "betrag", "umsatz", "betrageur", "importe", "montant", "importo", "kwota", "tutar", "summe", "wert"]),
-    (Col::Currency, &["currency", "waehrung", "wahrung", "moneda", "devise", "divisa", "waluta", "parabirimi"]),
-    (Col::Account, &["account", "konto", "cuenta", "compte", "conto", "rachunek", "hesap"]),
-    (Col::ToAccount, &["toaccount", "zielkonto", "cuentadestino", "comptedestination", "contodestinazione", "rachunekdocelowy", "hedefhesap"]),
-    (Col::Category, &["category", "kategorie", "categoria", "categorie", "kategoria", "kategori"]),
+    (
+        Col::Date,
+        &[
+            "date", "datum", "buchungstag", "buchungsdatum", "fecha", "data", "tarih", "bookingdate", "transactiondate", "datadioperazione", "dataoperacji",
+            "dateoperation", "дата", "датаоперации", "датаплатежа", "датапроводки",
+        ],
+    ),
+    (Col::Time, &["time", "uhrzeit", "zeit", "buchungszeit", "hora", "heure", "ora", "godzina", "saat", "zaman", "время", "времяоперации"]),
+    (Col::Kind, &["type", "typ", "art", "kind", "tipo", "rodzaj", "tur", "tuer", "turu", "тип", "типоперации"]),
+    (
+        Col::Amount,
+        &[
+            "amount", "betrag", "umsatz", "betrageur", "importe", "montant", "importo", "kwota", "tutar", "summe", "wert", "сумма", "суммаоперации",
+            "суммаплатежа", "суммаввалютесчета",
+        ],
+    ),
+    (Col::Currency, &["currency", "waehrung", "wahrung", "moneda", "devise", "divisa", "waluta", "parabirimi", "валюта", "валютаоперации"]),
+    (Col::Account, &["account", "konto", "cuenta", "compte", "conto", "rachunek", "hesap", "счет", "карта"]),
+    (
+        Col::ToAccount,
+        &["toaccount", "zielkonto", "cuentadestino", "comptedestination", "contodestinazione", "rachunekdocelowy", "hedefhesap", "счетзачисления"],
+    ),
+    (Col::Category, &["category", "kategorie", "categoria", "categorie", "kategoria", "kategori", "категория"]),
     (
         Col::Counterparty,
         &[
             "counterparty", "empfaenger", "empfanger", "auftraggeber", "zahlungsempfaenger", "zahlungsempfanger", "auftraggeberempfaenger",
             "beguenstigterzahlungspflichtiger", "begunstigterzahlungspflichtiger", "nameauftraggeberbeguenstigter", "payee", "name",
-            "gegenueber", "haendler", "merchant", "beneficiario", "beneficiaire", "kontrahent", "alici",
+            "gegenueber", "haendler", "merchant", "beneficiario", "beneficiaire", "kontrahent", "alici", "получатель", "плательщик", "контрагент",
+            "продавец",
         ],
     ),
     (
         Col::Title,
-        &["title", "titel", "verwendungszweck", "beschreibung", "description", "buchungstext", "text", "purpose", "bezeichnung", "concepto", "libelle", "descrizione", "opis", "aciklama"],
+        &[
+            "title", "titel", "verwendungszweck", "beschreibung", "description", "buchungstext", "text", "purpose", "bezeichnung", "concepto", "libelle",
+            "descripcion", "descrizione", "opis", "aciklama", "описание", "назначение", "назначениеплатежа", "наименование",
+        ],
     ),
-    (Col::Note, &["note", "notiz", "bemerkung", "notes", "nota", "remarque", "uwagi", "not"]),
-    (Col::Tags, &["tags", "schlagwoerter", "etiquetas", "etichette", "etykiety", "etiketler"]),
-    (Col::Reference, &["reference", "referenz", "ref", "referencia", "riferimento", "referans"]),
+    (Col::Note, &["note", "notiz", "bemerkung", "notes", "nota", "remarque", "uwagi", "not", "примечание", "заметка", "комментарий"]),
+    (Col::Tags, &["tags", "schlagwoerter", "etiquetas", "etichette", "etykiety", "etiketler", "теги", "метки"]),
+    (Col::Reference, &["reference", "referenz", "ref", "referencia", "riferimento", "referans", "ссылка"]),
 ];
+
+fn plain(c: char) -> char {
+    match c {
+        'á' | 'à' | 'â' | 'ã' | 'å' | 'ą' => 'a',
+        'é' | 'è' | 'ê' | 'ë' | 'ę' => 'e',
+        'í' | 'ì' | 'î' | 'ï' | 'ı' => 'i',
+        'ó' | 'ò' | 'ô' | 'õ' => 'o',
+        'ú' | 'ù' | 'û' => 'u',
+        'ñ' | 'ń' => 'n',
+        'ç' | 'ć' => 'c',
+        'ś' | 'ş' => 's',
+        'ź' | 'ż' => 'z',
+        'ł' => 'l',
+        'ğ' => 'g',
+        'ё' => 'е',
+        other => other,
+    }
+}
 
 fn fold(s: &str) -> String {
     s.to_lowercase()
@@ -122,7 +159,8 @@ fn fold(s: &str) -> String {
         .replace('ü', "ue")
         .replace('ß', "ss")
         .chars()
-        .filter(|c| c.is_ascii_alphanumeric())
+        .map(plain)
+        .filter(|c| c.is_alphanumeric())
         .collect()
 }
 
@@ -240,6 +278,7 @@ pub fn parse_amount(s: &str, currency: &str) -> Option<i64> {
     let raw: String = s.chars().filter(|c| !c.is_whitespace() && *c != '\u{a0}' && *c != '\'').collect();
     let negative = raw.starts_with('-') || raw.ends_with('-') || (raw.starts_with('(') && raw.ends_with(')'));
     let body: String = raw.chars().filter(|c| c.is_ascii_digit() || *c == '.' || *c == ',').collect();
+    let body = body.trim_end_matches(['.', ',']).to_owned();
     if body.is_empty() || !body.chars().any(|c| c.is_ascii_digit()) {
         return None;
     }
@@ -273,11 +312,11 @@ pub fn parse_amount(s: &str, currency: &str) -> Option<i64> {
 
 fn parse_kind(s: &str) -> Option<&'static str> {
     match fold(s).as_str() {
-        "income" | "einnahme" | "einnahmen" | "eingang" | "gutschrift" | "ingreso" | "revenu" | "entree" | "entrata" | "przychod" | "gelir" | "haben" => Some("income"),
-        "expense" | "ausgabe" | "ausgaben" | "ausgang" | "lastschrift" | "gasto" | "depense" | "uscita" | "spesa" | "wydatek" | "gider" | "soll" => {
-            Some("expense")
-        }
-        "transfer" | "umbuchung" | "uebertrag" | "transferencia" | "virement" | "trasferimento" | "przelew" | "przeniesienie" => Some("transfer"),
+        "income" | "einnahme" | "einnahmen" | "eingang" | "gutschrift" | "ingreso" | "revenu" | "entree" | "entrata" | "przychod" | "gelir" | "haben" | "доход"
+        | "поступление" | "зачисление" | "приход" => Some("income"),
+        "expense" | "ausgabe" | "ausgaben" | "ausgang" | "lastschrift" | "gasto" | "depense" | "uscita" | "spesa" | "wydatek" | "gider" | "soll" | "расход"
+        | "списание" | "трата" => Some("expense"),
+        "transfer" | "umbuchung" | "uebertrag" | "transferencia" | "virement" | "trasferimento" | "przelew" | "przeniesienie" | "перевод" => Some("transfer"),
         _ => None,
     }
 }
@@ -748,6 +787,38 @@ mod tests {
         assert_eq!(parse_amount("1 000,00", "EUR"), Some(100_000));
         assert_eq!(parse_amount("500", "JPY"), Some(500));
         assert_eq!(parse_amount("abc", "EUR"), None);
+        assert_eq!(parse_amount("-1\u{202f}234,56 руб.", "RUB"), Some(-123_456));
+        assert_eq!(parse_amount("1 234,56 ₽", "RUB"), Some(123_456));
+    }
+
+    #[test]
+    fn recognises_headers_and_types_in_more_languages() {
+        assert_eq!(column_for("Дата операции"), Some(Col::Date));
+        assert_eq!(column_for("Сумма в валюте счёта"), Some(Col::Amount));
+        assert_eq!(column_for("Описание"), Some(Col::Title));
+        assert_eq!(column_for("Libellé"), Some(Col::Title));
+        assert_eq!(column_for("Categoría"), Some(Col::Category));
+        assert_eq!(column_for("Açıklama"), Some(Col::Title));
+        assert_eq!(column_for("Alıcı"), Some(Col::Counterparty));
+        assert_eq!(column_for("Verwendungszweck"), Some(Col::Title));
+        assert_eq!(parse_kind("Списание"), Some("expense"));
+        assert_eq!(parse_kind("Зачисление"), Some("income"));
+        assert_ne!(fold("Кофе"), fold("Такси"), "Cyrillic descriptions stay apart for duplicate checks");
+    }
+
+    #[test]
+    fn previews_a_russian_bank_export() {
+        let db = Db::open_in_memory().unwrap();
+        let cash = accounts::list(&db.conn()).unwrap()[0].id.clone();
+        let csv = "Дата операции;Сумма операции;Валюта;Описание;Получатель\n\
+                   05.11.2026;-1 234,56;EUR;Хостинг;Hetzner\n\
+                   05.11.2026;-1 234,56;EUR;Домен;Reg.ru\n\
+                   01.11.2026;85 000,00;EUR;Зарплата;ООО Ромашка\n";
+        let opts = ImportOptions { default_account_id: Some(cash), auto_category: false, skip_duplicates: true, keep_balances: false, labels: HashMap::new() };
+        let p = preview(&db.conn(), csv, &opts).unwrap();
+        assert_eq!((p.total_rows, p.valid_rows, p.errors.len()), (3, 3, 0));
+        assert_eq!(p.expense_minor, 246_912, "same day and amount, different description – not a duplicate");
+        assert_eq!(p.income_minor, 8_500_000);
     }
 
     #[test]

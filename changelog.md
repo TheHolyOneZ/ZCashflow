@@ -1,5 +1,26 @@
 # Changelog
 
+## 1.8.4
+
+### Added
+
+- Russian (*Русский*) as interface language, including the Windows installer. Numbers, amounts and dates follow the Russian format (*1 234,56 ₽*, *9 нояб. 2026 г.*), with all Russian plural forms.
+- The welcome wizard suggests a currency that matches the chosen language where it is unambiguous – RUB for Russian, PLN for Polish, TRY for Turkish – until a currency is picked by hand. Other languages keep EUR as before.
+- CSV import recognises Russian column names (e.g. *Дата операции*, *Сумма операции*, *Сумма в валюте счёта*, *Описание*, *Получатель*, *Категория*) and type values (*Списание*, *Зачисление*, *Перевод* …), and amounts written like *1 234,56 руб.*
+- Quick entry understands *сегодня*, *вчера* and *позавчера*, and amounts with *₽*, *RUB* or *руб*.
+
+### Fixed
+
+- Choosing a currency in the welcome wizard without entering a starting cash amount left the built-in *Cash* account in EUR, so the app kept showing EUR as the main currency. The existing accounts now take the chosen currency.
+- CSV import ignored letters outside the basic Latin alphabet when matching column names, so headers like *Libellé*, *Categoría*, *Açıklama* or any Cyrillic header weren't recognised. Accented letters are now matched to their plain form and other alphabets are kept.
+- *Skip entries that already exist* treated rows with the same date and amount as duplicates when their descriptions only differed in non-Latin letters.
+- Month headings capitalise only the first letter, so Russian headings read *Ноябрь 2026 г.* instead of *Ноябрь 2026 Г.*
+
+### Notes
+
+- No database or sync schema change; devices on 1.8.3 and older 1.7/1.8 versions still sync.
+- Receipt text recognition (built-in and Tesseract) still works best with Latin-script receipts.
+
 ## 1.8.3
 
 ### Added

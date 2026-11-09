@@ -12,9 +12,9 @@ import { Money } from "@/components/ui/extra";
 import { CategoryIcon } from "@/components/category-icon";
 import { breakdown, currenciesOf, nodeTotal, type BreakdownNode } from "@/lib/breakdown";
 import { cn } from "@/lib/cn";
-import { isoDate, monthRange } from "@/lib/dates";
+import { isoDate, monthLabel, monthRange } from "@/lib/dates";
 import { percent } from "@/lib/format";
-import { activeLocale, displayName } from "@/lib/i18n";
+import { displayName } from "@/lib/i18n";
 import { useAppInfo, useCategories, useCategoryTotals } from "@/lib/queries";
 import { useSwipe } from "@/lib/swipe";
 import { useStatsView, type Span } from "./view";
@@ -46,7 +46,7 @@ export function StatisticsPage() {
   const slices = nodes.map((n, i) => ({ id: n.id, value: n.total, color: colorOf(n, i) }));
   const label =
     span === "month"
-      ? new Intl.DateTimeFormat(activeLocale(), { month: "long", year: "numeric" }).format(at)
+      ? monthLabel(at)
       : String(at.getFullYear());
   const step = (by: number) => {
     const view = useStatsView.getState();
@@ -89,7 +89,7 @@ export function StatisticsPage() {
           <Button variant="ghost" size="icon" aria-label={t("stats.previous")} onClick={() => step(-1)}>
             <ChevronLeft className="size-4" />
           </Button>
-          <span className="min-w-0 flex-1 truncate text-center text-[14px] font-semibold capitalize sm:flex-none sm:px-2">{label}</span>
+          <span className="min-w-0 flex-1 truncate text-center text-[14px] font-semibold sm:flex-none sm:px-2">{label}</span>
           <Button variant="ghost" size="icon" aria-label={t("stats.next")} onClick={() => step(1)}>
             <ChevronRight className="size-4" />
           </Button>
