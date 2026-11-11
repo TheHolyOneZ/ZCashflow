@@ -37,7 +37,7 @@ encrypted, over your own Wi-Fi.
 
 ## Contents
 
-- [What's new in 1.8.4](#-whats-new-in-184)
+- [What's new in 1.8.5](#-whats-new-in-185)
 - [Why ZCashflow?](#-why-zcashflow)
 - [Features](#-features)
 - [Screenshots](#-screenshots)
@@ -57,7 +57,15 @@ encrypted, over your own Wi-Fi.
 
 ---
 
-## 🆕 What's new in 1.8.4
+## 🆕 What's new in 1.8.5
+
+- **Transfers between currencies** (#34) – a transfer from a RUB account to a BYN account now asks for the *amount received*. The target account is credited with what actually arrived, and the form shows the rate (*1 RUB = 0.037 BYN*). Nothing is converted automatically, and ZCashflow still doesn't go online for exchange rates.
+- **Sync on Android 17** (#35) – Android 17 blocks local-network access unless the app has the new *Nearby devices* permission. ZCashflow now asks for it and starts sync as soon as it's allowed, so devices find each other again. If you denied it, *Devices & sync* says so – allow it under *Settings → Apps → ZCashflow → Permissions → Nearby devices*.
+- **Amount fields select their value on focus** (#36) – typing replaces the amount instead of adding to it.
+
+Older 1.7/1.8 devices still sync. Update all of them if you use transfers between different currencies, since older versions credit the sent amount.
+
+### 1.8.4
 
 - **Русский** – ZCashflow is now available in Russian, including the Windows installer. Amounts and dates follow Russian conventions (*1 234,56 ₽*, *9 нояб. 2026 г.*), and choosing Russian in the welcome wizard suggests RUB as the currency.
 - **The currency chosen at the start sticks** – picking a currency in the welcome wizard without entering a starting cash amount left the built-in *Cash* account in EUR, so the app kept showing EUR. The account now takes the chosen currency.
@@ -637,7 +645,7 @@ You don't need every toolchain locally – GitHub builds everything:
   - *Actions → Build → Run workflow* builds selected platforms as artifacts.
   - Pushing a version tag builds **all** platforms and creates a **draft release** with consistently named files and `SHA256SUMS.txt`:
     ```sh
-    git tag v1.8.4 && git push origin v1.8.4
+    git tag v1.8.5 && git push origin v1.8.5
     ```
   - Android signing uses the repository secrets `ANDROID_KEYSTORE_B64` (base64 of the keystore) and `ANDROID_KEY_PASSWORD`.
 
@@ -684,6 +692,7 @@ No – by design. Banking APIs require a cloud service in between. You enter tra
 - VPNs and router "AP / client isolation" block devices from seeing each other – turn them off.
 - Phones pause apps in the background – keep ZCashflow open on both devices while they sync.
 - iPhone: allow **Local Network** access (*Settings → Privacy & Security → Local Network → ZCashflow*).
+- Android 17: allow **Nearby devices** (*Settings → Apps → ZCashflow → Permissions*). Without it Android blocks the local network for the app.
 - Still nothing? Use **By address** with the IP shown on the other device.
 - *"update both devices"*: both devices need the same ZCashflow version – update the older one.
 </details>

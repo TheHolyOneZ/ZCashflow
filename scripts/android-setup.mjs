@@ -13,6 +13,7 @@ function patchManifest() {
     "android.permission.ACCESS_NETWORK_STATE",
     "android.permission.ACCESS_WIFI_STATE",
     "android.permission.CHANGE_WIFI_MULTICAST_STATE",
+    "android.permission.ACCESS_LOCAL_NETWORK",
   ];
   for (const p of perms) {
     if (!xml.includes(`"${p}"`)) {
@@ -34,40 +35,75 @@ function findMainActivity(dir) {
   return null;
 }
 
+function activitySource(pkg, edgeToEdge) {
+  return `package ${pkg}
+
+import android.content.Context
+import android.content.pm.PackageManager
+import android.net.wifi.WifiManager
+import android.os.Build
+import android.os.Bundle
+${edgeToEdge ? "import androidx.activity.enableEdgeToEdge\n" : ""}
+class MainActivity : TauriActivity() {
+  private val localNetwork = "android.permission.ACCESS_LOCAL_NETWORK"
+  private var multicastLock: WifiManager.MulticastLock? = null
+
+  external fun setLocalNetworkPermission(granted: Boolean)
+
+  private fun localNetworkAllowed(): Boolean =
+    Build.VERSION.SDK_INT < 37 ||
+      applicationInfo.targetSdkVersion < 37 ||
+      checkSelfPermission(localNetwork) == PackageManager.PERMISSION_GRANTED
+
+  private fun publishLocalNetwork() {
+    val allowed = localNetworkAllowed()
+    if (allowed && multicastLock == null) {
+      val wifi = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+      multicastLock = wifi.createMulticastLock("zcashflow-sync").apply {
+        setReferenceCounted(true)
+        acquire()
+      }
+    }
+    setLocalNetworkPermission(allowed)
+  }
+
+  override fun onCreate(savedInstanceState: Bundle?) {
+${edgeToEdge ? "    enableEdgeToEdge()\n" : ""}    super.onCreate(savedInstanceState)
+    publishLocalNetwork()
+    if (!localNetworkAllowed()) requestPermissions(arrayOf(localNetwork), 4781)
+  }
+
+  override fun onResume() {
+    super.onResume()
+    publishLocalNetwork()
+  }
+
+  override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+    super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    publishLocalNetwork()
+  }
+
+  override fun onDestroy() {
+    multicastLock?.let { if (it.isHeld) it.release() }
+    multicastLock = null
+    super.onDestroy()
+  }
+}
+`;
+}
+
 function patchActivity() {
   const file = findMainActivity(join(root, "app/src/main/java"));
   if (!file) throw new Error("MainActivity.kt not found – run `pnpm tauri android init` first");
   const src = readFileSync(file, "utf8");
-  if (src.includes("MulticastLock")) return console.log("already patched", file);
-  const lockField = `  private var multicastLock: WifiManager.MulticastLock? = null\n`;
-  const acquire = `    val wifi = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
-    multicastLock = wifi.createMulticastLock("zcashflow-sync").apply {
-      setReferenceCounted(true)
-      acquire()
-    }
-`;
-  const destroy = `
-  override fun onDestroy() {
-    multicastLock?.let { if (it.isHeld) it.release() }
-    super.onDestroy()
+  if (src.includes("setLocalNetworkPermission")) return console.log("already patched", file);
+  const pkg = /^package\s+([\w.]+)\s*$/m.exec(src)?.[1];
+  if (pkg !== "dev.zcashflow.app") {
+    throw new Error(`MainActivity package is ${pkg}, but the Rust bridge expects dev.zcashflow.app`);
   }
-`;
-  let out = src;
-  const missing = ["android.content.Context", "android.net.wifi.WifiManager", "android.os.Bundle"].filter(
-    (imp) => !out.includes(`import ${imp}`),
-  );
-  out = out.replace(/^package[^\n]*\n/m, (line) => `${line}\n${missing.map((i) => `import ${i}\n`).join("")}`);
-  if (/override fun onCreate/.test(out)) {
-    out = out.replace(/(class MainActivity\s*:\s*TauriActivity\(\)\s*\{\n)/, `$1${lockField}\n`);
-    out = out.replace(/(super\.onCreate\(savedInstanceState\)\s*\n)/, `$1${acquire}`);
-    out = out.replace(/\}\s*$/, `${destroy}}\n`);
-  } else {
-    out = out.replace(
-      /class MainActivity\s*:\s*TauriActivity\(\)\s*(\{\s*\})?/,
-      `class MainActivity : TauriActivity() {\n${lockField}\n  override fun onCreate(savedInstanceState: Bundle?) {\n    super.onCreate(savedInstanceState)\n${acquire}  }\n${destroy}}`,
-    );
-  }
-  writeFileSync(file, out);
+  const unknown = [...src.matchAll(/override fun (\w+)/g)].map((m) => m[1]).filter((name) => !["onCreate", "onDestroy"].includes(name));
+  if (unknown.length > 0) throw new Error(`MainActivity overrides ${unknown.join(", ")}; patch it by hand`);
+  writeFileSync(file, activitySource(pkg, src.includes("enableEdgeToEdge")));
   console.log("patched", file);
 }
 

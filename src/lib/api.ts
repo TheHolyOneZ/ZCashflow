@@ -71,6 +71,8 @@ export interface Transaction {
   occurredTime: string | null;
   accountId: string;
   toAccountId: string | null;
+  toAmountMinor: number | null;
+  toCurrency: string | null;
   categoryId: string | null;
   counterpartyId: string | null;
   counterpartyName: string | null;
@@ -92,6 +94,7 @@ export interface TransactionInput {
   occurredTime?: string | null;
   accountId: string;
   toAccountId?: string | null;
+  toAmountMinor?: number | null;
   categoryId?: string | null;
   counterparty?: string | null;
   title: string;
@@ -742,6 +745,7 @@ export interface SyncStatus {
   pairingRequest: string | null;
   pairingRole: PeerRole | null;
   scanning: boolean;
+  networkBlocked?: boolean;
 }
 
 export const demo = {

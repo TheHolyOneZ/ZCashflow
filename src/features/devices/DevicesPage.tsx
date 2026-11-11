@@ -64,6 +64,13 @@ export function DevicesPage() {
     <div className="flex max-w-4xl flex-col gap-3">
       <PageHeader title={t("nav.devices")} subtitle={t("sync.subtitle")} />
 
+      {status.networkBlocked && (
+        <p role="alert" className="flex items-start gap-2 rounded-xl bg-warn/10 px-4 py-3 text-[13px] text-fg">
+          <WifiOff className="mt-0.5 size-4 shrink-0 text-warn" />
+          <span>{t("sync.networkBlocked")}</span>
+        </p>
+      )}
+
       <Card className="grid grid-cols-1 gap-0 overflow-hidden md:grid-cols-[1fr_18rem]">
         <div className="flex flex-col gap-4 p-5">
           <div className="flex items-center gap-3">
@@ -152,9 +159,11 @@ export function DevicesPage() {
             ))}
           </ul>
         )}
-        <p className="border-t border-border px-4 py-2.5 text-[12px] text-muted">
-          {t("sync.thisDeviceAt")} <span className="font-mono text-fg">{status.addresses.join(", ") || `:${status.port}`}</span>
-        </p>
+        {!status.networkBlocked && (
+          <p className="border-t border-border px-4 py-2.5 text-[12px] text-muted">
+            {t("sync.thisDeviceAt")} <span className="font-mono text-fg">{status.addresses.join(", ") || `:${status.port}`}</span>
+          </p>
+        )}
         <SyncHelp port={status.port > 0 ? status.port : 47811} />
       </Card>
 

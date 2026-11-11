@@ -109,7 +109,11 @@
     "createMore": "En créer d'autres",
     "carriedOverHint": "Le solde reporté fait déjà partie du solde du compte – inutile de l'enregistrer comme revenu.",
     "correctedOn": "Solde corrigé le {{date}}",
-    "correctedHint": "Les soldes avant ce jour sont recalculés à partir du montant corrigé, cette période n'a donc pas de solde reporté."
+    "correctedHint": "Les soldes avant ce jour sont recalculés à partir du montant corrigé, cette période n'a donc pas de solde reporté.",
+    "toAmount": "Montant reçu ({{currency}})",
+    "toAmountHint": "Les comptes utilisent des devises différentes. Saisis ce qui est vraiment arrivé – {{from}} et {{to}} ne sont pas convertis automatiquement.",
+    "toAmountRate": "1 {{from}} = {{rate}} {{to}}",
+    "toAmountRequired": "Saisis le montant arrivé sur l'autre compte."
   },
   "stats": {
     "subtitle": "Où est passé ton argent et d'où il vient – par catégorie.",
@@ -659,7 +663,8 @@
     "receivedGeneric": "Nouvelles données reçues de ton autre appareil",
     "paired_many": "Associés · {{count}} appareils",
     "pairWarning": "N'associez que vos propres appareils. Les appareils associés partagent toutes les données – opérations, comptes et justificatifs – et les dissocier ne les sépare pas à nouveau.",
-    "pairingRole": "Le nouvel appareil peut"
+    "pairingRole": "Le nouvel appareil peut",
+    "networkBlocked": "Android n'autorise pas ZCashflow à accéder au réseau local, la synchronisation est donc en pause. Autorise Appareils à proximité dans Paramètres → Applications → ZCashflow → Autorisations, puis reviens dans l'app."
   },
   "date": {
     "pick": "Choisir une date",
@@ -1019,7 +1024,8 @@
       "title": "Description ou libellé",
       "note": "Note",
       "tags": "Étiquettes séparées par des espaces",
-      "reference": "Référence ZCashflow – reconnaît les opérations déjà présentes"
+      "reference": "Référence ZCashflow – reconnaît les opérations déjà présentes",
+      "to_amount": "Montant reçu sur le compte de destination – uniquement pour les virements entre devises différentes"
     },
     "defaultAccount": "Compte pour les lignes sans compte",
     "defaultAccountHint": "p. ex. ton compte courant pour un export bancaire",
@@ -1130,7 +1136,7 @@
     "linuxTitle": "Linux",
     "linuxText": "La plupart des distributions de bureau bloquent les connexions entrantes. Autorisez le port {{port}} une fois dans un terminal :",
     "mobileTitle": "Android et iPhone",
-    "mobileText": "Sur iPhone, autorisez « Réseau local » pour ZCashflow (Réglages → Confidentialité et sécurité → Réseau local). Sur les deux, le Wi-Fi doit être activé – les données mobiles ne permettent pas d'atteindre l'autre appareil. Gardez l'app ouverte pendant la synchronisation."
+    "mobileText": "Sur iPhone, autorisez « Réseau local » pour ZCashflow (Réglages → Confidentialité et sécurité → Réseau local). Sur les deux, le Wi-Fi doit être activé – les données mobiles ne permettent pas d'atteindre l'autre appareil. Gardez l'app ouverte pendant la synchronisation. Sous Android 17, autorise ZCashflow à accéder aux Appareils à proximité quand il le demande (Paramètres → Applications → ZCashflow → Autorisations)."
   },
   "bulk": {
     "select": "Sélectionner",

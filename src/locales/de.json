@@ -107,7 +107,11 @@
     "createMore": "Weitere erstellen",
     "carriedOverHint": "Der Übertrag ist bereits im Kontostand enthalten – er muss nicht als Einnahme gebucht werden.",
     "correctedOn": "Kontostand korrigiert am {{date}}",
-    "correctedHint": "Kontostände vor diesem Tag werden vom korrigierten Betrag aus zurückgerechnet, daher gibt es für diesen Zeitraum keinen Übertrag."
+    "correctedHint": "Kontostände vor diesem Tag werden vom korrigierten Betrag aus zurückgerechnet, daher gibt es für diesen Zeitraum keinen Übertrag.",
+    "toAmount": "Gutgeschriebener Betrag ({{currency}})",
+    "toAmountHint": "Die Konten haben verschiedene Währungen. Trag ein, was wirklich angekommen ist – {{from}} und {{to}} werden nicht automatisch umgerechnet.",
+    "toAmountRate": "1 {{from}} = {{rate}} {{to}}",
+    "toAmountRequired": "Gib den Betrag ein, der auf dem anderen Konto angekommen ist."
   },
   "stats": {
     "subtitle": "Wofür dein Geld ausgegeben wurde und woher es kam – nach Kategorien.",
@@ -631,7 +635,8 @@
     "pairRequestDeny": "Ablehnen",
     "receivedGeneric": "Neue Daten vom anderen Gerät übernommen",
     "pairWarning": "Kopple nur deine eigenen Geräte. Gekoppelte Geräte teilen alle Daten – Buchungen, Konten und Belege – und Entkoppeln trennt sie nicht wieder.",
-    "pairingRole": "Das neue Gerät darf"
+    "pairingRole": "Das neue Gerät darf",
+    "networkBlocked": "Android erlaubt ZCashflow keinen Zugriff auf das lokale Netzwerk, deshalb ist die Synchronisierung pausiert. Erlaube Geräte in der Nähe unter Einstellungen → Apps → ZCashflow → Berechtigungen und kehre dann zur App zurück."
   },
   "date": {
     "pick": "Datum wählen",
@@ -984,7 +989,8 @@
       "title": "Beschreibung oder Verwendungszweck",
       "note": "Notiz",
       "tags": "Schlagwörter, mit Leerzeichen getrennt",
-      "reference": "ZCashflow-Referenz – erkennt bereits vorhandene Buchungen"
+      "reference": "ZCashflow-Referenz – erkennt bereits vorhandene Buchungen",
+      "to_amount": "Gutgeschriebener Betrag auf dem Zielkonto – nur bei Umbuchungen zwischen verschiedenen Währungen"
     },
     "defaultAccount": "Konto für Zeilen ohne Konto",
     "defaultAccountHint": "z. B. dein Girokonto beim Bank-Export",
@@ -1091,7 +1097,7 @@
     "linuxTitle": "Linux",
     "linuxText": "Die meisten Desktop-Distributionen blockieren eingehende Verbindungen. Gib Port {{port}} einmal im Terminal frei:",
     "mobileTitle": "Android & iPhone",
-    "mobileText": "Auf dem iPhone „Lokales Netzwerk“ für ZCashflow erlauben (Einstellungen → Datenschutz & Sicherheit → Lokales Netzwerk). Auf beiden muss WLAN an sein – über mobile Daten erreicht das Handy das andere Gerät nicht. Lass die App offen, während sie synchronisiert."
+    "mobileText": "Auf dem iPhone „Lokales Netzwerk“ für ZCashflow erlauben (Einstellungen → Datenschutz & Sicherheit → Lokales Netzwerk). Auf beiden muss WLAN an sein – über mobile Daten erreicht das Handy das andere Gerät nicht. Lass die App offen, während sie synchronisiert. Unter Android 17 erlaube ZCashflow beim Nachfragen den Zugriff auf Geräte in der Nähe (Einstellungen → Apps → ZCashflow → Berechtigungen)."
   },
   "bulk": {
     "select": "Auswählen",

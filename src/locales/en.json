@@ -107,7 +107,11 @@
     "createMore": "Create more",
     "carriedOverHint": "The carried-over balance is already part of your account balance – it doesn't need to be booked as income.",
     "correctedOn": "Balance corrected on {{date}}",
-    "correctedHint": "Balances before this day are counted back from the corrected amount, so this period has no carried-over value."
+    "correctedHint": "Balances before this day are counted back from the corrected amount, so this period has no carried-over value.",
+    "toAmount": "Amount received ({{currency}})",
+    "toAmountHint": "The accounts use different currencies. Enter what actually arrived – {{from}} and {{to}} aren't converted automatically.",
+    "toAmountRate": "1 {{from}} = {{rate}} {{to}}",
+    "toAmountRequired": "Enter the amount that arrived in the other account."
   },
   "stats": {
     "subtitle": "Where your money went and where it came from – by category.",
@@ -631,7 +635,8 @@
     "pairRequestDeny": "Decline",
     "receivedGeneric": "New data from your other device received",
     "pairWarning": "Only pair your own devices. Paired devices share all data – transactions, accounts and receipts – and unpairing doesn't separate it again.",
-    "pairingRole": "The new device may"
+    "pairingRole": "The new device may",
+    "networkBlocked": "Android doesn't allow ZCashflow to reach the local network, so sync is paused. Allow Nearby devices under Settings → Apps → ZCashflow → Permissions, then come back to the app."
   },
   "date": {
     "pick": "Pick a date",
@@ -984,7 +989,8 @@
       "title": "Description or purpose",
       "note": "Note",
       "tags": "Tags separated by spaces",
-      "reference": "ZCashflow reference – used to recognise entries that already exist"
+      "reference": "ZCashflow reference – used to recognise entries that already exist",
+      "to_amount": "Amount received in the target account – only for transfers between different currencies"
     },
     "defaultAccount": "Account for rows without an account",
     "defaultAccountHint": "e.g. your checking account for a bank export",
@@ -1091,7 +1097,7 @@
     "linuxTitle": "Linux",
     "linuxText": "Most desktop distributions block incoming connections. Allow port {{port}} once in a terminal:",
     "mobileTitle": "Android & iPhone",
-    "mobileText": "On iPhone, allow Local Network for ZCashflow (Settings → Privacy & Security → Local Network). On both, Wi-Fi has to be on – mobile data alone doesn't reach the other device. Keep the app open while it syncs."
+    "mobileText": "On iPhone, allow Local Network for ZCashflow (Settings → Privacy & Security → Local Network). On both, Wi-Fi has to be on – mobile data alone doesn't reach the other device. Keep the app open while it syncs. On Android 17, allow ZCashflow access to Nearby devices when asked (Settings → Apps → ZCashflow → Permissions)."
   },
   "bulk": {
     "select": "Select",

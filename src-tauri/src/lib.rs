@@ -1,3 +1,5 @@
+#[cfg(target_os = "android")]
+mod android_network;
 mod clock;
 mod commands;
 mod db;
@@ -23,6 +25,13 @@ impl sync::Host for TauriHost {
     fn emit(&self, event: &str) {
         let _ = self.0.emit(event, ());
     }
+
+    fn network_allowed(&self) -> bool {
+        #[cfg(target_os = "android")]
+        return android_network::allowed();
+        #[cfg(not(target_os = "android"))]
+        true
+    }
 }
 
 pub struct DataDir(pub PathBuf);
@@ -32,10 +41,10 @@ pub(crate) fn start_services(app: &tauri::AppHandle, db: db::Db) {
     app.manage(db.clone());
     match sync::SyncCore::new(db.clone(), std::sync::Arc::new(TauriHost(app.clone()))) {
         Ok(core) => {
+            app.manage(core.clone());
             if let Err(e) = core.start(false) {
                 eprintln!("sync: could not start: {e}");
             }
-            app.manage(core);
         }
         Err(e) => eprintln!("sync: {e}"),
     }
@@ -86,6 +95,8 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_clipboard_manager::init())
         .setup(|app| {
+            #[cfg(target_os = "android")]
+            android_network::init(app.handle());
             let dir = data_dir(app);
             let models = app
                 .path()

@@ -40,7 +40,7 @@ const SELECT: &str = "
                    WHEN t.kind = 'income'   AND t.account_id    = a.id THEN t.amount_minor
                    WHEN t.kind = 'expense'  AND t.account_id    = a.id THEN -t.amount_minor
                    WHEN t.kind = 'transfer' AND t.account_id    = a.id THEN -t.amount_minor
-                   WHEN t.kind = 'transfer' AND t.to_account_id = a.id THEN t.amount_minor
+                   WHEN t.kind = 'transfer' AND t.to_account_id = a.id THEN coalesce(t.to_amount_minor, t.amount_minor)
                    ELSE 0 END * CASE
                    WHEN b.anchor_at IS NULL
                         OR t.occurred_on > b.anchor_on

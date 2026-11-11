@@ -155,6 +155,7 @@ function Row({
           amountMinor: tx.amountMinor,
           accountId: tx.accountId,
           toAccountId: tx.toAccountId,
+          toAmountMinor: tx.toAmountMinor,
           categoryId: tx.categoryId,
           counterparty: tx.counterpartyName,
           title: tx.title,
@@ -223,6 +224,11 @@ function Row({
         </div>
         <div className="flex flex-col items-end">
           <Amount minor={tx.amountMinor} currency={tx.currency} kind={tx.kind} />
+          {tx.toAmountMinor !== null && tx.toCurrency && (
+            <span className="text-[11px] text-muted">
+              → <Money minor={tx.toAmountMinor} currency={tx.toCurrency} />
+            </span>
+          )}
           <span className="hidden text-[10.5px] text-muted/60 sm:block">{tx.ref}</span>
         </div>
       </button>

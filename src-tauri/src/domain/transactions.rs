@@ -18,6 +18,8 @@ pub struct Transaction {
     pub occurred_time: Option<String>,
     pub account_id: String,
     pub to_account_id: Option<String>,
+    pub to_amount_minor: Option<i64>,
+    pub to_currency: Option<String>,
     pub category_id: Option<String>,
     pub counterparty_id: Option<String>,
     pub counterparty_name: Option<String>,
@@ -43,6 +45,8 @@ pub struct TransactionInput {
     pub occurred_time: Option<String>,
     pub account_id: String,
     pub to_account_id: Option<String>,
+    #[serde(default)]
+    pub to_amount_minor: Option<i64>,
     pub category_id: Option<String>,
 
     pub counterparty: Option<String>,
@@ -73,7 +77,7 @@ const SELECT: &str = "
            t.to_account_id, t.category_id, t.counterparty_id, c.name, t.title, t.note, t.tags,
            t.recurring_rule_id, t.debt_id, t.goal_id, t.created_at,
            (SELECT count(*) FROM attachments a WHERE a.transaction_id = t.id AND a.deleted = 0),
-           t.occurred_time
+           t.occurred_time, t.to_amount_minor, (SELECT currency FROM accounts WHERE id = t.to_account_id)
     FROM transactions t
     LEFT JOIN counterparties c ON c.id = t.counterparty_id
     WHERE t.deleted = 0";
@@ -90,6 +94,8 @@ fn from_row(r: &Row) -> rusqlite::Result<Transaction> {
         occurred_time: r.get(19)?,
         account_id: r.get(6)?,
         to_account_id: r.get(7)?,
+        to_amount_minor: r.get(20)?,
+        to_currency: r.get(21)?,
         category_id: r.get(8)?,
         counterparty_id: r.get(9)?,
         counterparty_name: r.get(10)?,
@@ -345,6 +351,7 @@ pub fn parse_time(s: &str) -> Option<NaiveTime> {
 }
 
 struct Validated {
+    to_amount_minor: Option<i64>,
     occurred_on: NaiveDate,
     occurred_time: Option<String>,
     currency: String,
@@ -371,25 +378,33 @@ fn validate(conn: &Connection, input: &TransactionInput) -> AppResult<Validated>
         None => None,
     };
     let account = accounts::get(conn, &input.account_id)?;
-    match (input.kind.as_str(), &input.to_account_id) {
+    let target = match (input.kind.as_str(), &input.to_account_id) {
         ("transfer", None) => return Err(AppError::Invalid("transfer needs a target account".into())),
         ("transfer", Some(to)) if *to == input.account_id => {
             return Err(AppError::Invalid("transfer target must differ from source".into()))
         }
-        ("transfer", Some(to)) => {
-            accounts::get(conn, to)?;
-        }
+        ("transfer", Some(to)) => Some(accounts::get(conn, to)?),
         (_, Some(_)) => return Err(AppError::Invalid("only transfers have a target account".into())),
-        _ => {}
-    }
+        _ => None,
+    };
     let currency = input
         .currency
         .as_deref()
         .map(|c| c.trim().to_uppercase())
         .filter(|c| !c.is_empty())
         .unwrap_or(account.currency);
+    let to_amount_minor = match (&target, input.to_amount_minor) {
+        (Some(to), Some(n)) if to.currency != currency => {
+            if n <= 0 {
+                return Err(AppError::Invalid("credited amount must be positive".into()));
+            }
+            Some(n)
+        }
+        _ => None,
+    };
     let tags: Vec<&str> = input.tags.iter().map(|t| t.trim()).filter(|t| !t.is_empty()).collect();
     Ok(Validated {
+        to_amount_minor,
         occurred_on,
         occurred_time,
         currency,
@@ -424,13 +439,13 @@ pub fn insert(db: &Db, conn: &Connection, input: &TransactionInput, links: Syste
         "INSERT INTO transactions (id, ref, kind, amount_minor, currency, occurred_on, account_id,
                                    to_account_id, category_id, counterparty_id, title, note, tags,
                                    recurring_rule_id, occurrence_key, debt_id, goal_id, created_at,
-                                   device_id, updated_hlc, occurred_time)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21)",
+                                   device_id, updated_hlc, occurred_time, to_amount_minor)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22)",
         params![
             id, r#ref, input.kind, input.amount_minor, v.currency, v.occurred_on.to_string(),
             input.account_id, input.to_account_id, input.category_id, counterparty_id, v.title,
             input.note, v.tags, links.recurring_rule_id, links.occurrence_key, input.debt_id,
-            input.goal_id, now_rfc3339(), db.device_id(), db.hlc.tick(), v.occurred_time
+            input.goal_id, now_rfc3339(), db.device_id(), db.hlc.tick(), v.occurred_time, v.to_amount_minor
         ],
     )?;
     Ok(id)
@@ -464,12 +479,12 @@ fn write_update(db: &Db, tx: &Connection, id: &str, input: &TransactionInput) ->
         "UPDATE transactions SET kind = ?2, amount_minor = ?3, currency = ?4, occurred_on = ?5,
                 account_id = ?6, to_account_id = ?7, category_id = ?8, counterparty_id = ?9,
                 title = ?10, note = ?11, tags = ?12, debt_id = ?13, goal_id = ?14, updated_hlc = ?15,
-                occurred_time = ?16
+                occurred_time = ?16, to_amount_minor = ?17
          WHERE id = ?1 AND deleted = 0",
         params![
             id, input.kind, input.amount_minor, v.currency, v.occurred_on.to_string(),
             input.account_id, input.to_account_id, input.category_id, counterparty_id, v.title,
-            input.note, v.tags, input.debt_id, input.goal_id, db.hlc.tick(), v.occurred_time
+            input.note, v.tags, input.debt_id, input.goal_id, db.hlc.tick(), v.occurred_time, v.to_amount_minor
         ],
     )?;
     if n == 0 {
@@ -529,6 +544,7 @@ pub fn bulk_update(db: &Db, ids: &[String], change: &BulkChange) -> AppResult<Bu
             occurred_time: if change.set_time { change.occurred_time.clone() } else { t.occurred_time },
             account_id: target.as_ref().map_or(t.account_id, |a| a.id.clone()),
             to_account_id: t.to_account_id,
+            to_amount_minor: t.to_amount_minor,
             category_id: if change.set_category { change.category_id.clone().filter(|c| !c.is_empty()) } else { t.category_id },
             counterparty: t.counterparty_name,
             title: t.title,
@@ -715,6 +731,7 @@ mod tests {
             occurred_time: None,
             account_id: account_id.into(),
             to_account_id: None,
+            to_amount_minor: None,
             category_id: None,
             counterparty: Some("Kebab Haus".into()),
             title: title.into(),
@@ -953,6 +970,39 @@ mod tests {
 
         assert_eq!(delete_many(&db, &[a.id.clone(), b.id.clone(), "missing".into()]).unwrap(), 2);
         assert_eq!(list(&db.conn(), &TransactionFilter::default()).unwrap().len(), 1);
+    }
+
+    #[test]
+    fn transfers_between_currencies_credit_the_entered_amount() {
+        let db = Db::open_in_memory().unwrap();
+        let acc = |name: &str, cur: &str| {
+            accounts::upsert(&db, accounts::AccountInput { id: None, name: name.into(), kind: "checking".into(), currency: cur.into(), opening_minor: 0, color: None, archived: false })
+                .unwrap()
+                .id
+        };
+        let (rub, byn, rub2) = (acc("Rubles", "RUB"), acc("Belarus", "BYN"), acc("Rubles 2", "RUB"));
+        let bal = |id: &str| accounts::get_as_of(&db.conn(), id, d("2026-11-10")).unwrap().balance_minor;
+        let mut input = expense(&rub, "Exchange", 100_000, "2026-11-10");
+        input.kind = "transfer".into();
+        input.counterparty = None;
+        input.to_account_id = Some(byn.clone());
+        input.to_amount_minor = Some(3_700);
+        let t = create(&db, input.clone()).unwrap();
+        assert_eq!((t.to_amount_minor, t.to_currency.as_deref()), (Some(3_700), Some("BYN")));
+        assert_eq!((bal(&rub), bal(&byn)), (-100_000, 3_700));
+
+        let r = bulk_update(&db, std::slice::from_ref(&t.id), &BulkChange { occurred_on: Some("2026-11-09".into()), ..Default::default() }).unwrap();
+        assert_eq!(r.updated, 1);
+        assert_eq!(get(&db.conn(), &t.id).unwrap().to_amount_minor, Some(3_700), "bulk changes keep the credited amount");
+
+        input.to_amount_minor = Some(0);
+        assert!(update(&db, &t.id, input.clone()).is_err());
+
+        input.to_account_id = Some(rub2.clone());
+        input.to_amount_minor = Some(5);
+        let same = update(&db, &t.id, input).unwrap();
+        assert_eq!(same.to_amount_minor, None, "same currency moves the amount as it is");
+        assert_eq!((bal(&rub), bal(&byn), bal(&rub2)), (-100_000, 0, 100_000));
     }
 
     #[test]

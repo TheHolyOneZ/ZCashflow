@@ -98,7 +98,7 @@ pub fn minor_digits(currency: &str) -> u32 {
 }
 
 pub const TRANSACTION_HEADER: &[&str] =
-    &["date", "time", "type", "amount", "currency", "account", "to_account", "category", "counterparty", "title", "note", "tags", "reference"];
+    &["date", "time", "type", "amount", "currency", "account", "to_account", "category", "counterparty", "title", "note", "tags", "reference", "to_amount"];
 
 pub struct Names {
     labels: HashMap<String, String>,
@@ -197,6 +197,10 @@ fn transactions_rows(conn: &Connection, f: &Format, names: &Names, filter: &Tran
                 t.note.clone().unwrap_or_default(),
                 t.tags.join(" "),
                 t.r#ref.clone(),
+                match (t.to_amount_minor, t.to_currency.as_deref()) {
+                    (Some(n), Some(c)) => f.money(n, c),
+                    _ => String::new(),
+                },
             ];
             if opts.split_categories {
                 let (main, sub) = names.category_levels(t.category_id.as_ref());

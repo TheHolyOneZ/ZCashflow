@@ -316,6 +316,7 @@ pub fn record_payment(
             occurred_time: None,
             account_id: account_id.into(),
             to_account_id: None,
+            to_amount_minor: None,
             category_id: None,
             counterparty: debt.counterparty_name.clone(),
             title: debt.title.clone(),

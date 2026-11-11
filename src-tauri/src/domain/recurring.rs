@@ -400,6 +400,7 @@ fn post(db: &Db, conn: &Connection, rule: &RecurringRule, on: NaiveDate, amount_
         occurred_time: rule.occurred_time.clone(),
         account_id: rule.account_id.clone(),
         to_account_id: rule.to_account_id.clone(),
+        to_amount_minor: None,
         category_id: rule.category_id.clone(),
         counterparty: rule.counterparty_name.clone(),
         title: rule.title.clone(),

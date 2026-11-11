@@ -81,6 +81,7 @@ enum Col {
     Currency,
     Account,
     ToAccount,
+    ToAmount,
     Category,
     Counterparty,
     Title,
@@ -112,6 +113,7 @@ const ALIASES: &[(Col, &[&str])] = &[
         Col::ToAccount,
         &["toaccount", "zielkonto", "cuentadestino", "comptedestination", "contodestinazione", "rachunekdocelowy", "hedefhesap", "счетзачисления"],
     ),
+    (Col::ToAmount, &["toamount", "creditedamount", "zielbetrag", "суммазачисления"]),
     (Col::Category, &["category", "kategorie", "categoria", "categorie", "kategoria", "kategori", "категория"]),
     (
         Col::Counterparty,
@@ -523,6 +525,11 @@ fn plan(conn: &Connection, text: &str, opts: &ImportOptions) -> AppResult<Parsed
         } else {
             None
         };
+        let to_amount_minor = to_account
+            .as_ref()
+            .and_then(|to| parse_amount(&cell(row, &map, Col::ToAmount), &to.currency))
+            .map(i64::abs)
+            .filter(|n| *n > 0);
         let counterparty = cell(row, &map, Col::Counterparty);
         let mut title = cell(row, &map, Col::Title);
         if title.is_empty() {
@@ -573,6 +580,7 @@ fn plan(conn: &Connection, text: &str, opts: &ImportOptions) -> AppResult<Parsed
                 occurred_time: time,
                 account_id: account.id.clone().unwrap_or_default(),
                 to_account_id: None,
+                to_amount_minor,
                 category_id: None,
                 counterparty: Some(counterparty).filter(|c| !c.is_empty()),
                 title,

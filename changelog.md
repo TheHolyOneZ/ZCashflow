@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.8.5
+
+### Added
+
+- Transfers between accounts in different currencies have a new *Amount received* field (#34). It holds what actually arrived in the target account, for example 1,000 RUB sent and 37 BYN received. The target account is credited with that amount, and the form shows the resulting rate (*1 RUB = 0.037 BYN*). Nothing is converted automatically and no exchange rates are downloaded. The transaction list shows the received amount under the sent one, and CSV export and import have a new *to_amount* column.
+
+### Fixed
+
+- Sync on Android 17 (#35). Apps built for Android 17 need the new *Nearby devices* (local network) permission before they can find or reach other devices on the Wi-Fi, so pairing and sync silently found nothing. ZCashflow now asks for it on start and only opens its network connections once it is granted, also when it's allowed later in the Android settings. Until then *Devices & sync* explains what's missing, and everything else keeps working offline. This follows the fix robysnc worked out and tested on Android 17 in a fork – thanks for tracking it down. If it was denied, allow it under *Settings → Apps → ZCashflow → Permissions → Nearby devices*.
+- Amount fields select their whole value when focused, so typing replaces the amount instead of adding digits to it (#36).
+
+### Notes
+
+- Database migration 010 adds the received amount to transactions. The sync schema stays compatible: 1.8.4 and older 1.7/1.8 devices still sync, but they credit the sent amount for transfers between different currencies until they're updated.
+- Release notes now list the issue numbers they address (#37).
+
 ## 1.8.4
 
 ### Added

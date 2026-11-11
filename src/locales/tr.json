@@ -107,7 +107,11 @@
     "createMore": "Daha fazla oluştur",
     "carriedOverHint": "Devreden bakiye zaten hesap bakiyesinin bir parçası – gelir olarak kaydetmen gerekmez.",
     "correctedOn": "Bakiye {{date}} tarihinde düzeltildi",
-    "correctedHint": "Bu günden önceki bakiyeler düzeltilen tutardan geriye doğru hesaplanır, bu yüzden bu dönemin devreden bakiyesi yok."
+    "correctedHint": "Bu günden önceki bakiyeler düzeltilen tutardan geriye doğru hesaplanır, bu yüzden bu dönemin devreden bakiyesi yok.",
+    "toAmount": "Alınan tutar ({{currency}})",
+    "toAmountHint": "Hesaplar farklı para birimleri kullanıyor. Gerçekten ulaşan tutarı gir – {{from}} ve {{to}} otomatik olarak çevrilmez.",
+    "toAmountRate": "1 {{from}} = {{rate}} {{to}}",
+    "toAmountRequired": "Diğer hesaba ulaşan tutarı gir."
   },
   "stats": {
     "subtitle": "Paran nereye gitti ve nereden geldi – kategoriye göre.",
@@ -631,7 +635,8 @@
     "pairRequestDeny": "Reddet",
     "receivedGeneric": "Diğer cihazından yeni veriler alındı",
     "pairWarning": "Yalnızca kendi cihazlarını eşle. Eşlenen cihazlar tüm verileri paylaşır – işlemler, hesaplar ve fişler – ve eşleşmeyi kaldırmak bunları yeniden ayırmaz.",
-    "pairingRole": "Yeni cihaz şunu yapabilir"
+    "pairingRole": "Yeni cihaz şunu yapabilir",
+    "networkBlocked": "Android, ZCashflow'un yerel ağa erişmesine izin vermiyor, bu yüzden senkronizasyon duraklatıldı. Ayarlar → Uygulamalar → ZCashflow → İzinler altında Yakındaki cihazlar'a izin ver, sonra uygulamaya geri dön."
   },
   "date": {
     "pick": "Tarih seç",
@@ -984,7 +989,8 @@
       "title": "Açıklama",
       "note": "Not",
       "tags": "Boşlukla ayrılmış etiketler",
-      "reference": "ZCashflow referansı – mevcut işlemleri tanır"
+      "reference": "ZCashflow referansı – mevcut işlemleri tanır",
+      "to_amount": "Hedef hesaba geçen tutar – yalnızca farklı para birimleri arasındaki transferler için"
     },
     "defaultAccount": "Hesabı olmayan satırlar için hesap",
     "defaultAccountHint": "ör. banka dökümü için vadesiz hesabın",
@@ -1091,7 +1097,7 @@
     "linuxTitle": "Linux",
     "linuxText": "Çoğu masaüstü dağıtımı gelen bağlantıları engeller. {{port}} numaralı bağlantı noktasına terminalde bir kez izin ver:",
     "mobileTitle": "Android ve iPhone",
-    "mobileText": "iPhone'da ZCashflow için \"Yerel Ağ\" iznini aç (Ayarlar → Gizlilik ve Güvenlik → Yerel Ağ). İkisinde de Wi-Fi açık olmalı – mobil veriyle diğer cihaza ulaşılamaz. Eşitleme sırasında uygulamayı açık tut."
+    "mobileText": "iPhone'da ZCashflow için \"Yerel Ağ\" iznini aç (Ayarlar → Gizlilik ve Güvenlik → Yerel Ağ). İkisinde de Wi-Fi açık olmalı – mobil veriyle diğer cihaza ulaşılamaz. Eşitleme sırasında uygulamayı açık tut. Android 17'de ZCashflow sorduğunda Yakındaki cihazlar erişimine izin ver (Ayarlar → Uygulamalar → ZCashflow → İzinler)."
   },
   "bulk": {
     "select": "Seç",

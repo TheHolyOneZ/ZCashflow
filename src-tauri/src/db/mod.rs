@@ -23,6 +23,7 @@ fn migrations() -> Migrations<'static> {
         M::up(include_str!("../../migrations/007_transaction_time.sql")),
         M::up(include_str!("../../migrations/008_recurring_time.sql")),
         M::up(include_str!("../../migrations/009_category_order.sql")),
+        M::up(include_str!("../../migrations/010_transfer_amount.sql")),
     ])
 }
 

@@ -6,6 +6,7 @@ import { cn } from "@/lib/cn";
 import { activeLocale } from "@/lib/i18n";
 import { dropCurrency, minorDigits, minorToInput, parseMoney, useCurrencyHidden, useExpensesInRed } from "@/lib/money";
 import { Button } from "./button";
+import { selectOnFocus } from "@/lib/select-on-focus";
 import { Input } from "./field";
 
 export function Money({
@@ -81,6 +82,7 @@ export function MoneyInput({
         autoFocus={autoFocus}
         inputMode="decimal"
         autoComplete="off"
+        {...selectOnFocus}
         placeholder={placeholder ?? minorToInput(0, currency, activeLocale())}
         value={value}
         aria-invalid={invalid}

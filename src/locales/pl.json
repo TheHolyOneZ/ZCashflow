@@ -111,7 +111,11 @@
     "createMore": "Utwórz kolejne",
     "carriedOverHint": "Przeniesione saldo jest już częścią salda konta – nie trzeba go księgować jako przychodu.",
     "correctedOn": "Saldo poprawione {{date}}",
-    "correctedHint": "Salda sprzed tego dnia są liczone wstecz od poprawionej kwoty, dlatego ten okres nie ma przeniesionego salda."
+    "correctedHint": "Salda sprzed tego dnia są liczone wstecz od poprawionej kwoty, dlatego ten okres nie ma przeniesionego salda.",
+    "toAmount": "Otrzymana kwota ({{currency}})",
+    "toAmountHint": "Konta mają różne waluty. Wpisz kwotę, która faktycznie dotarła – {{from}} i {{to}} nie są przeliczane automatycznie.",
+    "toAmountRate": "1 {{from}} = {{rate}} {{to}}",
+    "toAmountRequired": "Wpisz kwotę, która dotarła na drugie konto."
   },
   "stats": {
     "subtitle": "Na co poszły Twoje pieniądze i skąd przyszły – według kategorii.",
@@ -687,7 +691,8 @@
     "pairRequestDeny": "Odrzuć",
     "receivedGeneric": "Odebrano nowe dane z drugiego urządzenia",
     "pairWarning": "Paruj tylko własne urządzenia. Sparowane urządzenia dzielą wszystkie dane – transakcje, konta i paragony – a rozparowanie ich ponownie nie rozdziela.",
-    "pairingRole": "Nowe urządzenie może"
+    "pairingRole": "Nowe urządzenie może",
+    "networkBlocked": "Android nie pozwala ZCashflow korzystać z sieci lokalnej, więc synchronizacja jest wstrzymana. Zezwól na Urządzenia w pobliżu w Ustawienia → Aplikacje → ZCashflow → Uprawnienia, a potem wróć do aplikacji."
   },
   "date": {
     "pick": "Wybierz datę",
@@ -1054,7 +1059,8 @@
       "title": "Opis lub tytuł",
       "note": "Notatka",
       "tags": "Tagi oddzielone spacjami",
-      "reference": "Numer ZCashflow – rozpoznaje istniejące transakcje"
+      "reference": "Numer ZCashflow – rozpoznaje istniejące transakcje",
+      "to_amount": "Kwota otrzymana na koncie docelowym – tylko dla przelewów między różnymi walutami"
     },
     "defaultAccount": "Konto dla wierszy bez konta",
     "defaultAccountHint": "np. Twoje konto osobiste przy eksporcie z banku",
@@ -1169,7 +1175,7 @@
     "linuxTitle": "Linux",
     "linuxText": "Większość dystrybucji desktopowych blokuje połączenia przychodzące. Odblokuj port {{port}} raz w terminalu:",
     "mobileTitle": "Android i iPhone",
-    "mobileText": "Na iPhonie zezwól ZCashflow na „Sieć lokalna” (Ustawienia → Prywatność i ochrona → Sieć lokalna). Na obu Wi-Fi musi być włączone – przez dane komórkowe drugie urządzenie jest nieosiągalne. Nie zamykaj aplikacji podczas synchronizacji."
+    "mobileText": "Na iPhonie zezwól ZCashflow na „Sieć lokalna” (Ustawienia → Prywatność i ochrona → Sieć lokalna). Na obu Wi-Fi musi być włączone – przez dane komórkowe drugie urządzenie jest nieosiągalne. Nie zamykaj aplikacji podczas synchronizacji. Na Androidzie 17 zezwól ZCashflow na dostęp do Urządzeń w pobliżu, gdy o to poprosi (Ustawienia → Aplikacje → ZCashflow → Uprawnienia)."
   },
   "bulk": {
     "select": "Zaznacz",

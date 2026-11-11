@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 
 import { useTranslation } from "react-i18next";
 import { ChevronDown, Paperclip, Plus, Repeat, Trash2 } from "lucide-react";
 import { planning, receipts } from "@/lib/api";
-import { SwitchRow, Money } from "@/components/ui/extra";
+import { SwitchRow, Money, MoneyInput } from "@/components/ui/extra";
 import { freqLabel } from "@/lib/format";
 import { ruleInput } from "@/features/recurring/rule-input";
 import { AccountSelect, CategorySelect, CounterpartyInput, TitleInput } from "@/components/selects";
@@ -19,7 +19,7 @@ import type { Transaction, TransactionInput, TxKind } from "@/lib/api";
 import { activeLocale } from "@/lib/i18n";
 import { entryTime, isoDate } from "@/lib/dates";
 import { normalizeTime } from "@/lib/time";
-import { minorToInput, parseMoney } from "@/lib/money";
+import { minorDigits, minorToInput, parseMoney } from "@/lib/money";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   invalidateData,
@@ -31,6 +31,7 @@ import {
 import { useUi } from "@/stores/ui";
 import { usePrefs } from "@/stores/prefs";
 import { CheckRow } from "@/features/data/CheckRow";
+import { selectOnFocus } from "@/lib/select-on-focus";
 import { cn } from "@/lib/cn";
 
 interface FormState {
@@ -41,6 +42,7 @@ interface FormState {
   time: string;
   accountId: string;
   toAccountId: string;
+  toAmount: string;
   categoryId: string;
   counterparty: string;
   note: string;
@@ -61,6 +63,7 @@ function initialState(
       time: tx.occurredTime ?? "",
       accountId: tx.accountId,
       toAccountId: tx.toAccountId ?? "",
+      toAmount: tx.toAmountMinor && tx.toCurrency ? minorToInput(tx.toAmountMinor, tx.toCurrency, activeLocale()) : "",
       categoryId: tx.categoryId ?? "",
       counterparty: tx.counterpartyName ?? "",
       note: tx.note ?? "",
@@ -77,6 +80,7 @@ function initialState(
     time: d.occurredTime ?? entryTime(occurredOn) ?? "",
     accountId: d.accountId ?? fallbackAccount,
     toAccountId: d.toAccountId ?? "",
+    toAmount: d.toAmountMinor ? minorToInput(d.toAmountMinor, "EUR", activeLocale()) : "",
     categoryId: d.categoryId ?? "",
     counterparty: d.counterparty ?? "",
     note: d.note ?? "",
@@ -140,6 +144,7 @@ function TransactionForm({
   );
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [amountError, setAmountError] = useState(false);
+  const [toAmountError, setToAmountError] = useState(false);
   const [timeError, setTimeError] = useState(false);
   const [timeTouched, setTimeTouched] = useState(!!editing || ("draft" in source && source.draft.occurredTime !== undefined));
   const rule = (useRecurring().data ?? []).find((r) => r.id === editing?.recurringRuleId);
@@ -157,6 +162,16 @@ function TransactionForm({
 
   const account = accounts.find((a) => a.id === form.accountId);
   const currency = account?.currency ?? "EUR";
+  const toAccount = form.kind === "transfer" ? accounts.find((a) => a.id === form.toAccountId) : undefined;
+  const toCurrency = toAccount && toAccount.currency !== currency ? toAccount.currency : null;
+  const sentMinor = parseMoney(form.amount, currency);
+  const receivedMinor = toCurrency ? parseMoney(form.toAmount, toCurrency) : null;
+  const rate =
+    toCurrency && sentMinor && receivedMinor
+      ? new Intl.NumberFormat(activeLocale(), { maximumSignificantDigits: 5 }).format(
+          receivedMinor / 10 ** minorDigits(toCurrency) / (sentMinor / 10 ** minorDigits(currency)),
+        )
+      : null;
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -164,6 +179,12 @@ function TransactionForm({
     if (amountMinor === null) {
       setAmountError(true);
       document.getElementById("tx-amount")?.focus();
+      return;
+    }
+    const toAmountMinor = toCurrency ? parseMoney(form.toAmount, toCurrency) : null;
+    if (toCurrency && !toAmountMinor) {
+      setToAmountError(true);
+      document.getElementById("tx-to-amount")?.focus();
       return;
     }
     const time = normalizeTime(form.time);
@@ -179,6 +200,7 @@ function TransactionForm({
       occurredTime: time || null,
       accountId: form.accountId,
       toAccountId: form.kind === "transfer" ? form.toAccountId || null : null,
+      toAmountMinor: toCurrency ? toAmountMinor : null,
       categoryId: form.kind === "transfer" ? null : form.categoryId || null,
       counterparty: form.counterparty.trim() || null,
       title: form.title.trim(),
@@ -218,11 +240,13 @@ function TransactionForm({
     }
     if (enterMode !== "next") return;
     const target = e.target as HTMLElement;
-    const order = ["tx-amount", "tx-title", form.kind === "transfer" ? "tx-to-account" : "tx-category"];
+    const order = ["tx-amount", "tx-title", ...(form.kind === "transfer" ? ["tx-to-account", "tx-to-amount"] : ["tx-category"])];
     const i = order.indexOf(target.id);
     if (i === -1 || target.tagName !== "INPUT") return;
     e.preventDefault();
-    document.getElementById(order[i + 1])?.focus();
+    const next = order[i + 1] ? document.getElementById(order[i + 1]) : null;
+    if (next) next.focus();
+    else saveRef.current?.focus();
   }
 
   const toSave = () => {
@@ -273,6 +297,7 @@ function TransactionForm({
               inputMode="decimal"
               enterKeyHint={enterMode === "next" ? "next" : undefined}
               autoComplete="off"
+              {...selectOnFocus}
               placeholder="0,00"
               value={form.amount}
               aria-invalid={amountError}
@@ -377,7 +402,9 @@ function TransactionForm({
               value={form.toAccountId}
               onChange={(v) => {
                 set("toAccountId", v);
-                toSave();
+                if (accounts.find((a) => a.id === v)?.currency !== currency) {
+                  if (enterMode === "next") setTimeout(() => document.getElementById("tx-to-amount")?.focus(), 80);
+                } else toSave();
               }}
               exclude={form.accountId}
             />
@@ -396,6 +423,27 @@ function TransactionForm({
           </Field>
         )}
       </div>
+      {toCurrency && (
+        <Field label={t("tx.toAmount", { currency: toCurrency })} htmlFor="tx-to-amount">
+          <MoneyInput
+            id="tx-to-amount"
+            value={form.toAmount}
+            onChange={(v) => {
+              set("toAmount", v);
+              setToAmountError(false);
+            }}
+            currency={toCurrency}
+            invalid={toAmountError}
+          />
+          <span className={cn("text-[12px]", toAmountError ? "text-expense" : "text-muted")} role={toAmountError ? "alert" : undefined}>
+            {toAmountError
+              ? t("tx.toAmountRequired")
+              : rate
+                ? t("tx.toAmountRate", { from: currency, rate, to: toCurrency })
+                : t("tx.toAmountHint", { from: currency, to: toCurrency })}
+          </span>
+        </Field>
+      )}
 
       <Field label={t("tx.counterparty")} htmlFor="tx-counterparty">
         <CounterpartyInput

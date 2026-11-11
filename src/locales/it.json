@@ -109,7 +109,11 @@
     "createMore": "Creane altri",
     "carriedOverHint": "Il saldo riportato fa già parte del saldo del conto – non serve registrarlo come entrata.",
     "correctedOn": "Saldo corretto il {{date}}",
-    "correctedHint": "I saldi prima di questo giorno sono calcolati a ritroso dall'importo corretto, quindi questo periodo non ha un saldo riportato."
+    "correctedHint": "I saldi prima di questo giorno sono calcolati a ritroso dall'importo corretto, quindi questo periodo non ha un saldo riportato.",
+    "toAmount": "Importo ricevuto ({{currency}})",
+    "toAmountHint": "I conti usano valute diverse. Inserisci ciò che è arrivato davvero: {{from}} e {{to}} non vengono convertiti automaticamente.",
+    "toAmountRate": "1 {{from}} = {{rate}} {{to}}",
+    "toAmountRequired": "Inserisci l'importo arrivato sull'altro conto."
   },
   "stats": {
     "subtitle": "Dove sono andati i tuoi soldi e da dove sono arrivati – per categoria.",
@@ -659,7 +663,8 @@
     "receivedGeneric": "Nuovi dati ricevuti dall'altro dispositivo",
     "paired_many": "Associati · {{count}} dispositivi",
     "pairWarning": "Abbina solo i tuoi dispositivi. I dispositivi abbinati condividono tutti i dati – movimenti, conti e scontrini – e scollegarli non li separa di nuovo.",
-    "pairingRole": "Il nuovo dispositivo può"
+    "pairingRole": "Il nuovo dispositivo può",
+    "networkBlocked": "Android non consente a ZCashflow di accedere alla rete locale, quindi la sincronizzazione è in pausa. Consenti Dispositivi nelle vicinanze in Impostazioni → App → ZCashflow → Autorizzazioni, poi torna all'app."
   },
   "date": {
     "pick": "Scegli una data",
@@ -1019,7 +1024,8 @@
       "title": "Descrizione o causale",
       "note": "Nota",
       "tags": "Etichette separate da spazi",
-      "reference": "Riferimento ZCashflow – riconosce i movimenti già presenti"
+      "reference": "Riferimento ZCashflow – riconosce i movimenti già presenti",
+      "to_amount": "Importo ricevuto sul conto di destinazione – solo per trasferimenti tra valute diverse"
     },
     "defaultAccount": "Conto per le righe senza conto",
     "defaultAccountHint": "es. il tuo conto corrente per un estratto della banca",
@@ -1130,7 +1136,7 @@
     "linuxTitle": "Linux",
     "linuxText": "La maggior parte delle distribuzioni desktop blocca le connessioni in entrata. Consenti la porta {{port}} una volta nel terminale:",
     "mobileTitle": "Android e iPhone",
-    "mobileText": "Su iPhone consenti «Rete locale» per ZCashflow (Impostazioni → Privacy e sicurezza → Rete locale). Su entrambi la Wi-Fi deve essere attiva – con i dati mobili l'altro dispositivo non è raggiungibile. Tieni l'app aperta durante la sincronizzazione."
+    "mobileText": "Su iPhone consenti «Rete locale» per ZCashflow (Impostazioni → Privacy e sicurezza → Rete locale). Su entrambi la Wi-Fi deve essere attiva – con i dati mobili l'altro dispositivo non è raggiungibile. Tieni l'app aperta durante la sincronizzazione. Su Android 17, consenti a ZCashflow l'accesso ai Dispositivi nelle vicinanze quando lo chiede (Impostazioni → App → ZCashflow → Autorizzazioni)."
   },
   "bulk": {
     "select": "Seleziona",
