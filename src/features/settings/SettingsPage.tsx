@@ -103,6 +103,7 @@ export function SettingsPage() {
   const expenseStyle = usePrefs((s) => s.expenseStyle);
   const txPeriod = usePrefs((s) => s.txPeriod);
   const txEnter = usePrefs((s) => s.txEnter);
+  const txSkipCounterparty = usePrefs((s) => s.txSkipCounterparty);
   const timeFormat = usePrefs((s) => s.timeFormat);
   const protectedData = useVaultStatus().data?.enabled ?? false;
   const setPref = usePrefs((s) => s.set);
@@ -274,6 +275,16 @@ export function SettingsPage() {
                   { value: "next", label: t("amounts.txEnterNext") },
                 ]}
               />
+              {txEnter === "next" && (
+                <div className="mt-3 border-t border-border pt-3">
+                <SwitchRow
+                  label={t("amounts.txSkipCounterparty")}
+                  hint={t("amounts.txSkipCounterpartyHint")}
+                  checked={txSkipCounterparty}
+                  onCheckedChange={(v) => setPref("txSkipCounterparty", v)}
+                />
+                </div>
+              )}
             </Field2>
             <Field2 label={t("amounts.timeFormat")} hint={t("amounts.timeFormatHint")}>
               <Segmented<TimeFormat>

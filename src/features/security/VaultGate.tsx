@@ -149,10 +149,13 @@ function LockScreen({ startup, onUnlocked }: { startup?: boolean; onUnlocked: ()
             <p className="mt-1 text-[13px] text-muted">{t("vault.lockedHint")}</p>
           </div>
           {!forgot ? (
-            <form onSubmit={submit} className="flex w-full flex-col gap-3">
+            <form onSubmit={submit} name="zcashflow-unlock" id="zcashflow-unlock" className="relative flex w-full flex-col gap-3">
+              <VaultUsername />
               <div className="relative">
                 <Input
                   ref={input}
+                  id="vault-password"
+                  name="password"
                   type={show ? "text" : "password"}
                   autoFocus
                   autoComplete="current-password"
@@ -214,5 +217,20 @@ function LockScreen({ startup, onUnlocked }: { startup?: boolean; onUnlocked: ()
         </div>
       </div>
     </div>
+  );
+}
+
+export function VaultUsername() {
+  return (
+    <input
+      type="text"
+      name="username"
+      autoComplete="username"
+      value="ZCashflow"
+      readOnly
+      tabIndex={-1}
+      aria-hidden="true"
+      className="pointer-events-none absolute size-px overflow-hidden opacity-0"
+    />
   );
 }

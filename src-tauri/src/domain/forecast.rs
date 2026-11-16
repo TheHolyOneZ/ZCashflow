@@ -45,9 +45,13 @@ pub struct Forecast {
     pub budgets_included: bool,
     pub budget_reserved_minor: i64,
     pub accounts: Vec<AccountSeries>,
+    pub movements: Vec<Occurrence>,
 }
 
 struct BookedAhead {
+    id: String,
+    title: String,
+    category_id: Option<String>,
     date: String,
     kind: String,
     amount_minor: i64,
@@ -57,7 +61,8 @@ struct BookedAhead {
 
 fn booked_ahead(conn: &Connection, currency: &str, today: NaiveDate, to: NaiveDate) -> AppResult<Vec<BookedAhead>> {
     let mut stmt = conn.prepare(
-        "SELECT t.occurred_on, t.kind, t.amount_minor, t.account_id, t.to_account_id
+        "SELECT t.occurred_on, t.kind, t.amount_minor, t.account_id, t.to_account_id, t.id,
+                coalesce(nullif(t.title, ''), (SELECT name FROM counterparties WHERE id = t.counterparty_id), ''), t.category_id
          FROM transactions t JOIN accounts a ON a.id = t.account_id
          WHERE t.deleted = 0 AND a.deleted = 0 AND a.archived = 0 AND a.currency = ?1
            AND t.occurred_on > ?2 AND t.occurred_on <= ?3
@@ -70,6 +75,9 @@ fn booked_ahead(conn: &Connection, currency: &str, today: NaiveDate, to: NaiveDa
             amount_minor: r.get(2)?,
             account_id: r.get(3)?,
             to_account_id: r.get(4)?,
+            id: r.get(5)?,
+            title: r.get(6)?,
+            category_id: r.get(7)?,
         })
     })?;
     Ok(rows.collect::<Result<_, _>>()?)
@@ -78,6 +86,7 @@ fn booked_ahead(conn: &Connection, currency: &str, today: NaiveDate, to: NaiveDa
 struct Spending {
     total: i64,
     by_account: HashMap<String, i64>,
+    uncovered_by_account: HashMap<String, i64>,
 }
 
 fn variable_spending_90d(conn: &Connection, currency: &str, today: NaiveDate, exclude: &HashSet<String>) -> AppResult<Spending> {
@@ -90,12 +99,13 @@ fn variable_spending_90d(conn: &Connection, currency: &str, today: NaiveDate, ex
     let rows = stmt.query_map(params![currency, (today - Duration::days(90)).to_string(), today.to_string()], |r| {
         Ok((r.get::<_, String>(0)?, r.get::<_, Option<String>>(1)?, r.get::<_, i64>(2)?))
     })?;
-    let mut out = Spending { total: 0, by_account: HashMap::new() };
+    let mut out = Spending { total: 0, by_account: HashMap::new(), uncovered_by_account: HashMap::new() };
     for row in rows {
         let (account, category, amount) = row?;
-        *out.by_account.entry(account).or_default() += amount;
+        *out.by_account.entry(account.clone()).or_default() += amount;
         if !category.is_some_and(|c| exclude.contains(&c)) {
             out.total += amount;
+            *out.uncovered_by_account.entry(account).or_default() += amount;
         }
     }
     Ok(out)
@@ -244,6 +254,23 @@ pub fn forecast(conn: &Connection, currency: &str, today: NaiveDate, horizon_day
     }
 
     let next_income = events.iter().find(|o| o.kind == "income" && o.date.as_str() > today.to_string().as_str()).cloned();
+    let mut movements: Vec<Occurrence> = all_events.clone();
+    movements.extend(ahead.iter().map(|t| Occurrence {
+        rule_id: format!("tx:{}", t.id),
+        date: t.date.clone(),
+        time: None,
+        title: t.title.clone(),
+        kind: t.kind.clone(),
+        amount_minor: t.amount_minor,
+        currency: currency.into(),
+        account_id: t.account_id.clone(),
+        to_account_id: t.to_account_id.clone(),
+        category_id: t.category_id.clone(),
+        debt_id: None,
+        auto_post: false,
+        overdue: false,
+    }));
+    movements.sort_by(|a, b| a.date.cmp(&b.date));
 
     let until = next_income
         .as_ref()
@@ -287,6 +314,7 @@ pub fn forecast(conn: &Connection, currency: &str, today: NaiveDate, horizon_day
             .zip(series)
             .map(|(a, balances)| AccountSeries { account_id: a.id.clone(), balances })
             .collect(),
+        movements,
     })
 }
 
@@ -313,6 +341,7 @@ pub struct MonthPreview {
     pub budgets: Vec<PlannedBudget>,
 
     pub savings_target_minor: i64,
+    pub transfer_net_minor: i64,
 
     pub free_minor: i64,
     pub start_balance_minor: i64,
@@ -322,26 +351,41 @@ pub struct MonthPreview {
     pub is_current: bool,
 }
 
-pub fn month_preview(conn: &Connection, currency: &str, today: NaiveDate, month_start: NaiveDate) -> AppResult<MonthPreview> {
+pub fn month_preview(conn: &Connection, currency: &str, today: NaiveDate, month_start: NaiveDate, accounts: Option<&[String]>) -> AppResult<MonthPreview> {
     let month_end = month_start.checked_add_months(Months::new(1)).unwrap() - Duration::days(1);
     let from = month_start.max(today);
     let horizon = (month_end - today).num_days().max(0);
     let fc = forecast(conn, currency, today, horizon)?;
+    let selected: Option<HashSet<&String>> = accounts
+        .map(|ids| fc.accounts.iter().map(|s| &s.account_id).filter(|id| ids.contains(id)).collect::<HashSet<_>>())
+        .filter(|s| !s.is_empty() && s.len() < fc.accounts.len());
+    let picked = |id: &String| selected.as_ref().is_none_or(|s| s.contains(id));
 
-    let items: Vec<Occurrence> = fc
-        .events
-        .iter()
-        .filter(|o| {
-            let d = if o.date.as_str() < today.to_string().as_str() { today.to_string() } else { o.date.clone() };
-            d >= from.to_string() && d <= month_end.to_string()
-        })
-        .cloned()
-        .collect();
+    let in_month = |o: &&Occurrence| {
+        let d = if o.date.as_str() < today.to_string().as_str() { today.to_string() } else { o.date.clone() };
+        d >= from.to_string() && d <= month_end.to_string()
+    };
+    let crossing = |o: &&Occurrence| {
+        o.kind == "transfer" && !o.rule_id.starts_with("tx:") && picked(&o.account_id) != o.to_account_id.as_ref().is_some_and(picked)
+    };
+    let mut items: Vec<Occurrence> = fc.events.iter().filter(|o| picked(&o.account_id)).filter(in_month).cloned().collect();
+    let mut transfer_net = 0;
+    if selected.is_some() {
+        for o in fc.movements.iter().filter(crossing).filter(in_month) {
+            transfer_net += if picked(&o.account_id) { -o.amount_minor } else { o.amount_minor };
+            items.push(o.clone());
+        }
+        items.sort_by(|a, b| a.date.cmp(&b.date));
+    }
     let income: i64 = items.iter().filter(|o| o.kind == "income").map(|o| o.amount_minor).sum();
     let fixed: i64 = items.iter().filter(|o| o.kind == "expense").map(|o| o.amount_minor).sum();
 
     let plan = plan(conn, currency, today)?;
-    let variable_90 = variable_spending_90d(conn, currency, today, &plan.covered)?.total;
+    let spending = variable_spending_90d(conn, currency, today, &plan.covered)?;
+    let variable_90 = match &selected {
+        Some(s) => spending.uncovered_by_account.iter().filter(|(id, _)| s.contains(id)).map(|(_, v)| v).sum(),
+        None => spending.total,
+    };
     let days_in_month = (month_end - month_start).num_days() + 1;
     let days_ahead = (month_end - from).num_days() + 1 - i64::from(from == today);
     let variable = variable_90 / 3 * days_ahead.max(0) / days_in_month;
@@ -362,10 +406,26 @@ pub fn month_preview(conn: &Connection, currency: &str, today: NaiveDate, month_
         .sum();
 
     let day_before = (from - Duration::days(1)).to_string();
-    let start_balance = if from <= today {
-        fc.start_balance_minor
-    } else {
-        fc.days.iter().find(|d| d.date == day_before).map(|d| d.balance_minor).unwrap_or(fc.start_balance_minor)
+    let (start_balance, end_balance) = match &selected {
+        None => (
+            if from <= today {
+                fc.start_balance_minor
+            } else {
+                fc.days.iter().find(|d| d.date == day_before).map(|d| d.balance_minor).unwrap_or(fc.start_balance_minor)
+            },
+            fc.end_balance_minor,
+        ),
+        Some(s) => {
+            let series: Vec<&AccountSeries> = fc.accounts.iter().filter(|a| s.contains(&a.account_id)).collect();
+            let at = |i: usize| series.iter().map(|a| a.balances.get(i).copied().unwrap_or(0)).sum::<i64>();
+            let now: i64 = accounts::list_as_of(conn, today)?.iter().filter(|a| s.contains(&a.id)).map(|a| a.balance_minor).sum();
+            let start = if from <= today {
+                now
+            } else {
+                fc.days.iter().position(|d| d.date == day_before).map(at).unwrap_or(now)
+            };
+            (start, fc.days.len().checked_sub(1).map(at).unwrap_or(now))
+        }
     };
 
     Ok(MonthPreview {
@@ -379,9 +439,10 @@ pub fn month_preview(conn: &Connection, currency: &str, today: NaiveDate, month_
         budget_expense_minor: budgeted,
         budgets: planned,
         savings_target_minor: savings,
-        free_minor: income - fixed - variable - budgeted - savings,
+        transfer_net_minor: transfer_net,
+        free_minor: income - fixed - variable - budgeted - savings + transfer_net,
         start_balance_minor: start_balance,
-        end_balance_minor: fc.end_balance_minor,
+        end_balance_minor: end_balance,
         items,
         is_current: from == today,
     })
@@ -481,7 +542,7 @@ mod tests {
 
         assert_eq!(fc.end_balance_minor, 166_000);
 
-        let p = month_preview(&db.conn(), "EUR", today, d("2026-11-01")).unwrap();
+        let p = month_preview(&db.conn(), "EUR", today, d("2026-11-01"), None).unwrap();
         assert_eq!(p.expected_income_minor, 250_000);
         assert_eq!(p.fixed_expense_minor, 82_000);
         assert_eq!(p.free_minor, 168_000);
@@ -526,7 +587,7 @@ mod tests {
         assert_eq!(fc.days[1].balance_minor, -9_100);
         assert_eq!(fc.end_balance_minor, -18_000, "exactly 90 days × 1 €");
 
-        let p = month_preview(&db.conn(), "EUR", today, d("2026-10-01")).unwrap();
+        let p = month_preview(&db.conn(), "EUR", today, d("2026-10-01"), None).unwrap();
         assert!(p.is_current);
         assert_eq!(p.variable_expense_minor, 3_000 * 23 / 31);
     }
@@ -616,19 +677,19 @@ mod tests {
         spend(&db, &acc, None, 3_000, "2026-10-15");
         let budget = budgets::upsert(&db, budgets::BudgetInput { id: None, category_id: groceries, period: "month".into(), limit_minor: 50_000 }, today).unwrap();
 
-        let without = month_preview(&db.conn(), "EUR", today, d("2026-11-01")).unwrap();
+        let without = month_preview(&db.conn(), "EUR", today, d("2026-11-01"), None).unwrap();
         assert_eq!(without.budget_expense_minor, 0);
         assert_eq!(without.variable_expense_minor, 4_000);
 
         crate::db::set_meta(&db.conn(), budgets::PLAN_SETTING, "all").unwrap();
-        let with = month_preview(&db.conn(), "EUR", today, d("2026-11-01")).unwrap();
+        let with = month_preview(&db.conn(), "EUR", today, d("2026-11-01"), None).unwrap();
         assert_eq!(with.budget_expense_minor, 50_000);
         assert_eq!(with.variable_expense_minor, 1_000, "grocery history is covered by the budget");
         assert_eq!(with.free_minor, -51_000);
         assert_eq!(with.budgets[0].budget_id, budget.id);
 
         crate::db::set_meta(&db.conn(), budgets::PLAN_SETTING, "someone-else").unwrap();
-        assert_eq!(month_preview(&db.conn(), "EUR", today, d("2026-11-01")).unwrap().budget_expense_minor, 0);
+        assert_eq!(month_preview(&db.conn(), "EUR", today, d("2026-11-01"), None).unwrap().budget_expense_minor, 0);
     }
 
     #[test]
@@ -676,5 +737,69 @@ mod tests {
         for (idx, day) in fc.days.iter().enumerate() {
             assert_eq!(g[idx] + c[idx], day.balance_minor, "accounts add up to the total");
         }
+    }
+
+    #[test]
+    fn movements_list_transfers_and_entries_booked_ahead() {
+        let db = Db::open_in_memory().unwrap();
+        let today = d("2026-10-08");
+        let cash = accounts::list(&db.conn()).unwrap()[0].id.clone();
+        let savings = accounts::upsert(
+            &db,
+            accounts::AccountInput { id: None, name: "Tagesgeld".into(), kind: "savings".into(), currency: "EUR".into(), opening_minor: 100_000, color: None, archived: false },
+        )
+        .unwrap();
+        db.conn().execute("UPDATE accounts SET opening_minor = 50_000 WHERE id = ?1", [&cash]).unwrap();
+        upsert(
+            &db,
+            RecurringInput {
+                id: None,
+                title: "Sparplan".into(),
+                kind: "transfer".into(),
+                amount_minor: 10_000,
+                account_id: cash.clone(),
+                to_account_id: Some(savings.id.clone()),
+                category_id: None,
+                counterparty: None,
+                freq: "monthly".into(),
+                interval_n: 1,
+                start_on: "2026-10-10".into(),
+                end_on: None,
+                max_count: None,
+                auto_post: true,
+                backfill: false,
+                occurred_time: None,
+                note: None,
+            },
+            today,
+        )
+        .unwrap();
+        rule(&db, "Miete", "expense", 30_000, "2026-10-20", today);
+        spend(&db, &savings.id, None, 2_000, "2026-10-15");
+
+        let fc = forecast(&db.conn(), "EUR", today, 20).unwrap();
+        assert!(fc.events.iter().all(|e| e.kind != "transfer"));
+        let titles: Vec<&str> = fc.movements.iter().map(|m| m.title.as_str()).collect();
+        assert_eq!(titles, ["Sparplan", "x", "Miete"]);
+        assert!(fc.movements[1].rule_id.starts_with("tx:"));
+
+        let all = month_preview(&db.conn(), "EUR", today, d("2026-10-01"), None).unwrap();
+        assert_eq!(all.start_balance_minor, 150_000);
+        assert_eq!(all.fixed_expense_minor, 30_000);
+
+        assert_eq!(all.transfer_net_minor, 0);
+        assert!(all.items.iter().all(|o| o.kind != "transfer"));
+
+        let only = [savings.id.clone()];
+        let p = month_preview(&db.conn(), "EUR", today, d("2026-10-01"), Some(&only)).unwrap();
+        assert_eq!(p.start_balance_minor, 100_000);
+        assert_eq!(p.fixed_expense_minor, 0);
+        assert_eq!(p.transfer_net_minor, 10_000);
+        assert_eq!(p.items.iter().map(|o| o.title.as_str()).collect::<Vec<_>>(), ["Sparplan"]);
+        assert_eq!(p.free_minor, 10_000 - p.variable_expense_minor - p.budget_expense_minor - p.savings_target_minor);
+        assert_eq!(p.end_balance_minor, 108_000);
+
+        let everything = [cash.clone(), savings.id.clone()];
+        assert_eq!(month_preview(&db.conn(), "EUR", today, d("2026-10-01"), Some(&everything)).unwrap().start_balance_minor, 150_000);
     }
 }

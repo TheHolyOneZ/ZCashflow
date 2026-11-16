@@ -1,5 +1,25 @@
 # Changelog
 
+## 1.8.6
+
+### Added
+
+- *Settings → Amounts & transactions → Skip From / To* (#41). With *Enter: Next field*, Enter then goes from the category straight to Save. From / To can still be tapped or clicked. Off by default.
+- The Outlook shows what moves the balance (#42). Hovering a day on the forecast chart lists every entry of that day with its effect, including transfers and entries already booked ahead, the change from the day before, and the part that comes from estimated everyday spending and budgets. More than six entries are summed up as *+N more* with their total.
+- The account picker on the Outlook now filters the whole page (#42), not only the chart: the month plan, the payment calendar and the list of planned payments count only the selected accounts, including transfers into or out of them. Budgets and savings goals still apply to all accounts, and the page says so.
+- Calendar days on the Outlook show all their entries and the day's total when hovered, and an opened day shows its total.
+
+### Fixed
+
+- Enter in the transaction form looped on the category (#39). When a saved description had already filled in the category, Enter landed on the category field, opened it, and picking the same category again led back to the field. A category that is already chosen is now skipped, and picking from the list always moves on.
+- On phones, Enter in the description jumped to From / To instead of following the order set under *Enter: Next field*. The keyboard now follows the same order as on the computer: amount, description, category (if none yet), From / To, then Save.
+- The bar for editing several transactions was hard to tell apart from the list (#38). It now has an accent border and a filled count, the selection boxes are clearly visible in light and dark mode, selected rows are marked, and the list leaves room so the bar no longer covers the last entries.
+- Password managers on Android, e.g. KeePassDX, could not recognise the app lock (#43). The password fields now carry the usual login-form names and a fixed user name, so autofill services can offer and save the password.
+
+### Notes
+
+- No database or sync schema change; devices on 1.8.5 and older 1.7/1.8 versions still sync.
+
 ## 1.8.5
 
 ### Added

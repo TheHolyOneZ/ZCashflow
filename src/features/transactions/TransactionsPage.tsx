@@ -233,7 +233,9 @@ export function TransactionsPage() {
             />
           )
         ) : (
-          <TransactionList items={items} days={totals?.days} selection={{ selected, onChange: setSelected }} />
+          <div className={cn(selected.size > 0 && "pb-36 sm:pb-24")}>
+            <TransactionList items={items} days={totals?.days} selection={{ selected, onChange: setSelected }} />
+          </div>
         )}
       </Card>
       <ImportDialog open={importOpen} onOpenChange={setImportOpen} />

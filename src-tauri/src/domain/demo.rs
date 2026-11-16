@@ -399,7 +399,7 @@ mod tests {
         for o in 0..3 {
             let m = month(o);
             let start = NaiveDate::parse_from_str(&format!("{m}-01"), "%Y-%m-%d").unwrap();
-            put(&format!("month_preview_{m}"), j(&forecast::month_preview(&conn, "EUR", today, start).unwrap()));
+            put(&format!("month_preview_{m}"), j(&forecast::month_preview(&conn, "EUR", today, start, None).unwrap()));
         }
         put("monthly_series", j(&summary::monthly_series(&conn, "EUR", today, 6).unwrap()));
         let (from, to) = budgets::period_range("month", today).unwrap();

@@ -327,11 +327,11 @@ pub fn forecast(db: State<SharedDb>, days: i64) -> AppResult<Forecast> {
 }
 
 #[tauri::command]
-pub fn month_preview(db: State<SharedDb>, month: String) -> AppResult<MonthPreview> {
+pub fn month_preview(db: State<SharedDb>, month: String, accounts: Option<Vec<String>>) -> AppResult<MonthPreview> {
     let start = chrono::NaiveDate::parse_from_str(&format!("{month}-01"), "%Y-%m-%d")
         .map_err(|_| AppError::Invalid(format!("invalid month {month:?}")))?;
     let currency = default_currency(&db)?;
-    forecast_dom::month_preview(&db.conn(), &currency, today(), start)
+    forecast_dom::month_preview(&db.conn(), &currency, today(), start, accounts.as_deref())
 }
 
 #[tauri::command]

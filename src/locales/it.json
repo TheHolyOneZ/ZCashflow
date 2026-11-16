@@ -334,7 +334,10 @@
     "budgetsHintRest": "quanto resta questo mese",
     "variableOther": "Altre spese quotidiane",
     "forecastBudgets": "I budget pianificati sono inclusi.",
-    "forecastSubset": "Sono mostrati solo i conti scelti."
+    "forecastSubset": "Sono mostrati solo i conti scelti.",
+    "dayTotal": "Totale",
+    "filteredNote": "Vengono conteggiati solo i conti selezionati. Budget e obiettivi di risparmio valgono per tutti i conti.",
+    "transfers": "Trasferimenti (netto)"
   },
   "recurring": {
     "subtitle": "Stipendio, affitto, abbonamenti – tutto ciò che entra ed esce regolarmente.",
@@ -1081,7 +1084,11 @@
     "split": "Per conto",
     "sum": "Somma",
     "mode": "Vista",
-    "hint": "Somma disegna una curva per i conti scelti, per conto una curva per ciascuno."
+    "hint": "Somma disegna una curva per i conti scelti, per conto una curva per ciascuno.",
+    "more_one": "+{{count}} altro",
+    "more_other": "+{{count}} altri",
+    "everyday": "Spese quotidiane e budget (stima)",
+    "more_many": "+{{count}} altri"
   },
   "budgetPlan": {
     "off": "Budget non pianificati",
@@ -1109,11 +1116,13 @@
     "txEnterSave": "Salva",
     "txEnterNext": "Campo successivo",
     "txEnterSaveHint": "Invio salva subito il movimento.",
-    "txEnterNextHint": "Invio passa dall'importo alla descrizione e alla categoria, poi a Salva. {{shortcut}} salva sempre.",
+    "txEnterNextHint": "Invio passa dall'importo alla descrizione, alla categoria (se non ne è ancora scelta una) e a Da / A, poi a Salva. {{shortcut}} salva sempre.",
     "timeFormat": "Formato orario",
     "timeFormatHint": "Il formato predefinito è 24 ore. Vale per i campi orario e gli elenchi su questo dispositivo.",
     "time24": "24 ore",
-    "time12": "12 ore"
+    "time12": "12 ore",
+    "txSkipCounterparty": "Salta Da / A",
+    "txSkipCounterpartyHint": "Invio passa dalla categoria direttamente a Salva. Da / A si può sempre toccare o cliccare."
   },
   "currencySwitch": {
     "title": "Passare anche i conti a {{currency}}?",

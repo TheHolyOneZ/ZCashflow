@@ -67,8 +67,12 @@ export const useGoalAllocations = (goalId: string | undefined) =>
 export const useBudgets = () => useQuery({ queryKey: ["budgets"], queryFn: planning.listBudgets });
 export const useForecast = (days: number) =>
   useQuery({ queryKey: ["forecast", days], queryFn: () => planning.forecast(days), placeholderData: (p) => p });
-export const useMonthPreview = (month: string) =>
-  useQuery({ queryKey: ["monthPreview", month], queryFn: () => planning.monthPreview(month), placeholderData: (p) => p });
+export const useMonthPreview = (month: string, accounts: string[] = []) =>
+  useQuery({
+    queryKey: ["monthPreview", month, accounts],
+    queryFn: () => planning.monthPreview(month, accounts),
+    placeholderData: (p) => p,
+  });
 export const useMonthlySeries = (months: number) =>
   useQuery({ queryKey: ["monthlySeries", months], queryFn: () => planning.monthlySeries(months) });
 export const useInsights = () => useQuery({ queryKey: ["insights"], queryFn: planning.insights });

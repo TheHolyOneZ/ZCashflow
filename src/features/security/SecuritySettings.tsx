@@ -9,6 +9,7 @@ import { isApiError, vault } from "@/lib/api";
 import { usePrefs, type LockAfter } from "@/stores/prefs";
 import { useUi } from "@/stores/ui";
 import { useLock, useVaultStatus } from "./lock";
+import { VaultUsername } from "./VaultGate";
 
 type Mode = "set" | "change" | "remove";
 
@@ -123,7 +124,8 @@ function PasswordForm({ mode, onDone }: { mode: Mode; onDone: () => void }) {
   }
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-4">
+    <form onSubmit={submit} name="zcashflow-password" id="zcashflow-password" className="relative flex flex-col gap-4">
+      <VaultUsername />
       {mode === "set" && (
         <div className="flex gap-2.5 rounded-xl bg-warn/10 p-3 text-[12.5px]">
           <TriangleAlert className="mt-0.5 size-4 shrink-0 text-warn" />
@@ -135,16 +137,16 @@ function PasswordForm({ mode, onDone }: { mode: Mode; onDone: () => void }) {
       )}
       {needsCurrent && (
         <Field label={t("vault.current")} htmlFor="vault-current">
-          <Input id="vault-current" type="password" autoFocus autoComplete="current-password" value={current} onChange={(e) => setCurrent(e.target.value)} />
+          <Input id="vault-current" name="current-password" type="password" autoFocus autoComplete="current-password" value={current} onChange={(e) => setCurrent(e.target.value)} />
         </Field>
       )}
       {needsNew && (
         <>
           <Field label={t("vault.new")} htmlFor="vault-new" hint={t("vault.tooShort", { count: MIN })}>
-            <Input id="vault-new" type="password" autoFocus={!needsCurrent} autoComplete="new-password" value={next} onChange={(e) => setNext(e.target.value)} />
+            <Input id="vault-new" name="new-password" type="password" autoFocus={!needsCurrent} autoComplete="new-password" value={next} onChange={(e) => setNext(e.target.value)} />
           </Field>
           <Field label={t("vault.repeat")} htmlFor="vault-repeat">
-            <Input id="vault-repeat" type="password" autoComplete="new-password" value={repeat} onChange={(e) => setRepeat(e.target.value)} />
+            <Input id="vault-repeat" name="confirm-password" type="password" autoComplete="new-password" value={repeat} onChange={(e) => setRepeat(e.target.value)} />
           </Field>
         </>
       )}

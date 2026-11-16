@@ -1,4 +1,4 @@
-import { Children, isValidElement, type ReactElement, type ReactNode } from "react";
+import { Children, isValidElement, useRef, type ReactElement, type ReactNode } from "react";
 import { Select as S } from "radix-ui";
 import { Check, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/cn";
@@ -56,6 +56,7 @@ export interface SelectProps {
   value: string;
   onChange?: (e: { target: { value: string } }) => void;
   onValueChange?: (value: string) => void;
+  onPicked?: () => void;
   items?: SelectItem[];
   children?: ReactNode;
   className?: string;
@@ -71,6 +72,7 @@ export function Select({
   value,
   onChange,
   onValueChange,
+  onPicked,
   items,
   children,
   className,
@@ -80,6 +82,7 @@ export function Select({
   "aria-label": ariaLabel,
 }: SelectProps) {
   const list = items ?? itemsFromChildren(children);
+  const picked = useRef(false);
   const current = list.find((i) => i.value === value);
   const set = (v: string) => {
     if (v === "") return;
@@ -110,6 +113,13 @@ export function Select({
         <S.Content
           position="popper"
           sideOffset={6}
+          onCloseAutoFocus={(e) => {
+            if (picked.current && onPicked) {
+              e.preventDefault();
+              onPicked();
+            }
+            picked.current = false;
+          }}
           collisionPadding={12}
           className={cn(
             "z-[300] max-h-[min(22rem,var(--radix-select-content-available-height))] min-w-[var(--radix-select-trigger-width)] overflow-hidden",
@@ -124,6 +134,12 @@ export function Select({
                 value={enc(item.value)}
                 disabled={item.disabled}
                 textValue={item.text ?? textOf(item.label)}
+                onPointerUp={() => {
+                  picked.current = true;
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") picked.current = true;
+                }}
                 className={cn(
                   "relative flex cursor-default items-center gap-2.5 rounded-lg py-2 pr-8 pl-2.5 text-[13px] outline-none select-none",
                   "data-[highlighted]:bg-surface-2 data-[disabled]:opacity-40 data-[state=checked]:font-medium",

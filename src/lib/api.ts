@@ -459,6 +459,7 @@ export interface Forecast {
   budgetsIncluded: boolean;
   budgetReservedMinor: number;
   accounts: AccountSeries[];
+  movements?: Occurrence[];
 }
 
 export interface PlannedBudget {
@@ -478,6 +479,7 @@ export interface MonthPreview {
   budgetExpenseMinor: number;
   budgets: PlannedBudget[];
   savingsTargetMinor: number;
+  transferNetMinor?: number;
   freeMinor: number;
   startBalanceMinor: number;
   endBalanceMinor: number;
@@ -568,7 +570,8 @@ export const planning = {
   deleteBudget: (id: string) => invoke<void>("delete_budget", { id }),
 
   forecast: (days: number) => invoke<Forecast>("forecast", { days }),
-  monthPreview: (month: string) => invoke<MonthPreview>("month_preview", { month }),
+  monthPreview: (month: string, accounts?: string[]) =>
+    invoke<MonthPreview>("month_preview", { month, accounts: accounts?.length ? accounts : null }),
   monthlySeries: (months: number) => invoke<MonthTotals[]>("monthly_series", { months }),
   insights: () => invoke<Insight[]>("insights"),
 

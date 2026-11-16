@@ -68,6 +68,7 @@ export interface Prefs {
   exportCategories: ExportCategories;
   txEnter: TxEnter;
   txCreateMore: boolean;
+  txSkipCounterparty: boolean;
   lockAfter: LockAfter;
   timeFormat: TimeFormat;
 }
@@ -96,6 +97,7 @@ export const DEFAULT_PREFS: Prefs = {
   exportCategories: "path",
   txEnter: "save",
   txCreateMore: false,
+  txSkipCounterparty: false,
   lockAfter: "5",
   timeFormat: "24",
 };

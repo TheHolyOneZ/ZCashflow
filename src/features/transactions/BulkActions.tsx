@@ -41,12 +41,16 @@ export function BulkBar({
       <div
         role="toolbar"
         aria-label={t("bulk.selected", { count: selected.size })}
-        className="fixed bottom-[calc(4.75rem+env(safe-area-inset-bottom))] left-1/2 z-40 flex w-[min(42rem,calc(100vw-1.5rem))] -translate-x-1/2 flex-wrap items-center gap-1 rounded-xl border border-border bg-surface p-1.5 shadow-[0_12px_40px_-8px_rgb(0_0_0/0.35)] data-[state=open]:animate-[pop-in_140ms_var(--ease-out)] md:bottom-6"
+        className="fixed bottom-[calc(4.75rem+env(safe-area-inset-bottom))] left-1/2 z-40 flex w-[min(42rem,calc(100vw-1.5rem))] -translate-x-1/2 flex-wrap items-center gap-1 rounded-xl border-2 border-accent bg-surface p-1.5 shadow-[0_16px_48px_-6px_rgb(0_0_0/0.55)] ring-4 ring-accent/15 data-[state=open]:animate-[pop-in_140ms_var(--ease-out)] md:bottom-6"
       >
         <Button variant="ghost" size="icon" aria-label={t("bulk.clear")} onClick={() => onChange(new Set())}>
           <X className="size-4" />
         </Button>
-        <span className="min-w-0 flex-1 truncate px-1 text-[13px] font-semibold">{t("bulk.selected", { count: selected.size })}</span>
+        <span className="min-w-0 flex-1 truncate px-1">
+          <span className="inline-block max-w-full truncate rounded-md bg-accent px-2 py-0.5 align-middle text-[13px] font-semibold text-accent-fg">
+            {t("bulk.selected", { count: selected.size })}
+          </span>
+        </span>
         <Button variant="ghost" size="sm" onClick={() => onChange(all ? new Set() : new Set(items.map((i) => i.id)))}>
           {all ? t("bulk.none") : t("bulk.all")}
         </Button>

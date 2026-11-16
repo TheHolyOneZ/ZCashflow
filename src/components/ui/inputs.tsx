@@ -105,6 +105,7 @@ export function Autocomplete({
   suggestions,
   placeholder,
   renderIcon,
+  enterKeyHint,
 }: {
   id?: string;
   value: string;
@@ -113,6 +114,7 @@ export function Autocomplete({
   onPick?: (v: string) => void;
   suggestions: string[];
   placeholder?: string;
+  enterKeyHint?: "next" | "done";
   renderIcon?: (s: string) => ReactNode;
 }) {
   const [open, setOpen] = useState(false);
@@ -147,6 +149,7 @@ export function Autocomplete({
             aria-expanded={show}
             aria-controls={listId}
             autoComplete="off"
+            enterKeyHint={enterKeyHint}
             placeholder={placeholder}
             value={value}
             onChange={(e) => {

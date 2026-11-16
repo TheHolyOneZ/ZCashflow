@@ -64,6 +64,7 @@ export function MoneyInput({
   className,
   placeholder,
   allowNegative,
+  enterKeyHint,
 }: {
   id?: string;
   value: string;
@@ -74,12 +75,14 @@ export function MoneyInput({
   className?: string;
   placeholder?: string;
   allowNegative?: boolean;
+  enterKeyHint?: "next" | "done";
 }) {
   return (
     <div className="relative">
       <Input
         id={id}
         autoFocus={autoFocus}
+        enterKeyHint={enterKeyHint}
         inputMode="decimal"
         autoComplete="off"
         {...selectOnFocus}

@@ -37,7 +37,7 @@ encrypted, over your own Wi-Fi.
 
 ## Contents
 
-- [What's new in 1.8.5](#-whats-new-in-185)
+- [What's new in 1.8.6](#-whats-new-in-186)
 - [Why ZCashflow?](#-why-zcashflow)
 - [Features](#-features)
 - [Screenshots](#-screenshots)
@@ -57,7 +57,18 @@ encrypted, over your own Wi-Fi.
 
 ---
 
-## 🆕 What's new in 1.8.5
+## 🆕 What's new in 1.8.6
+
+- **See what moves the balance** (#42) – hovering a day on the Outlook chart lists every entry of that day with its effect, including transfers and entries booked ahead, the change from the day before, and the estimated everyday spending. Long days end in *+N more* with their total.
+- **One account filter for the whole Outlook** (#42) – the account picker now also filters the month plan, the calendar and the planned payments, transfers in and out included.
+- **Enter no longer loops on the category** (#39) – a category that a saved description already filled in is skipped, and phones follow the same Enter order as the computer.
+- **Skip From / To** (#41) – optional, under *Settings → Amounts & transactions* when Enter moves to the next field.
+- **Clearer multi-select bar** (#38) – accent border, visible selection boxes, and room so it no longer covers the last entries.
+- **Autofill for the app lock** (#43) – password managers like KeePassDX can recognise the password fields.
+
+No database or sync schema change – 1.8.5 and older 1.7/1.8 devices still sync.
+
+### 1.8.5
 
 - **Transfers between currencies** (#34) – a transfer from a RUB account to a BYN account now asks for the *amount received*. The target account is credited with what actually arrived, and the form shows the rate (*1 RUB = 0.037 BYN*). Nothing is converted automatically, and ZCashflow still doesn't go online for exchange rates.
 - **Sync on Android 17** (#35) – Android 17 blocks local-network access unless the app has the new *Nearby devices* permission. ZCashflow now asks for it and starts sync as soon as it's allowed, so devices find each other again. If you denied it, *Devices & sync* says so – allow it under *Settings → Apps → ZCashflow → Permissions → Nearby devices*.
@@ -110,7 +121,7 @@ No sync schema change – 1.7.0 devices still sync.
 
 - **Change several entries at once** – right-click (long-press on the phone) a transaction and choose *Select*, or <kbd>Ctrl</kbd>/<kbd>⌘</kbd>-click and <kbd>Shift</kbd>-click. Then change the category, date or account of all selected entries, or delete them.
 - **Create more** – tick *Create more* in the new-transaction dialog to save and start the next entry right away.
-- **Enter moves to the next field** – optional, under *Settings → Amounts & transactions*: Enter goes from amount to description and category, then to *Save*. <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>Enter</kbd> always saves. The default stays as before.
+- **Enter moves to the next field** – optional, under *Settings → Amounts & transactions*: Enter goes from amount to description, category (if none is chosen yet) and *From / To*, then to *Save*; *Skip From / To* leaves that field out. <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>Enter</kbd> always saves. The default stays as before.
 - **Swipe between months** – on phones and touch screens, swipe left or right in the transactions list or on *Statistics* to change the month.
 - **Categories as JSON** – export all categories with subcategories, icons and colors to a JSON file, or import a whole category tree from one on the *Categories* page. Existing categories are matched by name, and a preview shows what will change.
 - **Closing on Windows** – the close button leaves full screen and quits the app in one click.
@@ -172,6 +183,7 @@ See [changelog.md](changelog.md) for the full change list.
 ### 📊 Overview & forecast
 - **Statistics** per category for a month or a year – donut chart, ranked list, subcategories to fold out
 - Total balance with a **30-day balance forecast** chart – all accounts, a selection, or one curve per account
+- Hover a day on the forecast to see every entry behind the change, transfers and entries booked ahead included
 - **Safe to spend per day** until your next income – calculated from spendable accounts only
 - *Keeping an eye on*: overdue debts, exceeded budgets, low balance ahead, payments waiting for confirmation
 - Monthly income, expenses, net and fixed costs
@@ -645,7 +657,7 @@ You don't need every toolchain locally – GitHub builds everything:
   - *Actions → Build → Run workflow* builds selected platforms as artifacts.
   - Pushing a version tag builds **all** platforms and creates a **draft release** with consistently named files and `SHA256SUMS.txt`:
     ```sh
-    git tag v1.8.5 && git push origin v1.8.5
+    git tag v1.8.6 && git push origin v1.8.6
     ```
   - Android signing uses the repository secrets `ANDROID_KEYSTORE_B64` (base64 of the keystore) and `ANDROID_KEY_PASSWORD`.
 

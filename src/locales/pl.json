@@ -348,7 +348,10 @@
     "budgetsHintRest": "to, co zostało w tym miesiącu",
     "variableOther": "Pozostałe bieżące wydatki",
     "forecastBudgets": "Uwzględniono zaplanowane budżety.",
-    "forecastSubset": "Pokazano tylko wybrane konta."
+    "forecastSubset": "Pokazano tylko wybrane konta.",
+    "dayTotal": "Suma",
+    "filteredNote": "Liczone są tylko wybrane konta. Budżety i cele oszczędnościowe dotyczą wszystkich kont.",
+    "transfers": "Przelewy (netto)"
   },
   "recurring": {
     "subtitle": "Pensja, czynsz, subskrypcje – wszystko, co regularnie wpływa i wypływa.",
@@ -1120,7 +1123,12 @@
     "split": "Według kont",
     "sum": "Suma",
     "mode": "Widok",
-    "hint": "Suma rysuje jedną krzywą dla wybranych kont, widok według kont – osobną krzywą dla każdego."
+    "hint": "Suma rysuje jedną krzywą dla wybranych kont, widok według kont – osobną krzywą dla każdego.",
+    "more_one": "+{{count}} kolejna",
+    "more_few": "+{{count}} kolejne",
+    "more_many": "+{{count}} kolejnych",
+    "more_other": "+{{count}} kolejnych",
+    "everyday": "Wydatki codzienne i budżety (szacunkowo)"
   },
   "budgetPlan": {
     "off": "Budżety nie są uwzględnione",
@@ -1148,11 +1156,13 @@
     "txEnterSave": "Zapisuje",
     "txEnterNext": "Następne pole",
     "txEnterSaveHint": "Enter od razu zapisuje transakcję.",
-    "txEnterNextHint": "Enter przechodzi z kwoty do opisu i kategorii, a potem do Zapisz. {{shortcut}} zawsze zapisuje.",
+    "txEnterNextHint": "Enter przechodzi z kwoty do opisu, kategorii (jeśli żadna nie jest jeszcze wybrana) i pola Od / Do, a potem do Zapisz. {{shortcut}} zawsze zapisuje.",
     "timeFormat": "Format czasu",
     "timeFormatHint": "Domyślnie 24 godziny. Dotyczy pól czasu i list na tym urządzeniu.",
     "time24": "24 godziny",
-    "time12": "12 godzin"
+    "time12": "12 godzin",
+    "txSkipCounterparty": "Pomiń Od / Do",
+    "txSkipCounterpartyHint": "Enter przechodzi z kategorii od razu do Zapisz. Pole Od / Do nadal można dotknąć lub kliknąć."
   },
   "currencySwitch": {
     "title": "Przestawić też konta na {{currency}}?",

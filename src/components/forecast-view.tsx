@@ -22,6 +22,8 @@ export interface ForecastView {
   allSelected: boolean;
   days: ForecastDay[];
   events: Occurrence[];
+  movements: Occurrence[];
+  accountIds: string[] | null;
   lines: LineSeries[];
   start: number;
   end: number;
@@ -49,6 +51,8 @@ export function useForecastView(forecast: Forecast | undefined): ForecastView | 
         allSelected,
         days: forecast.days,
         events: forecast.events,
+        movements: forecast.movements ?? forecast.events,
+        accountIds: null,
         lines,
         start: forecast.startBalanceMinor,
         end: forecast.endBalanceMinor,
@@ -57,6 +61,7 @@ export function useForecastView(forecast: Forecast | undefined): ForecastView | 
       };
     }
     const ids = new Set(selected.map((s) => s.accountId));
+    const touches = (e: Occurrence) => ids.has(e.accountId) || (e.toAccountId !== null && ids.has(e.toAccountId));
     const days = forecast.days.map((d, i) => ({ ...d, balanceMinor: selected.reduce((sum, s) => sum + (s.balances[i] ?? 0), 0) }));
     let min = days[0]?.balanceMinor ?? 0;
     let minOn = days[0]?.date ?? forecast.minBalanceOn;
@@ -70,7 +75,9 @@ export function useForecastView(forecast: Forecast | undefined): ForecastView | 
       split,
       allSelected,
       days,
-      events: forecast.events.filter((e) => ids.has(e.accountId) || (e.toAccountId !== null && ids.has(e.toAccountId))),
+      events: forecast.events.filter(touches),
+      movements: (forecast.movements ?? forecast.events).filter(touches),
+      accountIds: allSelected ? null : [...ids],
       lines,
       start: days[0]?.balanceMinor ?? 0,
       end: days.at(-1)?.balanceMinor ?? 0,
@@ -94,7 +101,17 @@ export function BalanceForecastChart({
   if (view.split && view.lines.length > 0) {
     return <AccountLinesChart dates={view.days.map((d) => d.date)} series={view.lines} currency={currency} height={height} compact={compact} />;
   }
-  return <ForecastChart days={view.days} events={view.events} currency={currency} minOn={view.minOn} height={height} compact={compact} />;
+  return (
+    <ForecastChart
+      days={view.days}
+      movements={view.movements}
+      accountIds={view.accountIds}
+      currency={currency}
+      minOn={view.minOn}
+      height={height}
+      compact={compact}
+    />
+  );
 }
 
 export function ChartAccountPicker({ forecast, className }: { forecast: Forecast | undefined; className?: string }) {

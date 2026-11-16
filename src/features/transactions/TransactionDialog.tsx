@@ -127,6 +127,9 @@ function TransactionForm({
   const { t } = useTranslation();
   const enterMode = usePrefs((s) => s.txEnter);
   const createMore = usePrefs((s) => s.txCreateMore);
+  const skipCounterparty = usePrefs((s) => s.txSkipCounterparty);
+  const pointerAt = useRef(0);
+  const tabAt = useRef(0);
   const setPref = usePrefs((s) => s.set);
   const saveRef = useRef<HTMLButtonElement>(null);
   const toast = useUi((s) => s.toast);
@@ -240,18 +243,38 @@ function TransactionForm({
     }
     if (enterMode !== "next") return;
     const target = e.target as HTMLElement;
-    const order = ["tx-amount", "tx-title", ...(form.kind === "transfer" ? ["tx-to-account", "tx-to-amount"] : ["tx-category"])];
-    const i = order.indexOf(target.id);
-    if (i === -1 || target.tagName !== "INPUT") return;
+    if (target.tagName !== "INPUT" || !enterOrder().includes(target.id)) return;
     e.preventDefault();
-    const next = order[i + 1] ? document.getElementById(order[i + 1]) : null;
-    if (next) next.focus();
-    else saveRef.current?.focus();
+    focusAfter(target.id);
   }
 
-  const toSave = () => {
-    if (enterMode === "next") setTimeout(() => saveRef.current?.focus(), 80);
+  function enterOrder() {
+    return [
+      "tx-amount",
+      "tx-title",
+      ...(form.kind === "transfer" ? ["tx-to-account", "tx-to-amount"] : ["tx-category"]),
+      ...(skipCounterparty ? [] : ["tx-counterparty"]),
+    ];
+  }
+
+  function focusAfter(id: string) {
+    const order = enterOrder();
+    for (const next of order.slice(order.indexOf(id) + 1)) {
+      if (next === "tx-category" && form.categoryId) continue;
+      const el = document.getElementById(next);
+      if (el) {
+        el.focus();
+        return;
+      }
+    }
+    saveRef.current?.focus();
+  }
+
+  const after = (id: string) => () => {
+    if (enterMode === "next") setTimeout(() => focusAfter(id), 80);
   };
+
+  const nextHint = (id: string) => (enterMode === "next" && enterOrder().includes(id) ? "next" : undefined);
 
   async function remove() {
     if (!editing) return;
@@ -275,7 +298,24 @@ function TransactionForm({
   };
 
   return (
-    <form onSubmit={submit} onKeyDown={onKeyDown} className="flex flex-col gap-4">
+    <form
+      onSubmit={submit}
+      onKeyDown={onKeyDown}
+      onPointerDownCapture={() => {
+        pointerAt.current = Date.now();
+      }}
+      onKeyDownCapture={(e) => {
+        if (e.key === "Tab") tabAt.current = Date.now();
+      }}
+      onFocusCapture={(e) => {
+        if (enterMode !== "next" || !skipCounterparty || e.target.id !== "tx-counterparty") return;
+        if ((e.relatedTarget as HTMLElement | null)?.id !== "tx-title") return;
+        const now = Date.now();
+        if (now - pointerAt.current < 700 || now - tabAt.current < 700) return;
+        focusAfter("tx-counterparty");
+      }}
+      className="flex flex-col gap-4"
+    >
       <Segmented
         aria-label={t("tx.new")}
         value={form.kind}
@@ -381,6 +421,7 @@ function TransactionForm({
           kind={form.kind}
           placeholder={t("tx.titlePlaceholder")}
           value={form.title}
+          enterKeyHint={nextHint("tx-title")}
           onChange={(v) => set("title", v)}
           onPick={async (v) => {
             if (form.kind === "transfer" || form.categoryId) return;
@@ -400,12 +441,8 @@ function TransactionForm({
             <AccountSelect
               id="tx-to-account"
               value={form.toAccountId}
-              onChange={(v) => {
-                set("toAccountId", v);
-                if (accounts.find((a) => a.id === v)?.currency !== currency) {
-                  if (enterMode === "next") setTimeout(() => document.getElementById("tx-to-amount")?.focus(), 80);
-                } else toSave();
-              }}
+              onChange={(v) => set("toAccountId", v)}
+              onPicked={after("tx-to-account")}
               exclude={form.accountId}
             />
           </Field>
@@ -414,10 +451,8 @@ function TransactionForm({
             <CategorySelect
               id="tx-category"
               value={form.categoryId}
-              onChange={(v) => {
-                set("categoryId", v);
-                toSave();
-              }}
+              onChange={(v) => set("categoryId", v)}
+              onPicked={after("tx-category")}
               kind={form.kind}
             />
           </Field>
@@ -428,6 +463,7 @@ function TransactionForm({
           <MoneyInput
             id="tx-to-amount"
             value={form.toAmount}
+            enterKeyHint={nextHint("tx-to-amount")}
             onChange={(v) => {
               set("toAmount", v);
               setToAmountError(false);
@@ -449,6 +485,7 @@ function TransactionForm({
         <CounterpartyInput
           id="tx-counterparty"
           value={form.counterparty}
+          enterKeyHint={nextHint("tx-counterparty")}
           onChange={(v) => set("counterparty", v)}
           onBlur={async (v) => {
             if (form.categoryId || form.kind === "transfer" || !v.trim()) return;

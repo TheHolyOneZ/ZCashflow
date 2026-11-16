@@ -320,7 +320,10 @@
     "budgetsHintRest": "what's left this month",
     "variableOther": "Other everyday spending",
     "forecastBudgets": "Planned budgets are included.",
-    "forecastSubset": "Only the selected accounts are shown."
+    "forecastSubset": "Only the selected accounts are shown.",
+    "dayTotal": "Total",
+    "filteredNote": "Only the selected accounts are counted. Budgets and savings goals apply to all accounts.",
+    "transfers": "Transfers (net)"
   },
   "recurring": {
     "subtitle": "Salary, rent, subscriptions – everything that comes and goes regularly.",
@@ -1042,7 +1045,10 @@
     "split": "Per account",
     "sum": "Sum",
     "mode": "Display",
-    "hint": "Sum draws one curve for the selected accounts, per account draws one curve each."
+    "hint": "Sum draws one curve for the selected accounts, per account draws one curve each.",
+    "more_one": "+{{count}} more",
+    "more_other": "+{{count}} more",
+    "everyday": "Everyday spending and budgets (estimated)"
   },
   "budgetPlan": {
     "off": "Budgets not planned",
@@ -1070,11 +1076,13 @@
     "txEnterSave": "Saves",
     "txEnterNext": "Next field",
     "txEnterSaveHint": "Enter saves the entry right away.",
-    "txEnterNextHint": "Enter goes from amount to description and category, then to Save. {{shortcut}} always saves.",
+    "txEnterNextHint": "Enter goes from amount to description, category (if none is chosen yet) and From / To, then to Save. {{shortcut}} always saves.",
     "timeFormat": "Time format",
     "timeFormatHint": "24-hour is the default. Applies to time fields and lists on this device.",
     "time24": "24-hour",
-    "time12": "12-hour"
+    "time12": "12-hour",
+    "txSkipCounterparty": "Skip From / To",
+    "txSkipCounterpartyHint": "Enter goes straight from the category to Save. From / To can still be tapped or clicked."
   },
   "currencySwitch": {
     "title": "Switch your accounts to {{currency}} too?",

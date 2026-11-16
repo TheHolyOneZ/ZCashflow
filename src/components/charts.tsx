@@ -43,16 +43,31 @@ function TooltipBox({ children }: { children: React.ReactNode }) {
   );
 }
 
+export function movementEffect(m: Occurrence, accountIds: string[] | null): number | null {
+  const shown = (id: string | null) => id !== null && (accountIds === null || accountIds.includes(id));
+  if (m.kind === "income") return shown(m.accountId) ? m.amountMinor : 0;
+  if (m.kind === "expense") return shown(m.accountId) ? -m.amountMinor : 0;
+  const from = shown(m.accountId);
+  const to = shown(m.toAccountId);
+  if (from && !to) return -m.amountMinor;
+  if (to && !from) return m.amountMinor;
+  return null;
+}
+
+const TOOLTIP_ITEMS = 6;
+
 export function ForecastChart({
   days,
-  events,
+  movements,
+  accountIds = null,
   currency,
   height = 220,
   minOn,
   compact,
 }: {
   days: ForecastDay[];
-  events: Occurrence[];
+  movements: Occurrence[];
+  accountIds?: string[] | null;
   currency: string;
   height?: number | string;
   minOn?: string;
@@ -60,10 +75,11 @@ export function ForecastChart({
 }) {
   const { t } = useTranslation();
   const byDay = new Map<string, Occurrence[]>();
-  for (const e of events) {
+  for (const e of movements) {
     const d = days[0] && e.date < days[0].date ? days[0].date : e.date;
     byDay.set(d, [...(byDay.get(d) ?? []), e]);
   }
+  const index = new Map(days.map((d, i) => [d.date, i]));
   const data = days.map((d) => ({ ...d, balance: d.balanceMinor }));
   const min = data.reduce((m, d) => Math.min(m, d.balance), Infinity);
   const max = data.reduce((m, d) => Math.max(m, d.balance), -Infinity);
@@ -115,28 +131,43 @@ export function ForecastChart({
             content={({ active, payload }) => {
               if (!active || !payload?.length) return null;
               const d = payload[0].payload as ForecastDay;
-              const evs = byDay.get(d.date) ?? [];
+              const at = index.get(d.date) ?? 0;
+              const delta = at > 0 ? d.balanceMinor - days[at - 1].balanceMinor : null;
+              const evs = (byDay.get(d.date) ?? []).map((e) => ({ e, effect: movementEffect(e, accountIds) })).filter((x) => x.effect !== 0);
+              const listed = evs.reduce((s, x) => s + (x.effect ?? 0), 0);
+              const rest = evs.slice(TOOLTIP_ITEMS);
+              const other = delta === null ? 0 : delta - listed;
               return (
                 <TooltipBox>
                   <div className="text-muted">{formatDay(d.date, { weekday: "short", day: "numeric", month: "long" })}</div>
-                  <div className="mt-0.5 text-[14px] font-semibold">
-                    <Money minor={d.balanceMinor} currency={currency} tone="auto" />
+                  <div className="mt-0.5 flex items-baseline justify-between gap-3">
+                    <Money minor={d.balanceMinor} currency={currency} tone="auto" className="text-[14px] font-semibold" />
+                    {delta !== null && delta !== 0 && <Money flow minor={delta} currency={currency} signed tone="auto" className="text-[12px]" />}
                   </div>
-                  {evs.length > 0 && (
-                    <ul className="mt-1.5 flex flex-col gap-0.5 border-t border-border pt-1.5">
-                      {evs.slice(0, 5).map((e) => (
-                        <li key={e.ruleId} className="flex justify-between gap-3">
-                          <span className="truncate">{e.title}</span>
-                          <Money
-                            flow
-                            minor={e.kind === "income" ? e.amountMinor : -e.amountMinor}
-                            currency={e.currency}
-                            signed
-                            className={e.kind === "income" ? "text-income" : undefined}
-                          />
+                  {(evs.length > 0 || other !== 0) && (
+                    <ul className="mt-1.5 flex max-w-72 flex-col gap-0.5 border-t border-border pt-1.5">
+                      {evs.slice(0, TOOLTIP_ITEMS).map(({ e, effect }) => (
+                        <li key={`${e.ruleId}:${e.date}`} className="flex justify-between gap-3">
+                          <span className="truncate">{e.title || t(`kind.${e.kind}`)}</span>
+                          {effect === null ? (
+                            <Money minor={e.amountMinor} currency={e.currency} className="shrink-0 text-transfer" />
+                          ) : (
+                            <Money flow minor={effect} currency={e.currency} signed className={cn("shrink-0", effect > 0 && "text-income")} />
+                          )}
                         </li>
                       ))}
-                      {evs.length > 5 && <li className="text-muted">+{evs.length - 5}</li>}
+                      {rest.length > 0 && (
+                        <li className="flex justify-between gap-3 text-muted">
+                          <span>{t("forecastView.more", { count: rest.length })}</span>
+                          <Money flow minor={rest.reduce((s, x) => s + (x.effect ?? 0), 0)} currency={currency} signed className="shrink-0" />
+                        </li>
+                      )}
+                      {other !== 0 && (
+                        <li className="flex justify-between gap-3 text-muted">
+                          <span>{t("forecastView.everyday")}</span>
+                          <Money flow minor={other} currency={currency} signed className="shrink-0" />
+                        </li>
+                      )}
                     </ul>
                   )}
                 </TooltipBox>

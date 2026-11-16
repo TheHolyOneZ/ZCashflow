@@ -334,7 +334,10 @@
     "budgetsHintRest": "ce qu'il reste ce mois-ci",
     "variableOther": "Autres dépenses courantes",
     "forecastBudgets": "Les budgets planifiés sont inclus.",
-    "forecastSubset": "Seuls les comptes choisis sont affichés."
+    "forecastSubset": "Seuls les comptes choisis sont affichés.",
+    "dayTotal": "Total",
+    "filteredNote": "Seuls les comptes sélectionnés sont comptés. Les budgets et les objectifs d'épargne s'appliquent à tous les comptes.",
+    "transfers": "Virements (net)"
   },
   "recurring": {
     "subtitle": "Salaire, loyer, abonnements – tout ce qui entre et sort régulièrement.",
@@ -1081,7 +1084,11 @@
     "split": "Par compte",
     "sum": "Somme",
     "mode": "Affichage",
-    "hint": "Somme trace une courbe pour les comptes choisis, par compte une courbe pour chacun."
+    "hint": "Somme trace une courbe pour les comptes choisis, par compte une courbe pour chacun.",
+    "more_one": "+{{count}} autre",
+    "more_other": "+{{count}} autres",
+    "everyday": "Dépenses courantes et budgets (estimation)",
+    "more_many": "+{{count}} autres"
   },
   "budgetPlan": {
     "off": "Budgets non planifiés",
@@ -1109,11 +1116,13 @@
     "txEnterSave": "Enregistre",
     "txEnterNext": "Champ suivant",
     "txEnterSaveHint": "Entrée enregistre l'opération tout de suite.",
-    "txEnterNextHint": "Entrée passe du montant à la description et à la catégorie, puis à Enregistrer. {{shortcut}} enregistre toujours.",
+    "txEnterNextHint": "Entrée passe du montant à la description, à la catégorie (si aucune n'est encore choisie) et à De / À, puis à Enregistrer. {{shortcut}} enregistre toujours.",
     "timeFormat": "Format de l'heure",
     "timeFormatHint": "Le format 24 heures est utilisé par défaut. S'applique aux champs d'heure et aux listes sur cet appareil.",
     "time24": "24 heures",
-    "time12": "12 heures"
+    "time12": "12 heures",
+    "txSkipCounterparty": "Passer De / À",
+    "txSkipCounterpartyHint": "Entrée passe directement de la catégorie à Enregistrer. De / À reste accessible au toucher ou au clic."
   },
   "currencySwitch": {
     "title": "Passer aussi vos comptes en {{currency}} ?",

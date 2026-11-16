@@ -23,10 +23,12 @@ export function AccountSelect({
   onChange,
   exclude,
   includeId,
+  onPicked,
 }: {
   id?: string;
   value: string;
   onChange: (id: string) => void;
+  onPicked?: () => void;
   exclude?: string;
 
   includeId?: string;
@@ -44,7 +46,7 @@ export function AccountSelect({
       <Money minor={a.balanceMinor} currency={a.currency} />
     ),
   }));
-  return <Select id={id} value={value} onValueChange={onChange} items={items} />;
+  return <Select id={id} value={value} onValueChange={onChange} onPicked={onPicked} items={items} />;
 }
 
 export function CategorySelect({
@@ -54,10 +56,12 @@ export function CategorySelect({
   kind,
   allowNone = true,
   noneLabel,
+  onPicked,
 }: {
   id?: string;
   value: string;
   onChange: (id: string) => void;
+  onPicked?: () => void;
   kind?: TxKind;
   allowNone?: boolean;
   noneLabel?: string;
@@ -79,7 +83,7 @@ export function CategorySelect({
       : []),
     ...categoryTree(categories).map((n) => item(n.category, n.depth)),
   ];
-  return <Select id={id} value={value} onValueChange={onChange} items={items} placeholder={t("category.choose")} />;
+  return <Select id={id} value={value} onValueChange={onChange} onPicked={onPicked} items={items} placeholder={t("category.choose")} />;
 }
 
 export function CounterpartyInput({
@@ -88,12 +92,14 @@ export function CounterpartyInput({
   onChange,
   onBlur,
   placeholder,
+  enterKeyHint,
 }: {
   id?: string;
   value: string;
   onChange: (v: string) => void;
   onBlur?: (v: string) => void;
   placeholder?: string;
+  enterKeyHint?: "next" | "done";
 }) {
   const { t } = useTranslation();
   const counterparties = useCounterparties().data ?? [];
@@ -104,6 +110,7 @@ export function CounterpartyInput({
       onChange={onChange}
       onBlur={onBlur}
       placeholder={placeholder ?? t("tx.counterpartyPlaceholder")}
+      enterKeyHint={enterKeyHint}
       suggestions={counterparties.map((c) => c.name)}
     />
   );
@@ -116,6 +123,7 @@ export function TitleInput({
   onPick,
   kind,
   placeholder,
+  enterKeyHint,
 }: {
   id?: string;
   value: string;
@@ -123,12 +131,13 @@ export function TitleInput({
   onPick?: (v: string) => void;
   kind?: TxKind;
   placeholder?: string;
+  enterKeyHint?: "next" | "done";
 }) {
   const titles = useRecentTitles(kind).data ?? [];
   const counterparties = useCounterparties().data ?? [];
   const seen = new Set(titles.map((s) => s.toLowerCase()));
   const suggestions = [...titles, ...counterparties.map((c) => c.name).filter((n) => !seen.has(n.toLowerCase()))];
-  return <Autocomplete id={id} value={value} onChange={onChange} onPick={onPick} placeholder={placeholder} suggestions={suggestions} />;
+  return <Autocomplete id={id} value={value} onChange={onChange} onPick={onPick} placeholder={placeholder} enterKeyHint={enterKeyHint} suggestions={suggestions} />;
 }
 
 export function FreqPicker({

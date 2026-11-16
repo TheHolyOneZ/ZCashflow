@@ -7,6 +7,7 @@ import { Card, CardHeader, PageHeader } from "@/components/ui/misc";
 import { Segmented } from "@/components/ui/segmented";
 import { Money } from "@/components/ui/extra";
 import { BalanceForecastChart, ChartAccountPicker, useForecastView } from "@/components/forecast-view";
+import { movementEffect } from "@/components/charts";
 import { BudgetPlanPicker } from "@/features/budgets/BudgetPlanPicker";
 import { CategoryIcon } from "@/components/category-icon";
 import type { MonthPreview, Occurrence } from "@/lib/api";
@@ -25,9 +26,10 @@ export function PlannerPage() {
   const [offset, setOffset] = useState(0);
   const [horizon, setHorizon] = useState<Horizon>("90");
   const month = format(addMonths(new Date(), offset), "yyyy-MM");
-  const preview = useMonthPreview(month).data;
   const forecast = useForecast(Number(horizon)).data;
   const view = useForecastView(forecast);
+  const filtered = !!view && !view.allSelected;
+  const preview = useMonthPreview(month, view?.accountIds ?? []).data;
 
   return (
     <div className="flex flex-col gap-3">
@@ -35,23 +37,26 @@ export function PlannerPage() {
         title={t("nav.planner")}
         subtitle={t("planner.subtitle")}
         actions={
-          <div className="flex items-center gap-1 rounded-lg border border-border bg-surface p-0.5">
-            <Button size="icon" variant="ghost" className="size-8" disabled={offset === 0} onClick={() => setOffset((o) => o - 1)} aria-label={t("planner.prevMonth")}>
-              <ChevronLeft className="size-4" />
-            </Button>
-            <span className="min-w-32 text-center text-[13px] font-semibold">{monthLabel(month)}</span>
-            <Button size="icon" variant="ghost" className="size-8" disabled={offset >= 11} onClick={() => setOffset((o) => o + 1)} aria-label={t("planner.nextMonth")}>
-              <ChevronRight className="size-4" />
-            </Button>
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <ChartAccountPicker forecast={forecast} className="h-9" />
+            <div className="flex items-center gap-1 rounded-lg border border-border bg-surface p-0.5">
+              <Button size="icon" variant="ghost" className="size-8" disabled={offset === 0} onClick={() => setOffset((o) => o - 1)} aria-label={t("planner.prevMonth")}>
+                <ChevronLeft className="size-4" />
+              </Button>
+              <span className="min-w-32 text-center text-[13px] font-semibold">{monthLabel(month)}</span>
+              <Button size="icon" variant="ghost" className="size-8" disabled={offset >= 11} onClick={() => setOffset((o) => o + 1)} aria-label={t("planner.nextMonth")}>
+                <ChevronRight className="size-4" />
+              </Button>
+            </div>
           </div>
         }
       />
 
-      {preview && <MonthBudget preview={preview} />}
+      {preview && <MonthBudget preview={preview} filtered={filtered} />}
 
       <div className="grid grid-cols-1 gap-3 xl:grid-cols-[minmax(0,1fr)_22rem]">
-        {preview && <PaymentCalendar preview={preview} />}
-        {preview && <MonthItems items={preview.items} />}
+        {preview && <PaymentCalendar preview={preview} accountIds={view?.accountIds ?? null} />}
+        {preview && <MonthItems items={preview.items} accountIds={view?.accountIds ?? null} />}
       </div>
 
       <Card>
@@ -59,7 +64,6 @@ export function PlannerPage() {
           title={t("planner.balanceForecast")}
           action={
             <div className="flex flex-wrap items-center justify-end gap-2">
-              <ChartAccountPicker forecast={forecast} />
               <Segmented<Horizon>
                 aria-label={t("planner.horizon")}
                 value={horizon}
@@ -88,9 +92,11 @@ export function PlannerPage() {
                 <Fact label={t("planner.endOfRange")} hint={forecast.days.at(-1) && formatDay(forecast.days.at(-1)!.date)}>
                   <Money minor={view.end} currency={forecast.currency} tone="auto" />
                 </Fact>
-                <Fact label={t("planner.safeDaily")} hint={t("planner.until", { date: formatDay(forecast.safeUntil) })}>
-                  <Money minor={forecast.safeDailyMinor} currency={forecast.currency} className="text-accent" />
-                </Fact>
+                {!filtered && (
+                  <Fact label={t("planner.safeDaily")} hint={t("planner.until", { date: formatDay(forecast.safeUntil) })}>
+                    <Money minor={forecast.safeDailyMinor} currency={forecast.currency} className="text-accent" />
+                  </Fact>
+                )}
               </div>
               <p className="px-2 pt-3 text-[11px] text-muted">
                 {t("planner.forecastNote", {
@@ -117,7 +123,7 @@ function Fact({ label, hint, children }: { label: string; hint?: React.ReactNode
   );
 }
 
-function MonthBudget({ preview: p }: { preview: MonthPreview }) {
+function MonthBudget({ preview: p, filtered }: { preview: MonthPreview; filtered: boolean }) {
   const { t } = useTranslation();
   const hasBudgets = (useBudgets().data ?? []).length > 0;
   const categories = useCategories().data ?? [];
@@ -143,6 +149,9 @@ function MonthBudget({ preview: p }: { preview: MonthPreview }) {
       sign: -1,
     },
     { label: t("planner.savings"), hint: t("planner.savingsHint"), minor: p.savingsTargetMinor, color: "var(--accent)", sign: -1 },
+    ...(p.transferNetMinor
+      ? [{ label: t("planner.transfers"), minor: Math.abs(p.transferNetMinor), color: "var(--transfer)", sign: Math.sign(p.transferNetMinor) }]
+      : []),
   ];
   const free = p.freeMinor;
   const days = getDaysInMonth(parseISO(p.from));
@@ -171,6 +180,7 @@ function MonthBudget({ preview: p }: { preview: MonthPreview }) {
             </li>
           ))}
         </ul>
+        {filtered && <p className="text-[11px] text-muted">{t("planner.filteredNote")}</p>}
       </div>
       <div className="flex flex-col justify-center gap-1 border-t border-border bg-surface-2/50 p-5 lg:border-t-0 lg:border-l">
         <span className="text-[12px] font-medium text-muted">{t("planner.free")}</span>
@@ -195,7 +205,7 @@ function MonthBudget({ preview: p }: { preview: MonthPreview }) {
   );
 }
 
-function PaymentCalendar({ preview: p }: { preview: MonthPreview }) {
+function PaymentCalendar({ preview: p, accountIds }: { preview: MonthPreview; accountIds: string[] | null }) {
   const { t } = useTranslation();
   const [selected, setSelected] = useState<string | null>(null);
   const first = parseISO(p.from);
@@ -230,12 +240,20 @@ function PaymentCalendar({ preview: p }: { preview: MonthPreview }) {
         {Array.from({ length: count }, (_, i) => {
           const date = `${p.month}-${String(i + 1).padStart(2, "0")}`;
           const items = byDay.get(date) ?? [];
-          const net = items.reduce((s, o) => s + (o.kind === "income" ? o.amountMinor : o.kind === "expense" ? -o.amountMinor : 0), 0);
+          const net = netOf(items, accountIds);
           const past = date < today;
           return (
             <button
               key={date}
               type="button"
+              title={
+                items.length
+                  ? [
+                      ...items.map((o) => `${o.title}  ${formatMoney(movementEffect(o, accountIds) ?? o.amountMinor, o.currency, activeLocale())}`),
+                      `${t("planner.dayTotal")}  ${formatMoney(net, p.currency, activeLocale())}`,
+                    ].join("\n")
+                  : undefined
+              }
               onClick={() => setSelected(items.length ? (selected === date ? null : date) : null)}
               className={cn(
                 "flex min-h-16 flex-col items-start gap-0.5 bg-surface p-1.5 text-left hover:bg-surface-2 active:scale-100 sm:min-h-20",
@@ -263,7 +281,7 @@ function PaymentCalendar({ preview: p }: { preview: MonthPreview }) {
                   <span className="sm:hidden">•</span>
                 </span>
               ))}
-              {items.length > 2 && <span className="text-[10px] text-muted">+{items.length - 2}</span>}
+              {items.length > 2 && <span className="text-[10px] font-medium text-muted">+{items.length - 2}</span>}
               {items.length > 0 && (
                 <Money minor={net} currency={p.currency} signed tone="auto" fractionClassName="hidden" className="mt-auto hidden text-[10px] font-medium sm:block" />
               )}
@@ -273,15 +291,25 @@ function PaymentCalendar({ preview: p }: { preview: MonthPreview }) {
       </div>
       {selected && selectedItems.length > 0 && (
         <div className="p-3">
-          <div className="mb-1 text-[12px] font-medium text-muted">{formatDay(selected, { weekday: "long", day: "numeric", month: "long" })}</div>
-          <OccurrenceList items={selectedItems} />
+          <div className="mb-1 flex items-center justify-between gap-3 text-[12px] font-medium text-muted">
+            <span>{formatDay(selected, { weekday: "long", day: "numeric", month: "long" })}</span>
+            <span className="flex items-center gap-1.5">
+              {t("planner.dayTotal")}
+              <Money minor={netOf(selectedItems, accountIds)} currency={p.currency} signed tone="auto" className="text-fg" />
+            </span>
+          </div>
+          <OccurrenceList items={selectedItems} accountIds={accountIds} />
         </div>
       )}
     </Card>
   );
 }
 
-function MonthItems({ items }: { items: Occurrence[] }) {
+function netOf(items: Occurrence[], accountIds: string[] | null) {
+  return items.reduce((s, o) => s + (movementEffect(o, accountIds) ?? 0), 0);
+}
+
+function MonthItems({ items, accountIds }: { items: Occurrence[]; accountIds: string[] | null }) {
   const { t } = useTranslation();
   return (
     <Card className="overflow-hidden">
@@ -290,14 +318,14 @@ function MonthItems({ items }: { items: Occurrence[] }) {
         <p className="px-4 pb-4 text-[13px] text-muted">{t("planner.noPayments")}</p>
       ) : (
         <div className="max-h-[28rem] overflow-y-auto px-1 pb-2">
-          <OccurrenceList items={items} showDate />
+          <OccurrenceList items={items} showDate accountIds={accountIds} />
         </div>
       )}
     </Card>
   );
 }
 
-export function OccurrenceList({ items, showDate }: { items: Occurrence[]; showDate?: boolean }) {
+export function OccurrenceList({ items, showDate, accountIds = null }: { items: Occurrence[]; showDate?: boolean; accountIds?: string[] | null }) {
   const { t } = useTranslation();
   const categories = useCategories().data ?? [];
   return (
@@ -318,9 +346,9 @@ export function OccurrenceList({ items, showDate }: { items: Occurrence[]; showD
             </div>
             <Money
               flow
-              minor={o.kind === "income" ? o.amountMinor : -o.amountMinor}
+              minor={o.kind === "transfer" ? (movementEffect(o, accountIds) ?? -o.amountMinor) : o.kind === "income" ? o.amountMinor : -o.amountMinor}
               currency={o.currency}
-              signed={o.kind === "income"}
+              signed={o.kind === "income" || (o.kind === "transfer" && (movementEffect(o, accountIds) ?? 0) > 0)}
               className={cn("text-[13px] font-medium", o.kind === "income" && "text-income", o.kind === "transfer" && "text-transfer")}
             />
           </li>

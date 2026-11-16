@@ -320,7 +320,10 @@
     "budgetsHintRest": "bu ay kalan",
     "variableOther": "Diğer günlük harcamalar",
     "forecastBudgets": "Planlanan bütçeler dahil.",
-    "forecastSubset": "Yalnızca seçilen hesaplar gösteriliyor."
+    "forecastSubset": "Yalnızca seçilen hesaplar gösteriliyor.",
+    "dayTotal": "Toplam",
+    "filteredNote": "Yalnızca seçili hesaplar sayılır. Bütçeler ve birikim hedefleri tüm hesaplar için geçerlidir.",
+    "transfers": "Transferler (net)"
   },
   "recurring": {
     "subtitle": "Maaş, kira, abonelikler – düzenli gelen ve giden her şey.",
@@ -1042,7 +1045,10 @@
     "split": "Hesap başına",
     "sum": "Toplam",
     "mode": "Görünüm",
-    "hint": "Toplam, seçilen hesaplar için tek bir eğri çizer; hesap başına ise her biri için ayrı bir eğri."
+    "hint": "Toplam, seçilen hesaplar için tek bir eğri çizer; hesap başına ise her biri için ayrı bir eğri.",
+    "more_one": "+{{count}} tane daha",
+    "more_other": "+{{count}} tane daha",
+    "everyday": "Günlük harcamalar ve bütçeler (tahmini)"
   },
   "budgetPlan": {
     "off": "Bütçeler planlanmadı",
@@ -1070,11 +1076,13 @@
     "txEnterSave": "Kaydeder",
     "txEnterNext": "Sonraki alan",
     "txEnterSaveHint": "Enter işlemi hemen kaydeder.",
-    "txEnterNextHint": "Enter tutardan açıklamaya ve kategoriye, ardından Kaydet'e geçer. {{shortcut}} her zaman kaydeder.",
+    "txEnterNextHint": "Enter tutardan açıklamaya, kategoriye (henüz seçilmediyse) ve Kimden / Kime alanına, ardından Kaydet'e geçer. {{shortcut}} her zaman kaydeder.",
     "timeFormat": "Saat biçimi",
     "timeFormatHint": "Varsayılan 24 saattir. Bu cihazdaki saat alanları ve listeler için geçerlidir.",
     "time24": "24 saat",
-    "time12": "12 saat"
+    "time12": "12 saat",
+    "txSkipCounterparty": "Kimden / Kime'yi atla",
+    "txSkipCounterpartyHint": "Enter kategoriden doğrudan Kaydet'e geçer. Kimden / Kime alanına yine dokunabilir veya tıklayabilirsin."
   },
   "currencySwitch": {
     "title": "Hesapların da {{currency}} olarak değiştirilsin mi?",

@@ -194,14 +194,14 @@ function Row({
         }}
         className={cn(
           "flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-surface-2 focus-visible:bg-surface-2 focus-visible:outline-none",
-          selected && "bg-accent-soft hover:bg-accent-soft",
+          selected && "bg-accent-soft shadow-[inset_3px_0_0_var(--accent)] hover:bg-accent-soft",
         )}
       >
         {selecting && (
           <span
             className={cn(
-              "flex size-5 shrink-0 items-center justify-center rounded-md border transition-colors",
-              selected ? "border-accent bg-accent text-accent-fg" : "border-border bg-surface",
+              "flex size-5 shrink-0 items-center justify-center rounded-md border-2 transition-colors",
+              selected ? "border-accent bg-accent text-accent-fg" : "border-muted bg-surface",
             )}
           >
             {selected && <Check className="size-3.5" strokeWidth={3} />}
