@@ -559,7 +559,10 @@
     "combineHint": "Kalem başına değil kategori başına bir işlem",
     "bookParts_one": "{{count}} işlem kaydet",
     "bookParts_other": "{{count}} işlem kaydet",
-    "sameAsMain": "↑ {{category}}"
+    "sameAsMain": "↑ {{category}}",
+    "show": "Fişi göster",
+    "unlink": "İşlemden ayır",
+    "unlinked": "Fiş gelen kutusuna geri taşındı"
   },
   "ocr": {
     "title": "Fiş tanıma ve yapay zekâ",
@@ -1082,7 +1085,9 @@
     "time24": "24 saat",
     "time12": "12 saat",
     "txSkipCounterparty": "Kimden / Kime'yi atla",
-    "txSkipCounterpartyHint": "Enter kategoriden doğrudan Kaydet'e geçer. Kimden / Kime alanına yine dokunabilir veya tıklayabilirsin."
+    "txSkipCounterpartyHint": "Enter kategoriden doğrudan Kaydet'e geçer. Kimden / Kime alanına yine dokunabilir veya tıklayabilirsin.",
+    "txDeleteReceipts": "Fişleri işlemle birlikte sil",
+    "txDeleteReceiptsHint": "Kapalıyken silinen bir işlemin fişleri fiş gelen kutusuna geri döner; orada silebilir veya yeniden bağlayabilirsin."
   },
   "currencySwitch": {
     "title": "Hesapların da {{currency}} olarak değiştirilsin mi?",

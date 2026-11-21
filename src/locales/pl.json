@@ -613,7 +613,10 @@
     "bookParts_few": "Zaksięguj {{count}} transakcje",
     "bookParts_many": "Zaksięguj {{count}} transakcji",
     "bookParts_other": "Zaksięguj {{count}} transakcji",
-    "sameAsMain": "↑ {{category}}"
+    "sameAsMain": "↑ {{category}}",
+    "show": "Pokaż paragon",
+    "unlink": "Odłącz od transakcji",
+    "unlinked": "Paragon wrócił do skrzynki"
   },
   "ocr": {
     "title": "Rozpoznawanie paragonów i AI",
@@ -1162,7 +1165,9 @@
     "time24": "24 godziny",
     "time12": "12 godzin",
     "txSkipCounterparty": "Pomiń Od / Do",
-    "txSkipCounterpartyHint": "Enter przechodzi z kategorii od razu do Zapisz. Pole Od / Do nadal można dotknąć lub kliknąć."
+    "txSkipCounterpartyHint": "Enter przechodzi z kategorii od razu do Zapisz. Pole Od / Do nadal można dotknąć lub kliknąć.",
+    "txDeleteReceipts": "Usuwaj paragony razem z transakcją",
+    "txDeleteReceiptsHint": "Gdy wyłączone, paragony usuniętej transakcji wracają do skrzynki paragonów, gdzie możesz je usunąć lub przypisać ponownie."
   },
   "currencySwitch": {
     "title": "Przestawić też konta na {{currency}}?",

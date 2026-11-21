@@ -246,9 +246,9 @@ export const api = {
     invoke<Transaction>("create_transaction", { input }),
   updateTransaction: (id: string, input: TransactionInput) =>
     invoke<Transaction>("update_transaction", { id, input }),
-  deleteTransaction: (id: string) => invoke<void>("delete_transaction", { id }),
+  deleteTransaction: (id: string, deleteReceipts = false) => invoke<void>("delete_transaction", { id, deleteReceipts }),
   bulkUpdateTransactions: (ids: string[], change: BulkChange) => invoke<BulkResult>("bulk_update_transactions", { ids, change }),
-  deleteTransactions: (ids: string[]) => invoke<number>("delete_transactions", { ids }),
+  deleteTransactions: (ids: string[], deleteReceipts = false) => invoke<number>("delete_transactions", { ids, deleteReceipts }),
   quitApp: () => invoke<void>("quit_app"),
 
   parseQuickEntry: (text: string) => invoke<QuickEntry>("parse_quick_entry", { text }),

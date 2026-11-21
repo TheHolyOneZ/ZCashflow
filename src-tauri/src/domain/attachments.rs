@@ -45,7 +45,10 @@ pub fn thumb_path(db: &Db, sha: &str) -> PathBuf {
     db.files_dir.join("thumbs").join(format!("{sha}.jpg"))
 }
 
-const SELECT: &str = "SELECT id, transaction_id, sha256, mime, file_name, size_bytes, width, height,
+const SELECT: &str = "SELECT id,
+                             CASE WHEN EXISTS (SELECT 1 FROM transactions t WHERE t.id = attachments.transaction_id AND t.deleted = 0)
+                                  THEN transaction_id END,
+                             sha256, mime, file_name, size_bytes, width, height,
                              ocr_text, ocr_engine, extracted_json, created_at
                       FROM attachments WHERE deleted = 0";
 
@@ -73,7 +76,7 @@ pub fn list(db: &Db, conn: &Connection, f: &AttachmentFilter) -> AppResult<Vec<A
     let mut sql = String::from(SELECT);
     let mut args: Vec<String> = vec![];
     if f.inbox {
-        sql.push_str(" AND transaction_id IS NULL");
+        sql.push_str(" AND NOT EXISTS (SELECT 1 FROM transactions t WHERE t.id = attachments.transaction_id AND t.deleted = 0)");
     }
     if let Some(t) = &f.transaction_id {
         args.push(t.clone());
@@ -384,6 +387,63 @@ mod tests {
         )
         .unwrap();
         assert_eq!(found.len(), 1);
+    }
+
+    fn expense(db: &Db, title: &str) -> String {
+        let acc = crate::domain::accounts::list(&db.conn()).unwrap()[0].id.clone();
+        crate::domain::transactions::create(
+            db,
+            crate::domain::transactions::TransactionInput {
+                kind: "expense".into(),
+                amount_minor: 500,
+                currency: None,
+                occurred_on: "2026-10-06".into(),
+                occurred_time: None,
+                account_id: acc,
+                to_account_id: None,
+                to_amount_minor: None,
+                category_id: None,
+                counterparty: None,
+                title: title.into(),
+                note: None,
+                tags: vec![],
+                debt_id: None,
+                goal_id: None,
+            },
+        )
+        .unwrap()
+        .id
+    }
+
+    #[test]
+    fn receipts_of_a_deleted_entry_go_back_to_the_inbox_or_are_deleted() {
+        let db = Db::open_in_memory().unwrap();
+        let today = NaiveDate::from_ymd_opt(2026, 10, 8).unwrap();
+        db.conn().execute("INSERT INTO meta (key, value) VALUES ('ocr_engine', 'none')", []).unwrap();
+        let inbox = |db: &Db| list(db, &db.conn(), &AttachmentFilter { inbox: true, ..Default::default() }).unwrap();
+        let all = |db: &Db| list(db, &db.conn(), &AttachmentFilter::default()).unwrap();
+
+        let kept = expense(&db, "kept");
+        let a = import(&db, &png(), None, Some(kept.clone()), today).unwrap();
+        assert!(inbox(&db).is_empty());
+        crate::domain::transactions::delete(&db, &kept, false).unwrap();
+        let back = inbox(&db);
+        assert_eq!(back.len(), 1);
+        assert_eq!(back[0].id, a.id);
+        assert_eq!(back[0].transaction_id, None);
+
+        let gone = expense(&db, "gone");
+        link(&db, &a.id, Some(&gone)).unwrap();
+        crate::domain::transactions::delete_many(&db, &[gone], true).unwrap();
+        assert!(all(&db).is_empty());
+
+        let old = expense(&db, "old device");
+        let b = import(&db, &png(), Some("b.png".into()), Some(old.clone()), today).unwrap();
+        db.conn().execute("UPDATE transactions SET deleted = 1 WHERE id = ?1", [&old]).unwrap();
+        let orphan = all(&db);
+        assert_eq!(orphan.len(), 1);
+        assert_eq!((orphan[0].id.as_str(), orphan[0].transaction_id.as_deref()), (b.id.as_str(), None));
+        assert_eq!(inbox(&db).len(), 1);
     }
 
     #[test]

@@ -104,6 +104,7 @@ export function SettingsPage() {
   const txPeriod = usePrefs((s) => s.txPeriod);
   const txEnter = usePrefs((s) => s.txEnter);
   const txSkipCounterparty = usePrefs((s) => s.txSkipCounterparty);
+  const txDeleteReceipts = usePrefs((s) => s.txDeleteReceipts);
   const timeFormat = usePrefs((s) => s.timeFormat);
   const protectedData = useVaultStatus().data?.enabled ?? false;
   const setPref = usePrefs((s) => s.set);
@@ -298,6 +299,14 @@ export function SettingsPage() {
                 ]}
               />
             </Field2>
+            <div className="pt-3.5">
+              <SwitchRow
+                label={t("amounts.txDeleteReceipts")}
+                hint={t("amounts.txDeleteReceiptsHint")}
+                checked={txDeleteReceipts}
+                onCheckedChange={(v) => setPref("txDeleteReceipts", v)}
+              />
+            </div>
           </Section>
 
           <Section id="dashboard" icon={LayoutDashboard} title={t("dashboardSettings.title")}>

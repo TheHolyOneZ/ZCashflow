@@ -560,26 +560,36 @@ pub fn bulk_update(db: &Db, ids: &[String], change: &BulkChange) -> AppResult<Bu
     Ok(out)
 }
 
-pub fn delete_many(db: &Db, ids: &[String]) -> AppResult<u32> {
+fn release_receipts(conn: &Connection, db: &Db, id: &str, delete_receipts: bool) -> AppResult<()> {
+    let sql = if delete_receipts {
+        "UPDATE attachments SET deleted = 1, updated_hlc = ?2 WHERE transaction_id = ?1 AND deleted = 0"
+    } else {
+        "UPDATE attachments SET transaction_id = NULL, updated_hlc = ?2 WHERE transaction_id = ?1 AND deleted = 0"
+    };
+    conn.execute(sql, params![id, db.hlc.tick()])?;
+    Ok(())
+}
+
+pub fn delete_many(db: &Db, ids: &[String], delete_receipts: bool) -> AppResult<u32> {
     let mut conn = db.conn();
     let tx = conn.transaction()?;
     let mut n = 0;
     for id in ids {
-        n += tx.execute(
+        let changed = tx.execute(
             "UPDATE transactions SET deleted = 1, updated_hlc = ?2 WHERE id = ?1 AND deleted = 0",
             params![id, db.hlc.tick()],
         )? as u32;
+        if changed > 0 {
+            release_receipts(&tx, db, id, delete_receipts)?;
+        }
+        n += changed;
     }
     tx.commit()?;
     Ok(n)
 }
 
-pub fn delete(db: &Db, id: &str) -> AppResult<()> {
-    let n = db.conn().execute(
-        "UPDATE transactions SET deleted = 1, updated_hlc = ?2 WHERE id = ?1 AND deleted = 0",
-        params![id, db.hlc.tick()],
-    )?;
-    if n == 0 {
+pub fn delete(db: &Db, id: &str, delete_receipts: bool) -> AppResult<()> {
+    if delete_many(db, &[id.to_string()], delete_receipts)? == 0 {
         return Err(AppError::NotFound(format!("transaction {id}")));
     }
     Ok(())
@@ -788,10 +798,10 @@ mod tests {
         let db = Db::open_in_memory().unwrap();
         let acc = cash_account(&db);
         let t = create(&db, expense(&acc, "x", 500, "2026-01-01")).unwrap();
-        delete(&db, &t.id).unwrap();
+        delete(&db, &t.id, false).unwrap();
         assert!(list(&db.conn(), &TransactionFilter::default()).unwrap().is_empty());
         assert_eq!(accounts::get(&db.conn(), &acc).unwrap().balance_minor, 0);
-        assert!(matches!(delete(&db, &t.id), Err(AppError::NotFound(_))));
+        assert!(matches!(delete(&db, &t.id, false), Err(AppError::NotFound(_))));
     }
 
     #[test]
@@ -968,7 +978,7 @@ mod tests {
         assert_eq!(r, BulkResult { updated: 2, skipped: 1 }, "a transfer cannot go to its own target");
         assert_eq!(after(&a.id).account_id, other);
 
-        assert_eq!(delete_many(&db, &[a.id.clone(), b.id.clone(), "missing".into()]).unwrap(), 2);
+        assert_eq!(delete_many(&db, &[a.id.clone(), b.id.clone(), "missing".into()], false).unwrap(), 2);
         assert_eq!(list(&db.conn(), &TransactionFilter::default()).unwrap().len(), 1);
     }
 

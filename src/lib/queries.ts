@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { api, isApiError, planning, receipts, sync, type TransactionFilter, type TransactionInput, type TxKind } from "@/lib/api";
 import { useUi } from "@/stores/ui";
+import { usePrefs } from "@/stores/prefs";
 
 export const keys = {
   appInfo: ["appInfo"] as const,
@@ -117,7 +118,7 @@ export function useSaveTransaction() {
 }
 
 export function useDeleteTransaction() {
-  return useAppMutation((id: string) => api.deleteTransaction(id));
+  return useAppMutation((id: string) => api.deleteTransaction(id, usePrefs.getState().txDeleteReceipts));
 }
 
 export const useAttachments = (filter?: { inbox?: boolean; transactionId?: string }, enabled = true) =>

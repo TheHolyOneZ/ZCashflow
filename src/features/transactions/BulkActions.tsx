@@ -13,6 +13,7 @@ import { isoDate } from "@/lib/dates";
 import { normalizeTime } from "@/lib/time";
 import { invalidateData, useErrorMessage } from "@/lib/queries";
 import { useUi } from "@/stores/ui";
+import { usePrefs } from "@/stores/prefs";
 
 type Action = "category" | "date" | "account" | "delete";
 
@@ -121,7 +122,7 @@ function BulkForm({ action, items, onDone }: { action: Action; items: Transactio
     setBusy(true);
     try {
       if (action === "delete") {
-        const n = await api.deleteTransactions(ids);
+        const n = await api.deleteTransactions(ids, usePrefs.getState().txDeleteReceipts);
         toast(t("bulk.deleted", { count: n }));
       } else {
         const r = await api.bulkUpdateTransactions(ids, change);

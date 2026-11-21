@@ -559,7 +559,10 @@
     "combineHint": "Eine Buchung pro Kategorie statt pro Posten",
     "bookParts_one": "{{count}} Buchung anlegen",
     "bookParts_other": "{{count}} Buchungen anlegen",
-    "sameAsMain": "↑ {{category}}"
+    "sameAsMain": "↑ {{category}}",
+    "show": "Beleg anzeigen",
+    "unlink": "Von der Buchung lösen",
+    "unlinked": "Beleg zurück im Eingang"
   },
   "ocr": {
     "title": "Belegerkennung & KI",
@@ -1082,7 +1085,9 @@
     "time24": "24 Stunden",
     "time12": "12 Stunden",
     "txSkipCounterparty": "Von / An überspringen",
-    "txSkipCounterpartyHint": "Enter springt von der Kategorie direkt zu Speichern. Von / An lässt sich weiterhin antippen oder anklicken."
+    "txSkipCounterpartyHint": "Enter springt von der Kategorie direkt zu Speichern. Von / An lässt sich weiterhin antippen oder anklicken.",
+    "txDeleteReceipts": "Belege mit der Buchung löschen",
+    "txDeleteReceiptsHint": "Ist es aus, landen die Belege einer gelöschten Buchung wieder im Belegeingang. Dort kannst du sie löschen oder neu zuordnen."
   },
   "currencySwitch": {
     "title": "Konten auch auf {{currency}} umstellen?",

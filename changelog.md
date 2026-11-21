@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.8.7
+
+### Added
+
+- Booked receipts can be deleted (#45). Right-click or long-press a receipt under *Recently booked* or in a transaction, or open it: *Delete* asks once more before the file is removed. *Remove from transaction* moves a receipt back to the inbox instead.
+- *Settings → Amounts & transactions → Delete receipts with their transaction*. Off by default.
+
+### Fixed
+
+- Receipts of a deleted transaction stayed under *Recently booked* without a title and couldn't be deleted (#45). Deleting a transaction now moves its receipts back to the receipt inbox, or deletes them when the new setting is on. Receipts left behind by earlier versions show up in the inbox again after the update.
+
+### Notes
+
+- No database or sync schema change; devices on 1.8.6 and older 1.7/1.8 versions still sync.
+
 ## 1.8.6
 
 ### Added

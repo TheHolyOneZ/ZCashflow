@@ -1,11 +1,12 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState, type ReactElement } from "react";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
-import { ImageOff, Loader2, X } from "lucide-react";
+import { Eye, ImageOff, Loader2, RefreshCw, ScanLine, Trash2, Unlink, X } from "lucide-react";
 import { Dialog as D } from "radix-ui";
+import { RowMenu, type MenuEntry } from "@/components/ui/context-menu";
 import { receipts, type Attachment } from "@/lib/api";
 import { cn } from "@/lib/cn";
-import { invalidateData, useAttachmentImage, useErrorMessage } from "@/lib/queries";
+import { invalidateData, useAppMutation, useAttachmentImage, useErrorMessage } from "@/lib/queries";
 import { useUi } from "@/stores/ui";
 
 export const CAMERA_ACCEPT = "image/*";
@@ -81,10 +82,64 @@ export function ReceiptThumb({
   );
 }
 
-export function Lightbox({ attachment, onClose }: { attachment: Attachment | null; onClose: () => void }) {
+function useReceiptActions(a: Attachment | null) {
+  const { t } = useTranslation();
+  const del = useAppMutation((id: string) => receipts.delete(id), { success: t("common.deleted") });
+  const unlink = useAppMutation((id: string) => receipts.link(id, null), { success: t("receipts.unlinked") });
+  return {
+    remove: () => (a ? del.mutateAsync(a.id) : Promise.resolve()),
+    unlink: () => (a ? unlink.mutateAsync(a.id) : Promise.resolve()),
+  };
+}
+
+export function ReceiptMenu({
+  attachment: a,
+  onView,
+  children,
+}: {
+  attachment: Attachment;
+  onView?: () => void;
+  children: ReactElement;
+}) {
+  const { t } = useTranslation();
+  const openReceipt = useUi((s) => s.openReceipt);
+  const reprocess = useAppMutation(() => receipts.reprocess(a.id), { success: t("receipts.reprocessed") });
+  const actions = useReceiptActions(a);
+  const items: MenuEntry[] = a.transactionId
+    ? [
+        ...(onView ? [{ label: t("receipts.show"), icon: Eye, onSelect: onView }] : []),
+        { label: t("receipts.unlink"), icon: Unlink, onSelect: () => void actions.unlink().catch(() => {}) },
+        "separator",
+        { label: t("common.delete"), icon: Trash2, danger: true, confirm: true, onSelect: () => void actions.remove().catch(() => {}) },
+      ]
+    : [
+        { label: t("receipts.review"), icon: ScanLine, onSelect: () => openReceipt(a) },
+        { label: t("receipts.rerun"), icon: RefreshCw, onSelect: () => reprocess.mutate(undefined) },
+        "separator",
+        { label: t("common.delete"), icon: Trash2, danger: true, confirm: true, onSelect: () => void actions.remove().catch(() => {}) },
+      ];
+  return <RowMenu items={items}>{children}</RowMenu>;
+}
+
+export function Lightbox({
+  attachment,
+  onClose,
+  actions = true,
+}: {
+  attachment: Attachment | null;
+  onClose: () => void;
+  actions?: boolean;
+}) {
   const { t } = useTranslation();
   const { data: url } = useAttachmentImage(attachment?.available ? attachment.id : undefined, false);
   const [zoom, setZoom] = useState(false);
+  const [armed, setArmed] = useState(false);
+  const act = useReceiptActions(attachment);
+  useEffect(() => setArmed(false), [attachment?.id]);
+  const run = (fn: () => Promise<unknown>) => () =>
+    fn()
+      .then(onClose)
+      .catch(() => {});
   return (
     <D.Root open={!!attachment} onOpenChange={(o) => !o && onClose()}>
       <D.Portal>
@@ -112,6 +167,34 @@ export function Lightbox({ attachment, onClose }: { attachment: Attachment | nul
           >
             <X className="size-5" />
           </D.Close>
+          {attachment && actions && (
+            <div
+              className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-1/2 flex -translate-x-1/2 gap-2"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {attachment.transactionId && (
+                <button
+                  type="button"
+                  onClick={run(act.unlink)}
+                  className="flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-[13px] font-medium whitespace-nowrap text-white hover:bg-white/20"
+                >
+                  <Unlink className="size-4" />
+                  {t("receipts.unlink")}
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={armed ? run(act.remove) : () => setArmed(true)}
+                className={cn(
+                  "flex items-center gap-2 rounded-full px-4 py-2 text-[13px] font-medium whitespace-nowrap text-white",
+                  armed ? "bg-expense hover:bg-expense/90" : "bg-white/10 hover:bg-white/20",
+                )}
+              >
+                <Trash2 className="size-4" />
+                {armed ? t("common.confirmDelete") : t("common.delete")}
+              </button>
+            </div>
+          )}
         </D.Content>
       </D.Portal>
     </D.Root>

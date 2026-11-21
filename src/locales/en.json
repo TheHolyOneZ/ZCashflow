@@ -559,7 +559,10 @@
     "combineHint": "One entry per category instead of one per item",
     "bookParts_one": "Book {{count}} entry",
     "bookParts_other": "Book {{count}} entries",
-    "sameAsMain": "↑ {{category}}"
+    "sameAsMain": "↑ {{category}}",
+    "show": "Show receipt",
+    "unlink": "Remove from transaction",
+    "unlinked": "Receipt moved back to the inbox"
   },
   "ocr": {
     "title": "Receipt recognition & AI",
@@ -1082,7 +1085,9 @@
     "time24": "24-hour",
     "time12": "12-hour",
     "txSkipCounterparty": "Skip From / To",
-    "txSkipCounterpartyHint": "Enter goes straight from the category to Save. From / To can still be tapped or clicked."
+    "txSkipCounterpartyHint": "Enter goes straight from the category to Save. From / To can still be tapped or clicked.",
+    "txDeleteReceipts": "Delete receipts with their transaction",
+    "txDeleteReceiptsHint": "When off, the receipts of a deleted transaction go back to the receipt inbox, where you can delete them or attach them again."
   },
   "currencySwitch": {
     "title": "Switch your accounts to {{currency}} too?",

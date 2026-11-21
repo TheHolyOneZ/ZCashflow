@@ -618,7 +618,7 @@ mod tests {
         let today = d("2026-10-01");
         rule(&db, "2026-10-01", true, false, today);
         let t = transactions::list(&db.conn(), &Default::default()).unwrap().remove(0);
-        transactions::delete(&db, &t.id).unwrap();
+        transactions::delete(&db, &t.id, false).unwrap();
         assert_eq!(materialize_due(&db, today).unwrap(), 0);
     }
 

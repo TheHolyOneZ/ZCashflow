@@ -430,7 +430,7 @@ function ReviewForm({ receipt: initial, onDone }: { receipt: Attachment; onDone:
           </div>
         </div>
       </form>
-      <Lightbox attachment={lightbox ? receipt : null} onClose={() => setLightbox(false)} />
+      <Lightbox attachment={lightbox ? receipt : null} onClose={() => setLightbox(false)} actions={false} />
     </div>
   );
 }

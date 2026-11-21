@@ -37,7 +37,7 @@ encrypted, over your own Wi-Fi.
 
 ## Contents
 
-- [What's new in 1.8.6](#-whats-new-in-186)
+- [What's new in 1.8.7](#-whats-new-in-187)
 - [Why ZCashflow?](#-why-zcashflow)
 - [Features](#-features)
 - [Screenshots](#-screenshots)
@@ -57,7 +57,14 @@ encrypted, over your own Wi-Fi.
 
 ---
 
-## 🆕 What's new in 1.8.6
+## 🆕 What's new in 1.8.7
+
+- **Delete booked receipts** (#45) – right-click or long-press a receipt under *Recently booked* or in a transaction, or open it, and choose *Delete*. *Remove from transaction* puts it back into the inbox.
+- **Receipts of deleted transactions** (#45) – they now go back to the receipt inbox instead of staying behind without a title. Receipts left over from earlier versions show up there too. If you'd rather delete them together with the transaction, turn on *Settings → Amounts & transactions → Delete receipts with their transaction*.
+
+No database or sync schema change – 1.8.6 and older 1.7/1.8 devices still sync.
+
+### 1.8.6
 
 - **See what moves the balance** (#42) – hovering a day on the Outlook chart lists every entry of that day with its effect, including transfers and entries booked ahead, the change from the day before, and the estimated everyday spending. Long days end in *+N more* with their total.
 - **One account filter for the whole Outlook** (#42) – the account picker now also filters the month plan, the calendar and the planned payments, transfers in and out included.
@@ -227,6 +234,7 @@ See [changelog.md](changelog.md) for the full change list.
 - **Split by category**: one receipt, one entry per category
 - Photos and PDF scans
 - One click: **book** the receipt or **link** it to an existing entry
+- Delete a receipt or remove it from its entry at any time; receipts of a deleted entry go back to the inbox, or are deleted with it if you prefer
 - Optional **local AI** (Ollama, LM Studio …) refines values and suggests a category – nothing leaves your device
 
 </td>
@@ -657,7 +665,7 @@ You don't need every toolchain locally – GitHub builds everything:
   - *Actions → Build → Run workflow* builds selected platforms as artifacts.
   - Pushing a version tag builds **all** platforms and creates a **draft release** with consistently named files and `SHA256SUMS.txt`:
     ```sh
-    git tag v1.8.6 && git push origin v1.8.6
+    git tag v1.8.7 && git push origin v1.8.7
     ```
   - Android signing uses the repository secrets `ANDROID_KEYSTORE_B64` (base64 of the keystore) and `ANDROID_KEY_PASSWORD`.
 

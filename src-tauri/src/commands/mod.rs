@@ -111,8 +111,8 @@ pub fn bulk_update_transactions(db: State<SharedDb>, ids: Vec<String>, change: t
 }
 
 #[tauri::command]
-pub fn delete_transactions(db: State<SharedDb>, ids: Vec<String>) -> AppResult<u32> {
-    transactions::delete_many(&db, &ids)
+pub fn delete_transactions(db: State<SharedDb>, ids: Vec<String>, delete_receipts: Option<bool>) -> AppResult<u32> {
+    transactions::delete_many(&db, &ids, delete_receipts.unwrap_or(false))
 }
 
 #[tauri::command]
@@ -131,8 +131,8 @@ pub fn update_transaction(db: State<SharedDb>, id: String, input: TransactionInp
 }
 
 #[tauri::command]
-pub fn delete_transaction(db: State<SharedDb>, id: String) -> AppResult<()> {
-    transactions::delete(&db, &id)
+pub fn delete_transaction(db: State<SharedDb>, id: String, delete_receipts: Option<bool>) -> AppResult<()> {
+    transactions::delete(&db, &id, delete_receipts.unwrap_or(false))
 }
 
 #[tauri::command]

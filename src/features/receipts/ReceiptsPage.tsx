@@ -1,8 +1,5 @@
-import type { ReactElement } from "react";
-import { RefreshCw, Trash2, Camera, FolderOpen, Inbox, Loader2, ScanLine, Sparkles } from "lucide-react";
-import { RowMenu, type MenuEntry } from "@/components/ui/context-menu";
-import { receipts } from "@/lib/api";
-import { useAppMutation, useAttachments, useTransactions } from "@/lib/queries";
+import { Camera, FolderOpen, Inbox, Loader2, ScanLine, Sparkles } from "lucide-react";
+import { useAttachments, useTransactions } from "@/lib/queries";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -11,7 +8,7 @@ import { Badge, Money } from "@/components/ui/extra";
 import type { Attachment } from "@/lib/api";
 import { formatDay } from "@/lib/dates";
 import { useUi } from "@/stores/ui";
-import { CAMERA_ACCEPT, IMAGE_ACCEPT, Lightbox, ReceiptThumb, useReceiptImport } from "./receipt-ui";
+import { CAMERA_ACCEPT, IMAGE_ACCEPT, Lightbox, ReceiptMenu, ReceiptThumb, useReceiptImport } from "./receipt-ui";
 
 export function ReceiptsPage() {
   const { t } = useTranslation();
@@ -129,7 +126,8 @@ export function ReceiptsPage() {
             {linked.map((a) => {
               const tx = txs.find((x) => x.id === a.transactionId);
               return (
-                <li key={a.id} className="flex flex-col gap-1">
+                <ReceiptMenu key={a.id} attachment={a} onView={() => setLightbox(a)}>
+                <li className="flex flex-col gap-1">
                   <ReceiptThumb attachment={a} className="aspect-[3/4] w-full cursor-zoom-in" onClick={() => setLightbox(a)} />
                   {tx && (
                     <button type="button" onClick={() => openEditTx(tx)} className="truncate text-left text-[11px] text-muted hover:text-fg">
@@ -137,6 +135,7 @@ export function ReceiptsPage() {
                     </button>
                   )}
                 </li>
+                </ReceiptMenu>
               );
             })}
           </ul>
@@ -145,18 +144,4 @@ export function ReceiptsPage() {
       <Lightbox attachment={lightbox} onClose={() => setLightbox(null)} />
     </div>
   );
-}
-
-function ReceiptMenu({ attachment: a, children }: { attachment: Attachment; children: ReactElement }) {
-  const { t } = useTranslation();
-  const openReceipt = useUi((s) => s.openReceipt);
-  const del = useAppMutation(() => receipts.delete(a.id), { success: t("common.deleted") });
-  const reprocess = useAppMutation(() => receipts.reprocess(a.id), { success: t("receipts.reprocessed") });
-  const items: MenuEntry[] = [
-    { label: t("receipts.review"), icon: ScanLine, onSelect: () => openReceipt(a) },
-    { label: t("receipts.rerun"), icon: RefreshCw, onSelect: () => reprocess.mutate(undefined) },
-    "separator",
-    { label: t("common.delete"), icon: Trash2, danger: true, confirm: true, onSelect: () => del.mutate(undefined) },
-  ];
-  return <RowMenu items={items}>{children}</RowMenu>;
 }

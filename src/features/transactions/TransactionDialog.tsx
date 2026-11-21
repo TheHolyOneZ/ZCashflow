@@ -7,7 +7,7 @@ import { freqLabel } from "@/lib/format";
 import { ruleInput } from "@/features/recurring/rule-input";
 import { AccountSelect, CategorySelect, CounterpartyInput, TitleInput } from "@/components/selects";
 import { useAttachments } from "@/lib/queries";
-import { IMAGE_ACCEPT, Lightbox, ReceiptThumb, useReceiptImport } from "@/features/receipts/receipt-ui";
+import { IMAGE_ACCEPT, Lightbox, ReceiptMenu, ReceiptThumb, useReceiptImport } from "@/features/receipts/receipt-ui";
 import type { Attachment } from "@/lib/api";
 import { Dialog } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -566,7 +566,11 @@ function TxAttachments({ transactionId }: { transactionId: string }) {
       </span>
       <div className="flex flex-wrap gap-2">
         {list.map((a) => (
-          <ReceiptThumb key={a.id} attachment={a} onClick={() => setView(a)} className="size-16 cursor-zoom-in" />
+          <ReceiptMenu key={a.id} attachment={a} onView={() => setView(a)}>
+            <span className="block">
+              <ReceiptThumb attachment={a} onClick={() => setView(a)} className="size-16 cursor-zoom-in" />
+            </span>
+          </ReceiptMenu>
         ))}
         <label className="flex size-16 cursor-pointer items-center justify-center rounded-lg border border-dashed border-border text-muted hover:border-accent hover:text-accent">
           <Plus className="size-4" />

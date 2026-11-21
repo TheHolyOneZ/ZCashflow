@@ -649,7 +649,7 @@ mod tests {
         cursor = upto;
         let ids: Vec<String> = db.conn().prepare("SELECT id FROM transactions").unwrap().query_map([], |r| r.get(0)).unwrap().map(Result::unwrap).collect();
         for id in &ids {
-            crate::domain::transactions::delete(&db, id).unwrap();
+            crate::domain::transactions::delete(&db, id, false).unwrap();
         }
         let (changes, upto, _) = rows::changes_since(&db.conn(), cursor, 100_000).unwrap();
         rows::apply(&peer, &changes, None).unwrap();

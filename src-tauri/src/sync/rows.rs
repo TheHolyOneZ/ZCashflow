@@ -277,7 +277,7 @@ mod tests {
         assert_eq!(transactions::get(&a.conn(), &t.id).unwrap().title, "B edit");
         assert_eq!(transactions::get(&b.conn(), &t.id).unwrap().title, "B edit");
 
-        transactions::delete(&a, &t.id).unwrap();
+        transactions::delete(&a, &t.id, false).unwrap();
         sync(&a, &b, &mut ca);
         assert!(transactions::get(&b.conn(), &t.id).is_err());
 
@@ -295,10 +295,10 @@ mod tests {
         sync(&phone, &pc, &mut c_phone);
 
         for id in &all[14..18] {
-            transactions::delete(&phone, id).unwrap();
+            transactions::delete(&phone, id, false).unwrap();
         }
         for id in &all[9..14] {
-            transactions::delete(&pc, id).unwrap();
+            transactions::delete(&pc, id, false).unwrap();
         }
         sync(&pc, &phone, &mut c_pc);
         sync(&phone, &pc, &mut c_phone);

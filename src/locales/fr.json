@@ -586,7 +586,10 @@
     "bookParts_one": "Enregistrer {{count}} opération",
     "bookParts_many": "Enregistrer {{count}} opérations",
     "bookParts_other": "Enregistrer {{count}} opérations",
-    "sameAsMain": "↑ {{category}}"
+    "sameAsMain": "↑ {{category}}",
+    "show": "Afficher le ticket",
+    "unlink": "Détacher de l'opération",
+    "unlinked": "Ticket replacé dans la boîte de réception"
   },
   "ocr": {
     "title": "Reconnaissance des tickets et IA",
@@ -1122,7 +1125,9 @@
     "time24": "24 heures",
     "time12": "12 heures",
     "txSkipCounterparty": "Passer De / À",
-    "txSkipCounterpartyHint": "Entrée passe directement de la catégorie à Enregistrer. De / À reste accessible au toucher ou au clic."
+    "txSkipCounterpartyHint": "Entrée passe directement de la catégorie à Enregistrer. De / À reste accessible au toucher ou au clic.",
+    "txDeleteReceipts": "Supprimer les tickets avec leur opération",
+    "txDeleteReceiptsHint": "Désactivé, les tickets d'une opération supprimée retournent dans la boîte de réception, où tu peux les supprimer ou les rattacher à nouveau."
   },
   "currencySwitch": {
     "title": "Passer aussi vos comptes en {{currency}} ?",

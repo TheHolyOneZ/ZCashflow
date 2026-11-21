@@ -586,7 +586,10 @@
     "bookParts_one": "Registra {{count}} movimento",
     "bookParts_many": "Registra {{count}} movimenti",
     "bookParts_other": "Registra {{count}} movimenti",
-    "sameAsMain": "↑ {{category}}"
+    "sameAsMain": "↑ {{category}}",
+    "show": "Mostra scontrino",
+    "unlink": "Scollega dal movimento",
+    "unlinked": "Scontrino riportato nella posta in arrivo"
   },
   "ocr": {
     "title": "Riconoscimento scontrini e IA",
@@ -1122,7 +1125,9 @@
     "time24": "24 ore",
     "time12": "12 ore",
     "txSkipCounterparty": "Salta Da / A",
-    "txSkipCounterpartyHint": "Invio passa dalla categoria direttamente a Salva. Da / A si può sempre toccare o cliccare."
+    "txSkipCounterpartyHint": "Invio passa dalla categoria direttamente a Salva. Da / A si può sempre toccare o cliccare.",
+    "txDeleteReceipts": "Elimina gli scontrini insieme al movimento",
+    "txDeleteReceiptsHint": "Se disattivato, gli scontrini di un movimento eliminato tornano nella posta in arrivo degli scontrini, dove puoi eliminarli o collegarli di nuovo."
   },
   "currencySwitch": {
     "title": "Passare anche i conti a {{currency}}?",

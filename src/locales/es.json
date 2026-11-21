@@ -586,7 +586,10 @@
     "bookParts_one": "Registrar {{count}} movimiento",
     "bookParts_many": "Registrar {{count}} movimientos",
     "bookParts_other": "Registrar {{count}} movimientos",
-    "sameAsMain": "↑ {{category}}"
+    "sameAsMain": "↑ {{category}}",
+    "show": "Ver recibo",
+    "unlink": "Quitar del movimiento",
+    "unlinked": "El recibo ha vuelto a la bandeja de entrada"
   },
   "ocr": {
     "title": "Reconocimiento de recibos e IA",
@@ -1122,7 +1125,9 @@
     "time24": "24 horas",
     "time12": "12 horas",
     "txSkipCounterparty": "Saltar De / Para",
-    "txSkipCounterpartyHint": "Enter pasa de la categoría directamente a Guardar. De / Para se puede seguir tocando o pulsando."
+    "txSkipCounterpartyHint": "Enter pasa de la categoría directamente a Guardar. De / Para se puede seguir tocando o pulsando.",
+    "txDeleteReceipts": "Eliminar los recibos junto con su movimiento",
+    "txDeleteReceiptsHint": "Si está desactivado, los recibos de un movimiento eliminado vuelven a la bandeja de recibos, donde puedes eliminarlos o asignarlos de nuevo."
   },
   "currencySwitch": {
     "title": "¿Cambiar también tus cuentas a {{currency}}?",
