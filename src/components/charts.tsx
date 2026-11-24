@@ -35,6 +35,22 @@ function compactMoney(minor: number, currency: string) {
   return joinParts(f.formatToParts(value));
 }
 
+let measure: CanvasRenderingContext2D | null | undefined;
+
+function textWidth(text: string) {
+  if (measure === undefined) measure = typeof document === "undefined" ? null : document.createElement("canvas").getContext("2d");
+  if (!measure) return text.length * 7;
+  measure.font = `${axisTick.fontSize}px ${getComputedStyle(document.body).fontFamily}`;
+  return measure.measureText(text).width;
+}
+
+function axisWidth(values: number[], currency: string) {
+  const lo = Math.min(0, ...values);
+  const hi = Math.max(0, ...values);
+  const labels = [lo, hi, lo * 1.25, hi * 1.25].map((v) => compactMoney(v, currency));
+  return Math.max(48, Math.ceil(Math.max(...labels.map(textWidth))) + 14);
+}
+
 function TooltipBox({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-w-40 rounded-lg border border-border bg-surface px-3 py-2 text-[12px] shadow-xl">
@@ -118,7 +134,7 @@ export function ForecastChart({
           />
           <YAxis
             hide={compact}
-            width={64}
+            width={axisWidth(data.map((d) => d.balance), currency)}
             tick={axisTick}
             tickLine={false}
             axisLine={false}
@@ -247,7 +263,7 @@ export function CashflowChart({ data, currency, height = 220 }: { data: MonthTot
               tickFormatter={(m: string) => monthLabel(m, { month: "short" })}
             />
             <YAxis
-              width={64}
+              width={axisWidth(data.flatMap((m) => [m.incomeMinor, m.expenseMinor]), currency)}
               tick={axisTick}
               tickLine={false}
               axisLine={false}
@@ -334,7 +350,7 @@ export function AccountLinesChart({
           <LineChart data={data} margin={{ top: 8, right: compact ? 8 : 4, bottom: 0, left: compact ? 8 : 0 }}>
             {!compact && <CartesianGrid vertical={false} stroke="var(--border)" />}
             <XAxis dataKey="date" hide={compact} tick={axisTick} tickLine={false} axisLine={false} minTickGap={40} tickFormatter={(d: string) => shortDate(d)} />
-            <YAxis hide={compact} width={64} tick={axisTick} tickLine={false} axisLine={false} tickFormatter={(v: number) => compactMoney(v, currency)} />
+            <YAxis hide={compact} width={axisWidth(values, currency)} tick={axisTick} tickLine={false} axisLine={false} tickFormatter={(v: number) => compactMoney(v, currency)} />
             {min < 0 && <ReferenceLine y={0} stroke="var(--muted)" strokeDasharray="4 4" strokeOpacity={0.6} />}
             <Tooltip
               cursor={{ stroke: "var(--muted)", strokeWidth: 1, strokeDasharray: "3 3" }}

@@ -1127,7 +1127,11 @@
     "txSkipCounterparty": "Passer De / À",
     "txSkipCounterpartyHint": "Entrée passe directement de la catégorie à Enregistrer. De / À reste accessible au toucher ou au clic.",
     "txDeleteReceipts": "Supprimer les tickets avec leur opération",
-    "txDeleteReceiptsHint": "Désactivé, les tickets d'une opération supprimée retournent dans la boîte de réception, où tu peux les supprimer ou les rattacher à nouveau."
+    "txDeleteReceiptsHint": "Désactivé, les tickets d'une opération supprimée retournent dans la boîte de réception, où tu peux les supprimer ou les rattacher à nouveau.",
+    "newTxAccount": "Compte pour les nouvelles opérations",
+    "newTxAccountHint": "Présélectionné dans le formulaire. La vue simple commence toujours par le dernier compte utilisé.",
+    "accountFirst": "Premier compte",
+    "accountLast": "Dernier utilisé"
   },
   "currencySwitch": {
     "title": "Passer aussi vos comptes en {{currency}} ?",

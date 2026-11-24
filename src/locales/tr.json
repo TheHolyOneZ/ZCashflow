@@ -1087,7 +1087,11 @@
     "txSkipCounterparty": "Kimden / Kime'yi atla",
     "txSkipCounterpartyHint": "Enter kategoriden doğrudan Kaydet'e geçer. Kimden / Kime alanına yine dokunabilir veya tıklayabilirsin.",
     "txDeleteReceipts": "Fişleri işlemle birlikte sil",
-    "txDeleteReceiptsHint": "Kapalıyken silinen bir işlemin fişleri fiş gelen kutusuna geri döner; orada silebilir veya yeniden bağlayabilirsin."
+    "txDeleteReceiptsHint": "Kapalıyken silinen bir işlemin fişleri fiş gelen kutusuna geri döner; orada silebilir veya yeniden bağlayabilirsin.",
+    "newTxAccount": "Yeni işlemler için hesap",
+    "newTxAccountHint": "İşlem formunda önceden seçilir. Basit görünüm her zaman son kullanılan hesapla başlar.",
+    "accountFirst": "İlk hesap",
+    "accountLast": "Son kullanılan"
   },
   "currencySwitch": {
     "title": "Hesapların da {{currency}} olarak değiştirilsin mi?",

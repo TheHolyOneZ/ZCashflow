@@ -1127,7 +1127,11 @@
     "txSkipCounterparty": "Saltar De / Para",
     "txSkipCounterpartyHint": "Enter pasa de la categoría directamente a Guardar. De / Para se puede seguir tocando o pulsando.",
     "txDeleteReceipts": "Eliminar los recibos junto con su movimiento",
-    "txDeleteReceiptsHint": "Si está desactivado, los recibos de un movimiento eliminado vuelven a la bandeja de recibos, donde puedes eliminarlos o asignarlos de nuevo."
+    "txDeleteReceiptsHint": "Si está desactivado, los recibos de un movimiento eliminado vuelven a la bandeja de recibos, donde puedes eliminarlos o asignarlos de nuevo.",
+    "newTxAccount": "Cuenta para nuevos movimientos",
+    "newTxAccountHint": "Se preselecciona en el formulario. La vista simple siempre empieza con la última cuenta usada.",
+    "accountFirst": "Primera cuenta",
+    "accountLast": "Última usada"
   },
   "currencySwitch": {
     "title": "¿Cambiar también tus cuentas a {{currency}}?",

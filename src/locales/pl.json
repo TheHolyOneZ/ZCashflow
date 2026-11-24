@@ -1167,7 +1167,11 @@
     "txSkipCounterparty": "Pomiń Od / Do",
     "txSkipCounterpartyHint": "Enter przechodzi z kategorii od razu do Zapisz. Pole Od / Do nadal można dotknąć lub kliknąć.",
     "txDeleteReceipts": "Usuwaj paragony razem z transakcją",
-    "txDeleteReceiptsHint": "Gdy wyłączone, paragony usuniętej transakcji wracają do skrzynki paragonów, gdzie możesz je usunąć lub przypisać ponownie."
+    "txDeleteReceiptsHint": "Gdy wyłączone, paragony usuniętej transakcji wracają do skrzynki paragonów, gdzie możesz je usunąć lub przypisać ponownie.",
+    "newTxAccount": "Konto dla nowych transakcji",
+    "newTxAccountHint": "Wybierane z góry w formularzu. Widok prosty zawsze zaczyna od ostatnio używanego konta.",
+    "accountFirst": "Pierwsze konto",
+    "accountLast": "Ostatnio używane"
   },
   "currencySwitch": {
     "title": "Przestawić też konta na {{currency}}?",

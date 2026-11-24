@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, PageHeader } from "@/components/ui/misc";
 import { Segmented } from "@/components/ui/segmented";
+import { Select } from "@/components/ui/select";
 import { Money } from "@/components/ui/extra";
 import { BalanceForecastChart, ChartAccountPicker, useForecastView } from "@/components/forecast-view";
 import { movementEffect } from "@/components/charts";
@@ -29,6 +30,12 @@ export function PlannerPage() {
   const forecast = useForecast(Number(horizon)).data;
   const view = useForecastView(forecast);
   const filtered = !!view && !view.allSelected;
+  const horizons: { value: Horizon; label: string }[] = [
+    { value: "30", label: t("planner.days", { count: 30 }) },
+    { value: "90", label: t("planner.days", { count: 90 }) },
+    { value: "180", label: t("planner.months", { count: 6 }) },
+    { value: "365", label: t("planner.months", { count: 12 }) },
+  ];
   const preview = useMonthPreview(month, view?.accountIds ?? []).data;
 
   return (
@@ -68,12 +75,15 @@ export function PlannerPage() {
                 aria-label={t("planner.horizon")}
                 value={horizon}
                 onChange={setHorizon}
-                options={[
-                  { value: "30", label: t("planner.days", { count: 30 }) },
-                  { value: "90", label: t("planner.days", { count: 90 }) },
-                  { value: "180", label: t("planner.months", { count: 6 }) },
-                  { value: "365", label: t("planner.months", { count: 12 }) },
-                ]}
+                className="hidden sm:flex"
+                options={horizons}
+              />
+              <Select
+                aria-label={t("planner.horizon")}
+                value={horizon}
+                onValueChange={(v) => setHorizon(v as Horizon)}
+                items={horizons}
+                triggerClassName="h-8 w-36 sm:hidden"
               />
             </div>
           }

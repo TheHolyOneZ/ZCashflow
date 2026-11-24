@@ -51,8 +51,7 @@ import { REPEAT_PRESETS, type RepeatPreset } from "@/features/recurring/rule-inp
 import { IncomeCheck } from "./IncomeCheck";
 import { CatchupBanner, CatchupStart, daysBetween, useCatchup } from "./Catchup";
 import { useUi } from "@/stores/ui";
-
-const LAST_ACCOUNT = "zc.lastAccount";
+import { readLastAccount, writeLastAccount } from "@/lib/last-account";
 
 function streak(done: Set<string>): number {
   let day = new Date();
@@ -392,13 +391,7 @@ function QuickAdd({ day, onAdded }: { day: string; onAdded: () => void }) {
   const [amount, setAmount] = useState("");
   const [title, setTitle] = useState("");
   const [categoryId, setCategoryId] = useState<string | null>(null);
-  const [accountId, setAccountId] = useState(() => {
-    try {
-      return localStorage.getItem(LAST_ACCOUNT) ?? "";
-    } catch {
-      return "";
-    }
-  });
+  const [accountId, setAccountId] = useState(() => readLastAccount() ?? "");
   const [busy, setBusy] = useState(false);
   const [invalid, setInvalid] = useState(false);
   const [repeatAs, setRepeatAs] = useState<RepeatPreset>("once");
@@ -490,11 +483,7 @@ function QuickAdd({ day, onAdded }: { day: string; onAdded: () => void }) {
         });
       }
       setRepeatAs("once");
-      try {
-        localStorage.setItem(LAST_ACCOUNT, account.id);
-      } catch {
-        void 0;
-      }
+      writeLastAccount(account.id);
       setAmount("");
       setTitle("");
       setCategoryId(null);
@@ -683,12 +672,8 @@ function ReceiptRow({ attachment: a, day, entries }: { attachment: Attachment; d
   const openReceipt = useUi((s) => s.openReceipt);
   const ex = a.extracted;
   const account = (() => {
-    try {
-      const id = localStorage.getItem(LAST_ACCOUNT);
-      return accounts.find((x) => x.id === id && !x.archived) ?? accounts.find((x) => !x.archived);
-    } catch {
-      return accounts.find((x) => !x.archived);
-    }
+    const id = readLastAccount();
+    return accounts.find((x) => x.id === id && !x.archived) ?? accounts.find((x) => !x.archived);
   })();
   const book = useAppMutation(
     async () => {

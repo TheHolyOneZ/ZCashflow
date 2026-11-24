@@ -1087,7 +1087,11 @@
     "txSkipCounterparty": "Skip From / To",
     "txSkipCounterpartyHint": "Enter goes straight from the category to Save. From / To can still be tapped or clicked.",
     "txDeleteReceipts": "Delete receipts with their transaction",
-    "txDeleteReceiptsHint": "When off, the receipts of a deleted transaction go back to the receipt inbox, where you can delete them or attach them again."
+    "txDeleteReceiptsHint": "When off, the receipts of a deleted transaction go back to the receipt inbox, where you can delete them or attach them again.",
+    "newTxAccount": "Account for new transactions",
+    "newTxAccountHint": "Preselected in the transaction form. The Simple view always starts with the last account you used.",
+    "accountFirst": "First account",
+    "accountLast": "Last used"
   },
   "currencySwitch": {
     "title": "Switch your accounts to {{currency}} too?",

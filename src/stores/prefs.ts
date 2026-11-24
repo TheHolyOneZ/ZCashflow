@@ -70,6 +70,7 @@ export interface Prefs {
   txCreateMore: boolean;
   txSkipCounterparty: boolean;
   txDeleteReceipts: boolean;
+  newTxAccount: string;
   lockAfter: LockAfter;
   timeFormat: TimeFormat;
 }
@@ -100,6 +101,7 @@ export const DEFAULT_PREFS: Prefs = {
   txCreateMore: false,
   txSkipCounterparty: false,
   txDeleteReceipts: false,
+  newTxAccount: "first",
   lockAfter: "5",
   timeFormat: "24",
 };

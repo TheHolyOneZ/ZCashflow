@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.8.8
+
+### Added
+
+- *Settings → Amounts & transactions → Account for new transactions* (#46): *First account* (as before), *Last used*, or a fixed account. The transaction form now also remembers the last account used, the same way the Simple view already did.
+
+### Fixed
+
+- Android's back button closed the app while a transaction or another dialog was open (#48). Back now closes the open dialog, menu or list first, then goes back through the pages you visited, and only closes the app on the first page.
+- The Outlook didn't fit on narrow phones (#47). The account filter and month switch moved below the title instead of squeezing it, the page no longer scrolls sideways, and the forecast period is a dropdown on small screens. Page headers in general now wrap their buttons below the title when there isn't enough room.
+- Long axis labels were cut off in the charts, e.g. *140,0 тыс. ₽* in Russian (#47). The axis now gets as much room as its longest label needs.
+
+### Notes
+
+- No database or sync schema change; devices on 1.8.7 and older 1.7/1.8 versions still sync.
+
 ## 1.8.7
 
 ### Added

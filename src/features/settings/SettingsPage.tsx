@@ -44,7 +44,7 @@ import { SecuritySettings } from "@/features/security/SecuritySettings";
 import { useVaultStatus } from "@/features/security/lock";
 import { api, planning } from "@/lib/api";
 import { formatTime } from "@/lib/dates";
-import { activeLocale, languages } from "@/lib/i18n";
+import { activeLocale, displayName, languages } from "@/lib/i18n";
 import { currencyItems } from "@/lib/currencies";
 import { invalidateData, useAccounts, useAppInfo, useErrorMessage, useSettings } from "@/lib/queries";
 import { useUi } from "@/stores/ui";
@@ -105,6 +105,7 @@ export function SettingsPage() {
   const txEnter = usePrefs((s) => s.txEnter);
   const txSkipCounterparty = usePrefs((s) => s.txSkipCounterparty);
   const txDeleteReceipts = usePrefs((s) => s.txDeleteReceipts);
+  const newTxAccount = usePrefs((s) => s.newTxAccount);
   const timeFormat = usePrefs((s) => s.timeFormat);
   const protectedData = useVaultStatus().data?.enabled ?? false;
   const setPref = usePrefs((s) => s.set);
@@ -286,6 +287,18 @@ export function SettingsPage() {
                 />
                 </div>
               )}
+            </Field2>
+            <Field2 label={t("amounts.newTxAccount")} hint={t("amounts.newTxAccountHint")}>
+              <Select
+                aria-label={t("amounts.newTxAccount")}
+                value={newTxAccount === "first" || newTxAccount === "last" || accounts.some((a) => a.id === newTxAccount && !a.archived) ? newTxAccount : "first"}
+                onValueChange={(v) => setPref("newTxAccount", v)}
+                items={[
+                  { value: "first", label: t("amounts.accountFirst") },
+                  { value: "last", label: t("amounts.accountLast") },
+                  ...accounts.filter((a) => !a.archived).map((a) => ({ value: a.id, label: displayName(a) })),
+                ]}
+              />
             </Field2>
             <Field2 label={t("amounts.timeFormat")} hint={t("amounts.timeFormatHint")}>
               <Segmented<TimeFormat>

@@ -7,7 +7,7 @@ import { useLock, useVaultStatus } from "@/features/security/lock";
 import { Dialog } from "@/components/ui/dialog";
 import { Toaster } from "@/components/ui/toaster";
 import { TransactionDialog } from "@/features/transactions/TransactionDialog";
-import { isDesktop, isTauri, shortcutLabel } from "@/lib/platform";
+import { isAndroid, isDesktop, isTauri, shortcutLabel } from "@/lib/platform";
 import { usePrefs } from "@/stores/prefs";
 import { Logo, ModeSwitch, TitleBar, toggleFullscreen, useApplyTitleBar } from "./TitleBar";
 import { ShortcutsDialog } from "./ShortcutsDialog";
@@ -28,6 +28,7 @@ import { useDailyReminder } from "@/features/today/reminder";
 import { invalidateData, useAccounts, useInsights, useSyncStatus } from "@/lib/queries";
 import { useMoneyDisplay } from "@/lib/money";
 import { calmMotion, jumpTarget, scrollBlocked, scrollJump } from "@/lib/scroll-keys";
+import { installBackGuard } from "@/lib/back-guard";
 
 function isTyping(target: EventTarget | null) {
   const el = target as HTMLElement | null;
@@ -97,6 +98,10 @@ function useGlobalShortcuts(openHelp: () => void, scroller: RefObject<HTMLElemen
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [setPalette, openNew, navigate, openHelp, scroller]);
+}
+
+function useBackGuard() {
+  useEffect(() => (isAndroid ? installBackGuard() : undefined), []);
 }
 
 function useStartPage() {
@@ -242,6 +247,7 @@ export function AppShell() {
   const mainRef = useRef<HTMLElement>(null);
   useGlobalShortcuts(openHelp, mainRef);
   useStartPage();
+  useBackGuard();
   useApplyTitleBar();
   useLedgerEvents();
   useSingleCurrency();

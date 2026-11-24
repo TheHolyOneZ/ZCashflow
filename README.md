@@ -37,7 +37,7 @@ encrypted, over your own Wi-Fi.
 
 ## Contents
 
-- [What's new in 1.8.7](#-whats-new-in-187)
+- [What's new in 1.8.8](#-whats-new-in-188)
 - [Why ZCashflow?](#-why-zcashflow)
 - [Features](#-features)
 - [Screenshots](#-screenshots)
@@ -57,7 +57,15 @@ encrypted, over your own Wi-Fi.
 
 ---
 
-## 🆕 What's new in 1.8.7
+## 🆕 What's new in 1.8.8
+
+- **Account for new transactions** (#46) – *Settings → Amounts & transactions*: first account (as before), last used, or a fixed account.
+- **Back button on Android** (#48) – closes the open dialog or menu first and goes back through your pages; the app only closes from the first page.
+- **Outlook on small phones** (#47) – the header, filter and forecast controls fit on narrow screens, and chart axes make room for long labels such as *140,0 тыс. ₽*.
+
+No database or sync schema change – 1.8.7 and older 1.7/1.8 devices still sync.
+
+### 1.8.7
 
 - **Delete booked receipts** (#45) – right-click or long-press a receipt under *Recently booked* or in a transaction, or open it, and choose *Delete*. *Remove from transaction* puts it back into the inbox.
 - **Receipts of deleted transactions** (#45) – they now go back to the receipt inbox instead of staying behind without a title. Receipts left over from earlier versions show up there too. If you'd rather delete them together with the transaction, turn on *Settings → Amounts & transactions → Delete receipts with their transaction*.
@@ -665,7 +673,7 @@ You don't need every toolchain locally – GitHub builds everything:
   - *Actions → Build → Run workflow* builds selected platforms as artifacts.
   - Pushing a version tag builds **all** platforms and creates a **draft release** with consistently named files and `SHA256SUMS.txt`:
     ```sh
-    git tag v1.8.7 && git push origin v1.8.7
+    git tag v1.8.8 && git push origin v1.8.8
     ```
   - Android signing uses the repository secrets `ANDROID_KEYSTORE_B64` (base64 of the keystore) and `ANDROID_KEY_PASSWORD`.
 

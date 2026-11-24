@@ -33,6 +33,7 @@ import { usePrefs } from "@/stores/prefs";
 import { CheckRow } from "@/features/data/CheckRow";
 import { selectOnFocus } from "@/lib/select-on-focus";
 import { cn } from "@/lib/cn";
+import { readLastAccount, writeLastAccount } from "@/lib/last-account";
 
 interface FormState {
   kind: TxKind;
@@ -139,9 +140,10 @@ function TransactionForm({
   const editing = "editing" in source ? source.editing : null;
 
   const activeAccounts = accounts.filter((a) => !a.archived || a.id === editing?.accountId);
-  const [form, setForm] = useState<FormState>(() =>
-    initialState(source, activeAccounts[0]?.id ?? ""),
-  );
+  const newTxAccount = usePrefs((s) => s.newTxAccount);
+  const preferredAccount = newTxAccount === "first" ? null : newTxAccount === "last" ? readLastAccount() : newTxAccount;
+  const fallbackAccount = (activeAccounts.find((a) => a.id === preferredAccount) ?? activeAccounts[0])?.id ?? "";
+  const [form, setForm] = useState<FormState>(() => initialState(source, fallbackAccount));
   const [showMore, setShowMore] = useState(
     () => !!(editing?.note || editing?.tags.length) || ("draft" in source && !!source.draft.note),
   );
@@ -155,10 +157,10 @@ function TransactionForm({
   const qc = useQueryClient();
 
   useEffect(() => {
-    if (!form.accountId && activeAccounts[0]) {
-      setForm((f) => ({ ...f, accountId: activeAccounts[0].id }));
+    if (!form.accountId && fallbackAccount) {
+      setForm((f) => ({ ...f, accountId: fallbackAccount }));
     }
-  }, [activeAccounts, form.accountId]);
+  }, [fallbackAccount, form.accountId]);
 
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
@@ -214,6 +216,7 @@ function TransactionForm({
     };
     try {
       await save.mutateAsync({ id: editing?.id, input });
+      if (!editing) writeLastAccount(input.accountId);
       if (rule && applyToRule && amountMinor !== rule.amountMinor) {
         await planning.upsertRecurring(ruleInput(rule, { amountMinor }));
         await invalidateData(qc);
