@@ -29,8 +29,8 @@ export const useTransactions = (filter?: TransactionFilter) =>
     placeholderData: (prev) => prev,
   });
 
-export const useRecentTitles = (kind?: TxKind) =>
-  useQuery({ queryKey: ["transactions", "titles", kind ?? "all"], queryFn: () => api.recentTitles(kind), staleTime: 60_000 });
+export const useRecentTitles = (kind?: TxKind, enabled = true) =>
+  useQuery({ queryKey: ["transactions", "titles", kind ?? "all"], queryFn: () => api.recentTitles(kind), staleTime: 60_000, enabled });
 
 export const useTransactionTotals = (filter?: TransactionFilter) =>
   useQuery({

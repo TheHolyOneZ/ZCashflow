@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dropCurrency, formatMoney, minorToInput, parseMoney } from "./money";
+import { dropCurrency, formatMoney, groupAmount, minorToInput, parseMoney, ungroupAmount } from "./money";
 
 describe("parseMoney", () => {
   it.each([
@@ -68,5 +68,72 @@ describe("dropCurrency", () => {
     ["fr-FR", "EUR", 12.5, "12,50"],
   ])("%s %s %d -> %s", (locale, currency, value, expected) => {
     expect(plain(locale, currency, value).replace(/−/g, "-").replace(/[  ]/g, " ")).toBe(expected.replace(/[  ]/g, " "));
+  });
+});
+
+describe("groupAmount", () => {
+  it.each([
+    ["1234567", "de-DE", "1.234.567"],
+    ["1234567", "en-US", "1,234,567"],
+    ["1234,5", "de-DE", "1.234,5"],
+    ["1234.5", "de-DE", "1.234,5"],
+    ["1234,", "de-DE", "1.234,"],
+    ["12,345", "en-US", "12,345"],
+    ["1.234.567,89", "de-DE", "1.234.567,89"],
+    ["-2500", "en-US", "-2,500"],
+    ["12+5", "en-US", "12+5"],
+    ["", "en-US", ""],
+  ])("groups %s in %s as %s", (input, locale, expected) => {
+    expect(groupAmount(input, "EUR", locale)).toBe(expected);
+  });
+
+  it("never changes the amount that is read", () => {
+    const inputs = ["1", "12", "1234", "1234,5", "1234.56", "12.345", "12,345", "1.234.567,8", "6434343131313", "1234,", "1234.", "0,5", "999999,99"];
+    for (const locale of ["de-DE", "en-US", "fr-FR", "pl-PL", "ru-RU", "tr-TR", "it-IT", "es-ES", "de-CH"]) {
+      for (const input of inputs) {
+        expect(parseMoney(groupAmount(input, "EUR", locale), "EUR"), `${input} in ${locale}`).toBe(parseMoney(input, "EUR"));
+      }
+      expect(parseMoney(groupAmount("1234567", "JPY", locale), "JPY")).toBe(1234567);
+    }
+  });
+});
+
+describe("ungroupAmount", () => {
+  it.each([
+    ["12.934", 6, "typed", "de-DE", "12934"],
+    ["12.93", 5, "deleted", "de-DE", "1293"],
+    ["12.9345", 7, "typed", "de-DE", "129345"],
+    ["129.345,", 8, "typed", "de-DE", "129345,"],
+    ["129.345,567", 11, "typed", "de-DE", "129345,56"],
+    ["1.234.", 6, "typed", "de-DE", "1234,"],
+    ["12.", 3, "typed", "de-DE", "12,"],
+    ["1,234", 5, "typed", "en-US", "1234"],
+    ["1,23", 4, "deleted", "en-US", "123"],
+    ["1,234.5", 7, "typed", "en-US", "1234.5"],
+    ["12,", 3, "typed", "en-US", "12."],
+    ["1234.56", 7, "pasted", "de-DE", "1234,56"],
+    ["1.234", 5, "pasted", "de-DE", "1234"],
+    ["1 234.5", 7, "typed", "fr-FR", "1234,5"],
+    ["-1,250", 6, "typed", "en-US", "-1250"],
+  ] as const)("reads %s (%s, %s) in %s as %s", (raw, caret, change, locale, expected) => {
+    expect(ungroupAmount(raw, caret, change, "EUR", locale).text).toBe(expected);
+  });
+
+  it("keeps the caret on the same digit", () => {
+    expect(ungroupAmount("1.2934", 4, "typed", "EUR", "de-DE")).toEqual({ text: "12934", caret: 3 });
+    expect(ungroupAmount("1.234,5", 6, "typed", "EUR", "de-DE")).toEqual({ text: "1234,5", caret: 5 });
+  });
+
+  it("drops the decimal part for currencies without one", () => {
+    expect(ungroupAmount("1,234.5", 7, "typed", "JPY", "en-US").text).toBe("12345");
+  });
+
+  it("round-trips through the grouped display", () => {
+    for (const locale of ["de-DE", "en-US", "fr-FR", "pl-PL", "ru-RU", "tr-TR", "de-CH"]) {
+      for (const state of ["1", "1234", "1234567", "6434343131313"]) {
+        const shown = groupAmount(state, "EUR", locale);
+        expect(ungroupAmount(shown, shown.length, "deleted", "EUR", locale).text, `${state} in ${locale}`).toBe(state);
+      }
+    }
   });
 });

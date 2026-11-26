@@ -30,7 +30,7 @@ import { cn } from "@/lib/cn";
 import { entryTime, formatDay, formatTime, isoDate } from "@/lib/dates";
 import { activeLocale, displayName } from "@/lib/i18n";
 import { isTauri, os } from "@/lib/platform";
-import { minorDigits, parseMoney, withCurrencyChoice } from "@/lib/money";
+import { amountTextClass, groupAmount, minorDigits, parseMoney, withCurrencyChoice } from "@/lib/money";
 import {
   invalidateData,
   useAccounts,
@@ -400,6 +400,8 @@ function QuickAdd({ day, onAdded }: { day: string; onAdded: () => void }) {
   const activeAccounts = accounts.filter((a) => !a.archived);
   const account = activeAccounts.find((a) => a.id === accountId) ?? activeAccounts[0];
   const currency = account?.currency ?? "EUR";
+  const groupDigits = usePrefs((s) => s.groupDigits);
+  const shownAmount = groupDigits ? groupAmount(amount, currency, activeLocale()) : amount;
 
   useEffect(() => {
     if (!accountId && account) setAccountId(account.id);
@@ -524,7 +526,7 @@ function QuickAdd({ day, onAdded }: { day: string; onAdded: () => void }) {
               </button>
             ))}
           </div>
-          <div ref={amountRef} className="min-w-0 flex-[1_1_8rem] sm:w-40 sm:flex-none">
+          <div ref={amountRef} className={cn("min-w-0 flex-[1_1_8rem] sm:flex-none", shownAmount.length > 12 ? "sm:w-80" : shownAmount.length > 7 ? "sm:w-64" : "sm:w-40")}>
             <MoneyInput
               value={amount}
               onChange={(v) => {
@@ -533,7 +535,7 @@ function QuickAdd({ day, onAdded }: { day: string; onAdded: () => void }) {
               }}
               currency={currency}
               invalid={invalid}
-              className="h-12 text-xl font-semibold"
+              className={cn("h-12 font-semibold", amountTextClass(shownAmount, "xl"))}
             />
           </div>
           <div className="min-w-0 flex-[1_1_12rem] [&_input]:h-12 [&_input]:text-[15px]">

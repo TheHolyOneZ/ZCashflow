@@ -68,6 +68,7 @@ pub struct TransactionFilter {
     pub category_id: Option<String>,
     pub category_ids: Option<Vec<String>>,
     pub query: Option<String>,
+    pub title: Option<String>,
     pub limit: Option<u32>,
     pub offset: Option<u32>,
 }
@@ -171,6 +172,10 @@ fn filter_sql(f: &TransactionFilter) -> (String, Vec<Value>) {
             parts.push("(t.category_id IS NULL AND t.kind <> 'transfer')".into());
         }
         sql.push_str(&format!(" AND ({})", parts.join(" OR ")));
+    }
+    if let Some(v) = f.title.as_deref().map(str::trim).filter(|v| !v.is_empty()) {
+        args.push(v.to_string().into());
+        sql.push_str(&format!(" AND lower(trim(t.title)) = lower(?{})", args.len()));
     }
     if let Some(q) = f.query.as_deref().and_then(fts_query) {
         args.push(q.into());
@@ -293,7 +298,9 @@ pub fn category_totals(conn: &Connection, f: &TransactionFilter) -> AppResult<Ve
 }
 
 fn add_balances(conn: &Connection, f: &TransactionFilter, today: NaiveDate, out: &mut Vec<CurrencyTotal>) -> AppResult<()> {
-    if f.kind.is_some() || f.category_id.is_some() || f.category_ids.as_ref().is_some_and(|ids| !ids.is_empty()) || f.query.as_deref().is_some_and(|q| !q.trim().is_empty()) {
+    if f.kind.is_some() || f.category_id.is_some() || f.category_ids.as_ref().is_some_and(|ids| !ids.is_empty()) || f.query.as_deref().is_some_and(|q| !q.trim().is_empty())
+        || f.title.as_deref().is_some_and(|q| !q.trim().is_empty())
+    {
         return Ok(());
     }
     let date = |s: &Option<String>| s.as_deref().and_then(|d| NaiveDate::parse_from_str(d, "%Y-%m-%d").ok());
@@ -1102,6 +1109,21 @@ mod tests {
         assert_eq!(recent_titles(&conn, Some("expense"), 10).unwrap(), vec!["Uber warehouse", "Uber school"]);
         assert_eq!(recent_titles(&conn, None, 10).unwrap().len(), 3);
         assert_eq!(recent_titles(&conn, Some("expense"), 1).unwrap().len(), 1);
+    }
+
+    #[test]
+    fn title_filter_matches_one_description_exactly() {
+        let db = Db::open_in_memory().unwrap();
+        let acc = cash_account(&db);
+        for (title, date) in [("Uber home", "2026-10-01"), ("uber home ", "2026-10-02"), ("Uber home office", "2026-10-03"), ("Uber park", "2026-10-04")] {
+            create(&db, expense(&acc, title, 100, date)).unwrap();
+        }
+        let conn = db.conn();
+        let only = |title: &str| TransactionFilter { title: Some(title.into()), ..Default::default() };
+        assert_eq!(list(&conn, &only("Uber Home")).unwrap().len(), 2);
+        assert_eq!(list(&conn, &only("uber park")).unwrap().len(), 1);
+        assert_eq!(list(&conn, &TransactionFilter { query: Some("uber home".into()), ..Default::default() }).unwrap().len(), 3);
+        assert_eq!(list(&conn, &only("  ")).unwrap().len(), 4);
     }
 
     #[test]

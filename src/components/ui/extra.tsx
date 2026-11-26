@@ -4,10 +4,11 @@ import { Check, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/cn";
 import { activeLocale } from "@/lib/i18n";
-import { dropCurrency, minorDigits, minorToInput, parseMoney, useCurrencyHidden, useExpensesInRed } from "@/lib/money";
+import { dropCurrency, groupAmount, groupedInput, minorDigits, minorToInput, parseMoney, useCurrencyHidden, useExpensesInRed } from "@/lib/money";
 import { Button } from "./button";
 import { selectOnFocus } from "@/lib/select-on-focus";
 import { Input } from "./field";
+import { usePrefs } from "@/stores/prefs";
 
 export function Money({
   minor,
@@ -77,6 +78,7 @@ export function MoneyInput({
   allowNegative?: boolean;
   enterKeyHint?: "next" | "done";
 }) {
+  const groupDigits = usePrefs((s) => s.groupDigits);
   return (
     <div className="relative">
       <Input
@@ -87,11 +89,12 @@ export function MoneyInput({
         autoComplete="off"
         {...selectOnFocus}
         placeholder={placeholder ?? minorToInput(0, currency, activeLocale())}
-        value={value}
+        value={groupDigits ? groupAmount(value, currency, activeLocale()) : value}
         aria-invalid={invalid}
-        onChange={(e) =>
-          onChange(allowNegative ? e.target.value : e.target.value.replace(/^-/, ""))
-        }
+        onChange={(e) => {
+          const text = groupDigits ? groupedInput(e.target, groupAmount(value, currency, activeLocale()), currency, activeLocale()) : e.target.value;
+          onChange(allowNegative ? text : text.replace(/^-/, ""));
+        }}
         className={cn("tabular pr-12 font-medium", invalid && "border-expense focus:border-expense", className)}
       />
       <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-[12px] font-medium text-muted">

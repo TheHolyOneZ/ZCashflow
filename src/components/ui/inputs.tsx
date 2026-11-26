@@ -1,4 +1,4 @@
-import { useId, useMemo, useRef, useState, type ReactNode } from "react";
+import { useId, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { Popover as P, Tooltip as T } from "radix-ui";
 import { Minus, Plus, Search, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -58,30 +58,54 @@ export function Stepper({
 export function SearchInput({
   value,
   onChange,
+  onPick,
+  suggestions,
   placeholder,
   className,
   "aria-label": ariaLabel,
 }: {
   value: string;
   onChange: (v: string) => void;
+  onPick?: (v: string) => void;
+  suggestions?: string[];
   placeholder?: string;
   className?: string;
   "aria-label"?: string;
 }) {
   const { t } = useTranslation();
+  const clearOnEscape = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Escape" && value) {
+      e.stopPropagation();
+      onChange("");
+    }
+  };
   return (
     <div className={cn("relative", className)}>
-      <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted" />
-      <Input
-        type="text"
-        role="searchbox"
-        aria-label={ariaLabel}
-        placeholder={placeholder}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        onKeyDown={(e) => e.key === "Escape" && value && (e.stopPropagation(), onChange(""))}
-        className="px-9"
-      />
+      <Search className="pointer-events-none absolute top-1/2 left-3 z-10 size-4 -translate-y-1/2 text-muted" />
+      {suggestions ? (
+        <Autocomplete
+          value={value}
+          onChange={onChange}
+          onPick={onPick}
+          suggestions={suggestions}
+          placeholder={placeholder}
+          aria-label={ariaLabel}
+          inputClassName="px-9"
+          pickOnEnter={false}
+          onKeyDown={clearOnEscape}
+        />
+      ) : (
+        <Input
+          type="text"
+          role="searchbox"
+          aria-label={ariaLabel}
+          placeholder={placeholder}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onKeyDown={clearOnEscape}
+          className="px-9"
+        />
+      )}
       {value && (
         <button
           type="button"
@@ -106,7 +130,15 @@ export function Autocomplete({
   placeholder,
   renderIcon,
   enterKeyHint,
+  inputClassName,
+  pickOnEnter = true,
+  onKeyDown,
+  "aria-label": ariaLabel,
 }: {
+  inputClassName?: string;
+  pickOnEnter?: boolean;
+  onKeyDown?: (e: KeyboardEvent<HTMLInputElement>) => void;
+  "aria-label"?: string;
   id?: string;
   value: string;
   onChange: (v: string) => void;
@@ -118,7 +150,8 @@ export function Autocomplete({
   renderIcon?: (s: string) => ReactNode;
 }) {
   const [open, setOpen] = useState(false);
-  const [active, setActive] = useState(0);
+  const first = pickOnEnter ? 0 : -1;
+  const [active, setActive] = useState(first);
   const inputRef = useRef<HTMLInputElement>(null);
   const listId = useId();
   const matches = useMemo(() => {
@@ -146,6 +179,8 @@ export function Autocomplete({
             ref={inputRef}
             id={id}
             role="combobox"
+            aria-label={ariaLabel}
+            className={inputClassName}
             aria-expanded={show}
             aria-controls={listId}
             autoComplete="off"
@@ -154,7 +189,7 @@ export function Autocomplete({
             value={value}
             onChange={(e) => {
               onChange(e.target.value);
-              setActive(0);
+              setActive(first);
               setOpen(true);
             }}
             onFocus={() => setOpen(true)}
@@ -163,13 +198,13 @@ export function Autocomplete({
               onBlur?.(e.target.value);
             }}
             onKeyDown={(e) => {
-              if (!show) return;
+              if (!show) return onKeyDown?.(e);
               if (e.key === "ArrowDown") {
                 e.preventDefault();
                 setActive((a) => (a + 1) % matches.length);
               } else if (e.key === "ArrowUp") {
                 e.preventDefault();
-                setActive((a) => (a - 1 + matches.length) % matches.length);
+                setActive((a) => (a <= 0 ? matches.length - 1 : a - 1));
               } else if (e.key === "Enter" || e.key === "Tab") {
                 if (matches[active]) {
                   e.preventDefault();
@@ -178,6 +213,8 @@ export function Autocomplete({
               } else if (e.key === "Escape") {
                 e.stopPropagation();
                 setOpen(false);
+              } else {
+                onKeyDown?.(e);
               }
             }}
           />

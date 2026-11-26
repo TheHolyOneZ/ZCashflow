@@ -112,6 +112,7 @@ export interface TransactionFilter {
   categoryId?: string;
   categoryIds?: string[];
   query?: string;
+  title?: string;
   limit?: number;
   offset?: number;
 }

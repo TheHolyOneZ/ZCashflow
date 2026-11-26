@@ -14,7 +14,7 @@ import { Card, EmptyState, Kbd, PageHeader } from "@/components/ui/misc";
 import { Segmented } from "@/components/ui/segmented";
 import type { TransactionFilter, TransactionTotals, TxKind } from "@/lib/api";
 import { displayName } from "@/lib/i18n";
-import { useAccounts, useTransactionTotals, useTransactions } from "@/lib/queries";
+import { useAccounts, useRecentTitles, useTransactionTotals, useTransactions } from "@/lib/queries";
 import { Money } from "@/components/ui/extra";
 import { useUi } from "@/stores/ui";
 import { TransactionList } from "./TransactionList";
@@ -35,6 +35,9 @@ export function TransactionsPage() {
   const accounts = useAccounts().data ?? [];
 
   const [query, setQuery] = useState(search.q ?? "");
+  const [picked, setPicked] = useState("");
+  const searchSuggestions = usePrefs((s) => s.searchSuggestions);
+  const titles = useRecentTitles(undefined, searchSuggestions).data;
   const [kind, setKind] = useState<KindFilter>("all");
   const [accountId, setAccountId] = useState("");
   const [categoryIds, setCategoryIds] = useState<string[]>(search.category !== undefined ? [search.category] : []);
@@ -61,16 +64,18 @@ export function TransactionsPage() {
   }, [search.category, search.from, search.to]);
 
   const deferredQuery = useDeferredValue(query);
+  const exact = searchSuggestions && picked !== "" && deferredQuery === picked;
   const filter = useMemo<TransactionFilter>(
     () => ({
-      query: deferredQuery.trim() || undefined,
+      query: exact ? undefined : deferredQuery.trim() || undefined,
+      title: exact ? picked : undefined,
       kind: kind === "all" ? undefined : kind,
       accountId: accountId || undefined,
       categoryIds: categoryIds.length ? categoryIds : undefined,
       from: from || undefined,
       to: to || undefined,
     }),
-    [deferredQuery, kind, accountId, categoryIds, from, to],
+    [deferredQuery, exact, picked, kind, accountId, categoryIds, from, to],
   );
   const { data: items = [], isLoading } = useTransactions(filter);
   const totals = useTransactionTotals(filter).data;
@@ -136,7 +141,7 @@ export function TransactionsPage() {
       <Card className="overflow-hidden" {...swipe}>
         <div className="flex flex-col gap-2 border-b border-border p-3">
           <div className="flex flex-wrap items-center gap-2">
-            <SearchInput aria-label={t("common.search")} placeholder={t("tx.searchPlaceholder")} value={query} onChange={setQuery} className="min-w-[11rem] flex-1 sm:min-w-64" />
+            <SearchInput aria-label={t("common.search")} placeholder={t("tx.searchPlaceholder")} value={query} onChange={setQuery} onPick={setPicked} suggestions={searchSuggestions ? (titles ?? []) : undefined} className="min-w-[11rem] flex-1 sm:min-w-64" />
             <Button
               variant="ghost"
               size="icon"

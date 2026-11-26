@@ -105,6 +105,8 @@ export function SettingsPage() {
   const txEnter = usePrefs((s) => s.txEnter);
   const txSkipCounterparty = usePrefs((s) => s.txSkipCounterparty);
   const txDeleteReceipts = usePrefs((s) => s.txDeleteReceipts);
+  const groupDigits = usePrefs((s) => s.groupDigits);
+  const searchSuggestions = usePrefs((s) => s.searchSuggestions);
   const newTxAccount = usePrefs((s) => s.newTxAccount);
   const timeFormat = usePrefs((s) => s.timeFormat);
   const protectedData = useVaultStatus().data?.enabled ?? false;
@@ -318,6 +320,18 @@ export function SettingsPage() {
                 hint={t("amounts.txDeleteReceiptsHint")}
                 checked={txDeleteReceipts}
                 onCheckedChange={(v) => setPref("txDeleteReceipts", v)}
+              />
+              <SwitchRow
+                label={t("amounts.groupDigits")}
+                hint={t("amounts.groupDigitsHint")}
+                checked={groupDigits}
+                onCheckedChange={(v) => setPref("groupDigits", v)}
+              />
+              <SwitchRow
+                label={t("amounts.searchSuggestions")}
+                hint={t("amounts.searchSuggestionsHint")}
+                checked={searchSuggestions}
+                onCheckedChange={(v) => setPref("searchSuggestions", v)}
               />
             </div>
           </Section>

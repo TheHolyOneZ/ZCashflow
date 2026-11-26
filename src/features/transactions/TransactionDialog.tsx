@@ -19,7 +19,7 @@ import type { Transaction, TransactionInput, TxKind } from "@/lib/api";
 import { activeLocale } from "@/lib/i18n";
 import { entryTime, isoDate } from "@/lib/dates";
 import { normalizeTime } from "@/lib/time";
-import { minorDigits, minorToInput, parseMoney } from "@/lib/money";
+import { amountTextClass, groupAmount, groupedInput, minorDigits, minorToInput, parseMoney } from "@/lib/money";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   invalidateData,
@@ -129,6 +129,7 @@ function TransactionForm({
   const enterMode = usePrefs((s) => s.txEnter);
   const createMore = usePrefs((s) => s.txCreateMore);
   const skipCounterparty = usePrefs((s) => s.txSkipCounterparty);
+  const groupDigits = usePrefs((s) => s.groupDigits);
   const pointerAt = useRef(0);
   const tabAt = useRef(0);
   const setPref = usePrefs((s) => s.set);
@@ -331,8 +332,8 @@ function TransactionForm({
         }))}
       />
 
-      <div className="grid grid-cols-[1fr_auto] items-end gap-3 sm:grid-cols-[1fr_auto_auto]">
-        <Field label={t("tx.amount")} htmlFor="tx-amount" className="col-span-2 sm:col-span-1">
+      <div className="grid grid-cols-[1fr_auto] items-end gap-3">
+        <Field label={t("tx.amount")} htmlFor="tx-amount" className="col-span-2">
           <div className="relative">
             <Input
               id="tx-amount"
@@ -342,14 +343,15 @@ function TransactionForm({
               autoComplete="off"
               {...selectOnFocus}
               placeholder="0,00"
-              value={form.amount}
+              value={groupDigits ? groupAmount(form.amount, currency, activeLocale()) : form.amount}
               aria-invalid={amountError}
               onChange={(e) => {
-                set("amount", e.target.value);
+                set("amount", groupDigits ? groupedInput(e.target, groupAmount(form.amount, currency, activeLocale()), currency, activeLocale()) : e.target.value);
                 setAmountError(false);
               }}
               className={cn(
-                "tabular h-12 pr-14 text-2xl font-semibold",
+                "tabular h-12 pr-14 font-semibold",
+                amountTextClass(groupDigits ? groupAmount(form.amount, currency, activeLocale()) : form.amount, "2xl"),
                 amountError && "border-expense focus:border-expense",
               )}
             />
@@ -371,7 +373,7 @@ function TransactionForm({
             onChange={(v) =>
               setForm((f) => ({ ...f, occurredOn: v, time: timeTouched ? f.time : (entryTime(v) ?? "") }))
             }
-            className="h-12 sm:w-[10.5rem]"
+            className="h-12"
           />
         </Field>
         <Field label={t("tx.time")} htmlFor="tx-time">

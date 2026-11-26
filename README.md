@@ -37,7 +37,7 @@ encrypted, over your own Wi-Fi.
 
 ## Contents
 
-- [What's new in 1.8.8](#-whats-new-in-188)
+- [What's new in 1.8.9](#-whats-new-in-189)
 - [Why ZCashflow?](#-why-zcashflow)
 - [Features](#-features)
 - [Screenshots](#-screenshots)
@@ -57,7 +57,15 @@ encrypted, over your own Wi-Fi.
 
 ---
 
-## 🆕 What's new in 1.8.8
+## 🆕 What's new in 1.8.9
+
+- **Thousands separators while typing** (#50) – optional, under *Settings → Amounts & transactions*: amounts like *1.250.000* are easy to read as you enter them.
+- **Pick a description in the search** (#51) – optional, same place: the Transactions search lists matching descriptions, and picking *Uber home* shows only *Uber home*, not *Uber office* or *Uber park*.
+- **Large amounts fit** (#49) – the amount in the transaction form has its own row on the computer too, and long numbers no longer get cut off.
+
+No database or sync schema change – 1.8.8 and older 1.7/1.8 devices still sync.
+
+### 1.8.8
 
 - **Account for new transactions** (#46) – *Settings → Amounts & transactions*: first account (as before), last used, or a fixed account.
 - **Back button on Android** (#48) – closes the open dialog or menu first and goes back through your pages; the app only closes from the first page.
@@ -673,7 +681,7 @@ You don't need every toolchain locally – GitHub builds everything:
   - *Actions → Build → Run workflow* builds selected platforms as artifacts.
   - Pushing a version tag builds **all** platforms and creates a **draft release** with consistently named files and `SHA256SUMS.txt`:
     ```sh
-    git tag v1.8.8 && git push origin v1.8.8
+    git tag v1.8.9 && git push origin v1.8.9
     ```
   - Android signing uses the repository secrets `ANDROID_KEYSTORE_B64` (base64 of the keystore) and `ANDROID_KEY_PASSWORD`.
 

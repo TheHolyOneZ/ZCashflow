@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.8.9
+
+### Added
+
+- *Settings → Amounts & transactions → Thousands separators while typing* (#50). Amounts such as *1.250.000* are shown with separators as you type them, in the transaction form, the Simple view and every other amount field. Off by default. The typed decimal mark follows your language, and deleting a digit keeps the amount as it is.
+- *Settings → Amounts & transactions → Suggest descriptions in search* (#51). The search on the Transactions page lists matching descriptions while you type. Picking one, e.g. *Uber home*, shows only transactions with exactly that description and leaves out *Uber office* or *Uber park*. Typing without picking searches as before. Off by default.
+
+### Fixed
+
+- Amounts with more than six digits were cut off in the transaction form on the computer (#49). The amount now has its own row there as well, like on phones, so the date and time sit below it. In the Simple view the amount field grows with the number, and very long amounts get a smaller font instead of scrolling.
+
+### Notes
+
+- No database or sync schema change; devices on 1.8.8 and older 1.7/1.8 versions still sync.
+
 ## 1.8.8
 
 ### Added
